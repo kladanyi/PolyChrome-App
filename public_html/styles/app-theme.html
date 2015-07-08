@@ -24,4 +24,81 @@
         --paper-menu-background-color: #fff;
         --menu-link-color: #111111;
     }
+
+    body {
+        font-family: 'Roboto', 'Noto', sans-serif;
+        font-size: 16px;
+    }
+
+    /* BUTTONS */
+/*    body /deep/ paper-button::shadow paper-ripple {
+        color: var(--default-primary-color);
+    }*/
+
+    body /deep/ paper-button.default::shadow {
+        color: var(--default-primary-color);
+    }
+
+    body /deep/ paper-button[raised].default::shadow {
+        background: var(--default-primary-color);
+        color: var(--text-primary-color);
+    }
+
+    body /deep/ paper-button[raised].default::shadow paper-ripple {
+        color: var(--light-primary-color);
+    }
+    /* -BUTTONS- */
+    
+    /* CARDS */
+    /deep/ paper-material.card {
+        border-radius: 2px;
+        height: 100%;
+        padding: 16px;
+        margin: 16px;
+        background: white;
+    }
+    /* -CARDS- */
+    
+    
+    /* Material Design Adaptive Breakpoints */
+    /*
+      Below you'll find CSS media queries based on the breakpoint guidance
+      published by the Material Design team. You can choose to use, customise
+      or remove these breakpoints based on your needs.
+  
+      http://www.google.com/design/spec/layout/adaptive-ui.html#adaptive-ui-breakpoints
+    */
+
+    /* mobile-small */
+    @media all and (min-width: 0) and (max-width: 360px) and (orientation: portrait) { }
+    /* mobile-large */
+    @media all and (min-width: 361px) and (orientation: portrait) { }
+    /* mobile-small-landscape */
+    @media all and (min-width: 0) and (max-width: 480px) and (orientation: landscape) { }
+    /* mobile-large-landscape */
+    @media all and (min-width: 481px) and (orientation: landscape) { }
+    /* tablet-small-landscape */
+    @media all and (min-width: 600px) and (max-width: 960px) and (orientation: landscape) { }
+    /* tablet-large-landscape */
+    @media all and (min-width: 961px) and (orientation: landscape) { }
+    /* tablet-small */
+    @media all and (min-width: 600px) and (orientation: portrait) { }
+    /* tablet-large */
+    @media all and (min-width: 601px) and (max-width: 840px) and (orientation : portrait) { }
+    /* desktop-x-small-landscape */
+    @media all and (min-width: 0) and (max-width: 480px) and (orientation: landscape) { }
+    /* desktop-x-small */
+    @media all and (min-width: 0) and (max-width: 480px) and (max-aspect-ratio: 4/3) { }
+    /* desktop-small-landscape */
+    @media all and (min-width: 481px) and (max-width: 840px) and (orientation: landscape) { }
+    /* desktop-small */
+    @media all and (min-width: 481px) and (max-width: 840px) and (max-aspect-ratio: 4/3) { }
+    /* desktop-medium-landscape */
+    @media all and (min-width: 841px) and (max-width: 1280px) and (orientation: landscape) { }
+    /* desktop-medium */
+    @media all and (min-width: 841px) and (max-width: 1280px) and (max-aspect-ratio: 4/3) { }
+    /* desktop-large */
+    @media all and (min-width: 1281px) and (max-width: 1600px) { }
+    /* desktop-xlarge */
+    @media all and (min-width: 1601px) and (max-width: 1920px) { }
 </style>
