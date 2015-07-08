@@ -88,7 +88,7 @@
                     <paper-icon-button icon="social:person"></paper-icon-button>
 
                     <!--                     Application name -->
-                    <div class="app-name">Polymer Starter Kit</div>
+                    <div class="app-name">PolyChrome App</div>
 
                     <!--Application sub title--> 
                     <div class="bottom title"></div>
@@ -97,40 +97,39 @@
 
                 <!-- Main Content -->
                 <div class="content">
-                    <paper-material elevation="1" class="card">
-                        <content-1></content-1>
-                    </paper-material>
-                    <!--                    <iron-pages attr-for-selected="data-route" selected="{{route}}">
-                    
-                                            <section data-route="home">
-                                                <my-home></my-home>
-                                            </section>
-                    
-                                            <section data-route="users">
-                                                <paper-material elevation="1">
-                                                    <h2 class="paper-font-display2">Users</h2>
-                                                    <p>This is the users section</p>
-                                                    <a href="/users/Rob">Rob</a>
-                                                </paper-material>
-                                            </section>
-                    
-                                            <section data-route="user-info">
-                                                <paper-material elevation="1">
-                                                    <h2 class="paper-font-display2">
-                                                        User:<span>{{params.name}}</span>
-                                                    </h2>
-                                                    <div>This is <span>{{params.name}}</span>'s section</div>
-                                                </paper-material>
-                                            </section>
-                    
-                                            <section data-route="contact">
-                                                <paper-material elevation="1">
-                                                    <h2 class="paper-font-display2">Contact</h2>
-                                                    <p>This is the contact section</p>
-                                                </paper-material>
-                                            </section>
-                    
-                                        </iron-pages>-->
+                    <iron-pages attr-for-selected="data-route" selected="{{route}}">
+
+                        <section data-route="home">
+                            <paper-material elevation="1" class="card">
+                                <content-1></content-1>
+                            </paper-material>
+                        </section>
+
+                        <section data-route="users">
+                            <paper-material elevation="1" class="card">
+                                <h2 class="paper-font-display2">Users</h2>
+                                <p>This is the users section</p>
+                                <a href="/users/Rob">Rob</a>
+                            </paper-material>
+                        </section>
+
+                        <section data-route="user-info" class="card">
+                            <paper-material elevation="1">
+                                <h2 class="paper-font-display2">
+                                    User:<span>{{params.name}}</span>
+                                </h2>
+                                <div>This is <span>{{params.name}}</span>'s section</div>
+                            </paper-material>
+                        </section>
+
+                        <section data-route="contact">
+                            <paper-material elevation="1" class="card">
+                                <h2 class="paper-font-display2">Contact</h2>
+                                <p>This is the contact section</p>
+                            </paper-material>
+                        </section>
+
+                    </iron-pages>
                 </div>
             </paper-header-panel>
             </paper-header-panel>

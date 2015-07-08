@@ -5871,6 +5871,584 @@ this._removeChildren();
 }
 });
 ;
+  /**
+   * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
+   * coordinate the flow of resize events between "resizers" (elements that control the
+   * size or hidden state of their children) and "resizables" (elements that need to be
+   * notified when they are resized or un-hidden by their parents in order to take
+   * action on their new measurements).
+   * Elements that perform measurement should add the `IronResizableBehavior` behavior to
+   * their element definition and listen for the `iron-resize` event on themselves.
+   * This event will be fired when they become showing after having been hidden,
+   * when they are resized explicitly by another resizable, or when the window has been
+   * resized.
+   * Note, the `iron-resize` event is non-bubbling.
+   *
+   * @polymerBehavior Polymer.IronResizableBehavior
+   * @demo demo/index.html
+   **/
+  Polymer.IronResizableBehavior = {
+    properties: {
+      /**
+       * The closest ancestor element that implements `IronResizableBehavior`.
+       */
+      _parentResizable: {
+        type: Object,
+        observer: '_parentResizableChanged'
+      },
+
+      /**
+       * True if this element is currently notifying its descedant elements of
+       * resize.
+       */
+      _notifyingDescendant: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    listeners: {
+      'iron-request-resize-notifications': '_onIronRequestResizeNotifications'
+    },
+
+    created: function() {
+      // We don't really need property effects on these, and also we want them
+      // to be created before the `_parentResizable` observer fires:
+      this._interestedResizables = [];
+      this._boundNotifyResize = this.notifyResize.bind(this);
+    },
+
+    attached: function() {
+      this.fire('iron-request-resize-notifications', null, {
+        node: this,
+        bubbles: true,
+        cancelable: true
+      });
+
+      if (!this._parentResizable) {
+        window.addEventListener('resize', this._boundNotifyResize);
+        this.notifyResize();
+      }
+    },
+
+    detached: function() {
+      if (this._parentResizable) {
+        this._parentResizable.stopResizeNotificationsFor(this);
+      } else {
+        window.removeEventListener('resize', this._boundNotifyResize);
+      }
+
+      this._parentResizable = null;
+    },
+
+    /**
+     * Can be called to manually notify a resizable and its descendant
+     * resizables of a resize change.
+     */
+    notifyResize: function() {
+      if (!this.isAttached) {
+        return;
+      }
+
+      this._interestedResizables.forEach(function(resizable) {
+        if (this.resizerShouldNotify(resizable)) {
+          this._notifyDescendant(resizable);
+        }
+      }, this);
+
+      this._fireResize();
+    },
+
+    /**
+     * Used to assign the closest resizable ancestor to this resizable
+     * if the ancestor detects a request for notifications.
+     */
+    assignParentResizable: function(parentResizable) {
+      this._parentResizable = parentResizable;
+    },
+
+    /**
+     * Used to remove a resizable descendant from the list of descendants
+     * that should be notified of a resize change.
+     */
+    stopResizeNotificationsFor: function(target) {
+      var index = this._interestedResizables.indexOf(target);
+
+      if (index > -1) {
+        this._interestedResizables.splice(index, 1);
+        this.unlisten(target, 'iron-resize', '_onDescendantIronResize');
+      }
+    },
+
+    /**
+     * This method can be overridden to filter nested elements that should or
+     * should not be notified by the current element. Return true if an element
+     * should be notified, or false if it should not be notified.
+     *
+     * @param {HTMLElement} element A candidate descendant element that
+     * implements `IronResizableBehavior`.
+     * @return {boolean} True if the `element` should be notified of resize.
+     */
+    resizerShouldNotify: function(element) { return true; },
+
+    _onDescendantIronResize: function(event) {
+      if (this._notifyingDescendant) {
+        event.stopPropagation();
+        return;
+      }
+
+      // NOTE(cdata): In ShadowDOM, event retargetting makes echoing of the
+      // otherwise non-bubbling event "just work." We do it manually here for
+      // the case where Polymer is not using shadow roots for whatever reason:
+      if (!Polymer.Settings.useShadow) {
+        this._fireResize();
+      }
+    },
+
+    _fireResize: function() {
+      this.fire('iron-resize', null, {
+        node: this,
+        bubbles: false
+      });
+    },
+
+    _onIronRequestResizeNotifications: function(event) {
+      var target = event.path ? event.path[0] : event.target;
+
+      if (target === this) {
+        return;
+      }
+
+      if (this._interestedResizables.indexOf(target) === -1) {
+        this._interestedResizables.push(target);
+        this.listen(target, 'iron-resize', '_onDescendantIronResize');
+      }
+
+      target.assignParentResizable(this);
+      this._notifyDescendant(target);
+
+      event.stopPropagation();
+    },
+
+    _parentResizableChanged: function(parentResizable) {
+      if (parentResizable) {
+        window.removeEventListener('resize', this._boundNotifyResize);
+      }
+    },
+
+    _notifyDescendant: function(descendant) {
+      // NOTE(cdata): In IE10, attached is fired on children first, so it's
+      // important not to notify them if the parent is not attached yet (or
+      // else they will get redundantly notified when the parent attaches).
+      if (!this.isAttached) {
+        return;
+      }
+
+      this._notifyingDescendant = true;
+      descendant.notifyResize();
+      this._notifyingDescendant = false;
+    }
+  };
+
+;
+
+  /**
+   * @param {!Function} selectCallback
+   * @constructor
+   */
+  Polymer.IronSelection = function(selectCallback) {
+    this.selection = [];
+    this.selectCallback = selectCallback;
+  };
+
+  Polymer.IronSelection.prototype = {
+
+    /**
+     * Retrieves the selected item(s).
+     *
+     * @method get
+     * @returns Returns the selected item(s). If the multi property is true,
+     * `get` will return an array, otherwise it will return
+     * the selected item or undefined if there is no selection.
+     */
+    get: function() {
+      return this.multi ? this.selection : this.selection[0];
+    },
+
+    /**
+     * Clears all the selection except the ones indicated.
+     *
+     * @method clear
+     * @param {Array} excludes items to be excluded.
+     */
+    clear: function(excludes) {
+      this.selection.slice().forEach(function(item) {
+        if (!excludes || excludes.indexOf(item) < 0) {
+          this.setItemSelected(item, false);
+        }
+      }, this);
+    },
+
+    /**
+     * Indicates if a given item is selected.
+     *
+     * @method isSelected
+     * @param {*} item The item whose selection state should be checked.
+     * @returns Returns true if `item` is selected.
+     */
+    isSelected: function(item) {
+      return this.selection.indexOf(item) >= 0;
+    },
+
+    /**
+     * Sets the selection state for a given item to either selected or deselected.
+     *
+     * @method setItemSelected
+     * @param {*} item The item to select.
+     * @param {boolean} isSelected True for selected, false for deselected.
+     */
+    setItemSelected: function(item, isSelected) {
+      if (item != null) {
+        if (isSelected) {
+          this.selection.push(item);
+        } else {
+          var i = this.selection.indexOf(item);
+          if (i >= 0) {
+            this.selection.splice(i, 1);
+          }
+        }
+        if (this.selectCallback) {
+          this.selectCallback(item, isSelected);
+        }
+      }
+    },
+
+    /**
+     * Sets the selection state for a given item. If the `multi` property
+     * is true, then the selected state of `item` will be toggled; otherwise
+     * the `item` will be selected.
+     *
+     * @method select
+     * @param {*} item The item to select.
+     */
+    select: function(item) {
+      if (this.multi) {
+        this.toggle(item);
+      } else if (this.get() !== item) {
+        this.setItemSelected(this.get(), false);
+        this.setItemSelected(item, true);
+      }
+    },
+
+    /**
+     * Toggles the selection state for `item`.
+     *
+     * @method toggle
+     * @param {*} item The item to toggle.
+     */
+    toggle: function(item) {
+      this.setItemSelected(item, !this.isSelected(item));
+    }
+
+  };
+
+
+;
+
+  /** @polymerBehavior */
+  Polymer.IronSelectableBehavior = {
+
+    properties: {
+
+      /**
+       * If you want to use the attribute value of an element for `selected` instead of the index,
+       * set this to the name of the attribute.
+       *
+       * @attribute attrForSelected
+       * @type {string}
+       */
+      attrForSelected: {
+        type: String,
+        value: null
+      },
+
+      /**
+       * Gets or sets the selected element. The default is to use the index of the item.
+       *
+       * @attribute selected
+       * @type {string}
+       */
+      selected: {
+        type: String,
+        notify: true
+      },
+
+      /**
+       * Returns the currently selected item.
+       *
+       * @attribute selectedItem
+       * @type {Object}
+       */
+      selectedItem: {
+        type: Object,
+        readOnly: true,
+        notify: true
+      },
+
+      /**
+       * The event that fires from items when they are selected. Selectable
+       * will listen for this event from items and update the selection state.
+       * Set to empty string to listen to no events.
+       *
+       * @attribute activateEvent
+       * @type {string}
+       * @default 'tap'
+       */
+      activateEvent: {
+        type: String,
+        value: 'tap',
+        observer: '_activateEventChanged'
+      },
+
+      /**
+       * This is a CSS selector sting.  If this is set, only items that matches the CSS selector
+       * are selectable.
+       *
+       * @attribute selectable
+       * @type {string}
+       */
+      selectable: String,
+
+      /**
+       * The class to set on elements when selected.
+       *
+       * @attribute selectedClass
+       * @type {string}
+       */
+      selectedClass: {
+        type: String,
+        value: 'iron-selected'
+      },
+
+      /**
+       * The attribute to set on elements when selected.
+       *
+       * @attribute selectedAttribute
+       * @type {string}
+       */
+      selectedAttribute: {
+        type: String,
+        value: null
+      }
+
+    },
+
+    observers: [
+      '_updateSelected(attrForSelected, selected)'
+    ],
+
+    excludedLocalNames: {
+      'template': 1
+    },
+
+    created: function() {
+      this._bindFilterItem = this._filterItem.bind(this);
+      this._selection = new Polymer.IronSelection(this._applySelection.bind(this));
+    },
+
+    attached: function() {
+      this._observer = this._observeItems(this);
+      this._contentObserver = this._observeContent(this);
+    },
+
+    detached: function() {
+      if (this._observer) {
+        this._observer.disconnect();
+      }
+      if (this._contentObserver) {
+        this._contentObserver.disconnect();
+      }
+      this._removeListener(this.activateEvent);
+    },
+
+    /**
+     * Returns an array of selectable items.
+     *
+     * @property items
+     * @type Array
+     */
+    get items() {
+      var nodes = Polymer.dom(this).queryDistributedElements(this.selectable || '*');
+      return Array.prototype.filter.call(nodes, this._bindFilterItem);
+    },
+
+    /**
+     * Returns the index of the given item.
+     *
+     * @method indexOf
+     * @param {Object} item
+     * @returns Returns the index of the item
+     */
+    indexOf: function(item) {
+      return this.items.indexOf(item);
+    },
+
+    /**
+     * Selects the given value.
+     *
+     * @method select
+     * @param {string} value the value to select.
+     */
+    select: function(value) {
+      this.selected = value;
+    },
+
+    /**
+     * Selects the previous item.
+     *
+     * @method selectPrevious
+     */
+    selectPrevious: function() {
+      var length = this.items.length;
+      var index = (Number(this._valueToIndex(this.selected)) - 1 + length) % length;
+      this.selected = this._indexToValue(index);
+    },
+
+    /**
+     * Selects the next item.
+     *
+     * @method selectNext
+     */
+    selectNext: function() {
+      var index = (Number(this._valueToIndex(this.selected)) + 1) % this.items.length;
+      this.selected = this._indexToValue(index);
+    },
+
+    _addListener: function(eventName) {
+      this.listen(this, eventName, '_activateHandler');
+    },
+
+    _removeListener: function(eventName) {
+      // There is no unlisten yet...
+      // https://github.com/Polymer/polymer/issues/1639
+      //this.removeEventListener(eventName, this._bindActivateHandler);
+    },
+
+    _activateEventChanged: function(eventName, old) {
+      this._removeListener(old);
+      this._addListener(eventName);
+    },
+
+    _updateSelected: function() {
+      this._selectSelected(this.selected);
+    },
+
+    _selectSelected: function(selected) {
+      this._selection.select(this._valueToItem(this.selected));
+    },
+
+    _filterItem: function(node) {
+      return !this.excludedLocalNames[node.localName];
+    },
+
+    _valueToItem: function(value) {
+      return (value == null) ? null : this.items[this._valueToIndex(value)];
+    },
+
+    _valueToIndex: function(value) {
+      if (this.attrForSelected) {
+        for (var i = 0, item; item = this.items[i]; i++) {
+          if (this._valueForItem(item) == value) {
+            return i;
+          }
+        }
+      } else {
+        return Number(value);
+      }
+    },
+
+    _indexToValue: function(index) {
+      if (this.attrForSelected) {
+        var item = this.items[index];
+        if (item) {
+          return this._valueForItem(item);
+        }
+      } else {
+        return index;
+      }
+    },
+
+    _valueForItem: function(item) {
+      return item[this.attrForSelected] || item.getAttribute(this.attrForSelected);
+    },
+
+    _applySelection: function(item, isSelected) {
+      if (this.selectedClass) {
+        this.toggleClass(this.selectedClass, isSelected, item);
+      }
+      if (this.selectedAttribute) {
+        this.toggleAttribute(this.selectedAttribute, isSelected, item);
+      }
+      this._selectionChange();
+      this.fire('iron-' + (isSelected ? 'select' : 'deselect'), {item: item});
+    },
+
+    _selectionChange: function() {
+      this._setSelectedItem(this._selection.get());
+    },
+
+    // observe content changes under the given node.
+    _observeContent: function(node) {
+      var content = node.querySelector('content');
+      if (content && content.parentElement === node) {
+        return this._observeItems(node.domHost);
+      }
+    },
+
+    // observe items change under the given node.
+    _observeItems: function(node) {
+      var observer = new MutationObserver(function() {
+        if (this.selected != null) {
+          this._updateSelected();
+        }
+      }.bind(this));
+      observer.observe(node, {
+        childList: true,
+        subtree: true
+      });
+      return observer;
+    },
+
+    _activateHandler: function(e) {
+      // TODO: remove this when https://github.com/Polymer/polymer/issues/1639 is fixed so we
+      // can just remove the old event listener.
+      if (e.type !== this.activateEvent) {
+        return;
+      }
+      var t = e.target;
+      var items = this.items;
+      while (t && t != this) {
+        var i = items.indexOf(t);
+        if (i >= 0) {
+          var value = this._indexToValue(i);
+          this._itemActivate(value, t);
+          return;
+        }
+        t = t.parentNode;
+      }
+    },
+
+    _itemActivate: function(value, item) {
+      if (!this.fire('iron-activate',
+          {selected: value, item: item}, {cancelable: true}).defaultPrevented) {
+        this.select(value);
+      }
+    }
+
+  };
+
+
+;
 
   (function() {
 
@@ -6362,404 +6940,6 @@ this._removeChildren();
     }
 
   });
-
-
-;
-
-  /**
-   * @param {!Function} selectCallback
-   * @constructor
-   */
-  Polymer.IronSelection = function(selectCallback) {
-    this.selection = [];
-    this.selectCallback = selectCallback;
-  };
-
-  Polymer.IronSelection.prototype = {
-
-    /**
-     * Retrieves the selected item(s).
-     *
-     * @method get
-     * @returns Returns the selected item(s). If the multi property is true,
-     * `get` will return an array, otherwise it will return
-     * the selected item or undefined if there is no selection.
-     */
-    get: function() {
-      return this.multi ? this.selection : this.selection[0];
-    },
-
-    /**
-     * Clears all the selection except the ones indicated.
-     *
-     * @method clear
-     * @param {Array} excludes items to be excluded.
-     */
-    clear: function(excludes) {
-      this.selection.slice().forEach(function(item) {
-        if (!excludes || excludes.indexOf(item) < 0) {
-          this.setItemSelected(item, false);
-        }
-      }, this);
-    },
-
-    /**
-     * Indicates if a given item is selected.
-     *
-     * @method isSelected
-     * @param {*} item The item whose selection state should be checked.
-     * @returns Returns true if `item` is selected.
-     */
-    isSelected: function(item) {
-      return this.selection.indexOf(item) >= 0;
-    },
-
-    /**
-     * Sets the selection state for a given item to either selected or deselected.
-     *
-     * @method setItemSelected
-     * @param {*} item The item to select.
-     * @param {boolean} isSelected True for selected, false for deselected.
-     */
-    setItemSelected: function(item, isSelected) {
-      if (item != null) {
-        if (isSelected) {
-          this.selection.push(item);
-        } else {
-          var i = this.selection.indexOf(item);
-          if (i >= 0) {
-            this.selection.splice(i, 1);
-          }
-        }
-        if (this.selectCallback) {
-          this.selectCallback(item, isSelected);
-        }
-      }
-    },
-
-    /**
-     * Sets the selection state for a given item. If the `multi` property
-     * is true, then the selected state of `item` will be toggled; otherwise
-     * the `item` will be selected.
-     *
-     * @method select
-     * @param {*} item The item to select.
-     */
-    select: function(item) {
-      if (this.multi) {
-        this.toggle(item);
-      } else if (this.get() !== item) {
-        this.setItemSelected(this.get(), false);
-        this.setItemSelected(item, true);
-      }
-    },
-
-    /**
-     * Toggles the selection state for `item`.
-     *
-     * @method toggle
-     * @param {*} item The item to toggle.
-     */
-    toggle: function(item) {
-      this.setItemSelected(item, !this.isSelected(item));
-    }
-
-  };
-
-
-;
-
-  /** @polymerBehavior */
-  Polymer.IronSelectableBehavior = {
-
-    properties: {
-
-      /**
-       * If you want to use the attribute value of an element for `selected` instead of the index,
-       * set this to the name of the attribute.
-       *
-       * @attribute attrForSelected
-       * @type {string}
-       */
-      attrForSelected: {
-        type: String,
-        value: null
-      },
-
-      /**
-       * Gets or sets the selected element. The default is to use the index of the item.
-       *
-       * @attribute selected
-       * @type {string}
-       */
-      selected: {
-        type: String,
-        notify: true
-      },
-
-      /**
-       * Returns the currently selected item.
-       *
-       * @attribute selectedItem
-       * @type {Object}
-       */
-      selectedItem: {
-        type: Object,
-        readOnly: true,
-        notify: true
-      },
-
-      /**
-       * The event that fires from items when they are selected. Selectable
-       * will listen for this event from items and update the selection state.
-       * Set to empty string to listen to no events.
-       *
-       * @attribute activateEvent
-       * @type {string}
-       * @default 'tap'
-       */
-      activateEvent: {
-        type: String,
-        value: 'tap',
-        observer: '_activateEventChanged'
-      },
-
-      /**
-       * This is a CSS selector sting.  If this is set, only items that matches the CSS selector
-       * are selectable.
-       *
-       * @attribute selectable
-       * @type {string}
-       */
-      selectable: String,
-
-      /**
-       * The class to set on elements when selected.
-       *
-       * @attribute selectedClass
-       * @type {string}
-       */
-      selectedClass: {
-        type: String,
-        value: 'iron-selected'
-      },
-
-      /**
-       * The attribute to set on elements when selected.
-       *
-       * @attribute selectedAttribute
-       * @type {string}
-       */
-      selectedAttribute: {
-        type: String,
-        value: null
-      }
-
-    },
-
-    observers: [
-      '_updateSelected(attrForSelected, selected)'
-    ],
-
-    excludedLocalNames: {
-      'template': 1
-    },
-
-    created: function() {
-      this._bindFilterItem = this._filterItem.bind(this);
-      this._selection = new Polymer.IronSelection(this._applySelection.bind(this));
-    },
-
-    attached: function() {
-      this._observer = this._observeItems(this);
-      this._contentObserver = this._observeContent(this);
-    },
-
-    detached: function() {
-      if (this._observer) {
-        this._observer.disconnect();
-      }
-      if (this._contentObserver) {
-        this._contentObserver.disconnect();
-      }
-      this._removeListener(this.activateEvent);
-    },
-
-    /**
-     * Returns an array of selectable items.
-     *
-     * @property items
-     * @type Array
-     */
-    get items() {
-      var nodes = Polymer.dom(this).queryDistributedElements(this.selectable || '*');
-      return Array.prototype.filter.call(nodes, this._bindFilterItem);
-    },
-
-    /**
-     * Returns the index of the given item.
-     *
-     * @method indexOf
-     * @param {Object} item
-     * @returns Returns the index of the item
-     */
-    indexOf: function(item) {
-      return this.items.indexOf(item);
-    },
-
-    /**
-     * Selects the given value.
-     *
-     * @method select
-     * @param {string} value the value to select.
-     */
-    select: function(value) {
-      this.selected = value;
-    },
-
-    /**
-     * Selects the previous item.
-     *
-     * @method selectPrevious
-     */
-    selectPrevious: function() {
-      var length = this.items.length;
-      var index = (Number(this._valueToIndex(this.selected)) - 1 + length) % length;
-      this.selected = this._indexToValue(index);
-    },
-
-    /**
-     * Selects the next item.
-     *
-     * @method selectNext
-     */
-    selectNext: function() {
-      var index = (Number(this._valueToIndex(this.selected)) + 1) % this.items.length;
-      this.selected = this._indexToValue(index);
-    },
-
-    _addListener: function(eventName) {
-      this.listen(this, eventName, '_activateHandler');
-    },
-
-    _removeListener: function(eventName) {
-      // There is no unlisten yet...
-      // https://github.com/Polymer/polymer/issues/1639
-      //this.removeEventListener(eventName, this._bindActivateHandler);
-    },
-
-    _activateEventChanged: function(eventName, old) {
-      this._removeListener(old);
-      this._addListener(eventName);
-    },
-
-    _updateSelected: function() {
-      this._selectSelected(this.selected);
-    },
-
-    _selectSelected: function(selected) {
-      this._selection.select(this._valueToItem(this.selected));
-    },
-
-    _filterItem: function(node) {
-      return !this.excludedLocalNames[node.localName];
-    },
-
-    _valueToItem: function(value) {
-      return (value == null) ? null : this.items[this._valueToIndex(value)];
-    },
-
-    _valueToIndex: function(value) {
-      if (this.attrForSelected) {
-        for (var i = 0, item; item = this.items[i]; i++) {
-          if (this._valueForItem(item) == value) {
-            return i;
-          }
-        }
-      } else {
-        return Number(value);
-      }
-    },
-
-    _indexToValue: function(index) {
-      if (this.attrForSelected) {
-        var item = this.items[index];
-        if (item) {
-          return this._valueForItem(item);
-        }
-      } else {
-        return index;
-      }
-    },
-
-    _valueForItem: function(item) {
-      return item[this.attrForSelected] || item.getAttribute(this.attrForSelected);
-    },
-
-    _applySelection: function(item, isSelected) {
-      if (this.selectedClass) {
-        this.toggleClass(this.selectedClass, isSelected, item);
-      }
-      if (this.selectedAttribute) {
-        this.toggleAttribute(this.selectedAttribute, isSelected, item);
-      }
-      this._selectionChange();
-      this.fire('iron-' + (isSelected ? 'select' : 'deselect'), {item: item});
-    },
-
-    _selectionChange: function() {
-      this._setSelectedItem(this._selection.get());
-    },
-
-    // observe content changes under the given node.
-    _observeContent: function(node) {
-      var content = node.querySelector('content');
-      if (content && content.parentElement === node) {
-        return this._observeItems(node.domHost);
-      }
-    },
-
-    // observe items change under the given node.
-    _observeItems: function(node) {
-      var observer = new MutationObserver(function() {
-        if (this.selected != null) {
-          this._updateSelected();
-        }
-      }.bind(this));
-      observer.observe(node, {
-        childList: true,
-        subtree: true
-      });
-      return observer;
-    },
-
-    _activateHandler: function(e) {
-      // TODO: remove this when https://github.com/Polymer/polymer/issues/1639 is fixed so we
-      // can just remove the old event listener.
-      if (e.type !== this.activateEvent) {
-        return;
-      }
-      var t = e.target;
-      var items = this.items;
-      while (t && t != this) {
-        var i = items.indexOf(t);
-        if (i >= 0) {
-          var value = this._indexToValue(i);
-          this._itemActivate(value, t);
-          return;
-        }
-        t = t.parentNode;
-      }
-    },
-
-    _itemActivate: function(value, item) {
-      if (!this.fire('iron-activate',
-          {selected: value, item: item}, {cancelable: true}).defaultPrevented) {
-        this.select(value);
-      }
-    }
-
-  };
 
 
 ;
@@ -7876,6 +8056,69 @@ this._removeChildren();
     Polymer.IronControlState,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
+
+
+;
+    window.addEventListener('WebComponentsReady', function () {
+
+        // We use Page.js for routing. This is a Micro
+        // client-side router inspired by the Express router
+        // More info: https://visionmedia.github.io/page.js/
+        page('/', function () {
+            app.route = 'home';
+        });
+
+        page('/users', function () {
+            app.route = 'users';
+        });
+
+        page('/users/:name', function (data) {
+            app.route = 'user-info';
+            app.params = data.params;
+        });
+
+        page('/contact', function () {
+            app.route = 'contact';
+        });
+
+        // add #! before urls
+        page({
+            hashbang: true
+        });
+
+    });
+
+;
+
+  Polymer({
+
+    is: 'iron-pages',
+
+    behaviors: [
+      Polymer.IronResizableBehavior,
+      Polymer.IronSelectableBehavior
+    ],
+
+    properties: {
+
+      // as the selected page is the only one visible, activateEvent
+      // is both non-sensical and problematic; e.g. in cases where a user
+      // handler attempts to change the page and the activateEvent
+      // handler immediately changes it back
+      activateEvent: {
+        value: null
+      }
+
+    },
+
+    observers: [
+      '_selectedPageChanged(selected)'
+    ],
+
+    _selectedPageChanged: function(selected, old) {
+      this.async(this.notifyResize);
+    }
+  });
 
 
 ;

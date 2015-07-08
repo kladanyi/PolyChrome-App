@@ -35,16 +35,16 @@
         color: var(--default-primary-color);
     }*/
 
-    body /deep/ paper-button.default::shadow {
+    body /deep/ paper-button:not([disabled]).default::shadow {
         color: var(--default-primary-color);
     }
 
-    body /deep/ paper-button[raised].default::shadow {
+    body /deep/ paper-button:not([disabled])[raised].default::shadow {
         background: var(--default-primary-color);
         color: var(--text-primary-color);
     }
 
-    body /deep/ paper-button[raised].default::shadow paper-ripple {
+    body /deep/ paper-button:not([disabled])[raised].default::shadow paper-ripple {
         color: var(--light-primary-color);
     }
     /* -BUTTONS- */
