@@ -31,24 +31,26 @@
     }
 
     /* BUTTONS */
-/*    body /deep/ paper-button::shadow paper-ripple {
-        color: var(--default-primary-color);
-    }*/
-
-    body /deep/ paper-button:not([disabled]).default::shadow {
+    /deep/ paper-button:not([disabled]).default::shadow {
         color: var(--default-primary-color);
     }
 
-    body /deep/ paper-button:not([disabled])[raised].default::shadow {
+    /deep/ paper-button:not([disabled])[raised].default::shadow {
         background: var(--default-primary-color);
         color: var(--text-primary-color);
     }
 
-    body /deep/ paper-button:not([disabled])[raised].default::shadow paper-ripple {
+    /deep/ paper-button:not([disabled])[raised].default::shadow paper-ripple {
         color: var(--light-primary-color);
     }
     /* -BUTTONS- */
-    
+
+    /* TOGGLE BUTTONS */
+    /deep/ paper-toggle-button::shadow .toggle {
+        background-color: red;
+    }
+    /* -TOGGLE BUTTONS- */
+
     /* CARDS */
     /deep/ paper-material.card {
         border-radius: 2px;
@@ -58,8 +60,7 @@
         background: white;
     }
     /* -CARDS- */
-    
-    
+
     /* Material Design Adaptive Breakpoints */
     /*
       Below you'll find CSS media queries based on the breakpoint guidance

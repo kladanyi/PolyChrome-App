@@ -15,10 +15,6 @@
             opacity: 0.54;
         }
 
-        .paper-menu > .iron-selected {
-            color: var(--default-primary-color);
-        }
-
         paper-menu a {
             text-decoration: none;
             color: var(--menu-link-color);
@@ -40,9 +36,24 @@
             min-height: 48px;
             padding: 0 16px;
         }
+
+        [drawer] paper-menu .iron-selected {
+            color: var(--default-primary-color);
+        }
+
         #mainToolbar .app-name {
             margin-left: 36px;
             font-size: 20px;
+        }
+        
+        @media (max-width: 640px) {
+            #mainToolbar .app-name {
+                margin-left: 12px;
+                font-size: 16px;
+            }
+            #paperToggle {
+                margin-right: 0;
+            }
         }
 
         #drawerToolbar .menu-title {
@@ -52,7 +63,7 @@
         }
     </style>
     <template>
-        <paper-drawer-panel id="paperDrawerPanel">
+        <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical">
             <div drawer>
                 <!-- Drawer Toolbar -->
                 <paper-toolbar id="drawerToolbar">
@@ -77,29 +88,29 @@
                     </a>
                 </paper-menu>
             </div>
-            <paper-header-panel main mode="seamed">
+            <paper-header-panel main mode="seamed" class="fullbleed layout vertical">
                 <!-- Main Toolbar -->
                 <paper-toolbar id="mainToolbar">
                     <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
+
+                    <!-- Application name -->
+                    <div class="app-name">PolyChrome App</div>
                     <span class="flex"></span>
 
                     <!--Toolbar icons--> 
                     <paper-icon-button icon="refresh"></paper-icon-button>
                     <paper-icon-button icon="social:person"></paper-icon-button>
 
-                    <!--                     Application name -->
-                    <div class="app-name">PolyChrome App</div>
-
-                    <!--Application sub title--> 
-                    <div class="bottom title"></div>
-
                 </paper-toolbar>
 
                 <!-- Main Content -->
-                <div class="content">
+                <div class="content" class="flex">
                     <iron-pages attr-for-selected="data-route" selected="{{route}}">
 
                         <section data-route="home">
+                            <paper-material elevation="1" class="card">
+                                <content-2></content-2>
+                            </paper-material>
                             <paper-material elevation="1" class="card">
                                 <content-1></content-1>
                             </paper-material>
@@ -132,7 +143,6 @@
                     </iron-pages>
                 </div>
             </paper-header-panel>
-            </paper-header-panel>
         </paper-drawer-panel>
     </template>
 </dom-module>
@@ -140,8 +150,15 @@
     (function () {
         Polymer({
             is: 'my-app',
+            properties: {
+                route: {
+                    type: String,
+                    value: 'home'
+                }
+            },
             ready: function () {
                 console.log('MyApp is ready.');
+
             }
         });
     })();

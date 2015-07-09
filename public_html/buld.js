@@ -9511,8 +9511,15 @@ this._removeChildren();
     (function () {
         Polymer({
             is: 'my-app',
+            properties: {
+                route: {
+                    type: String,
+                    value: 'home'
+                }
+            },
             ready: function () {
                 console.log('MyApp is ready.');
+
             }
         });
     })();

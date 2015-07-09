@@ -1,0 +1,26 @@
+<dom-module id="content-2">
+    <style is="custom-style">
+    </style>
+    <template>
+        <h1>Form styling</h1>
+        <paper-button raised>ilyen már volt</paper-button>
+        <paper-checkbox>label</paper-checkbox>
+        <paper-checkbox checked> label</paper-checkbox>
+        <paper-input label="Input label"></paper-input>
+        <paper-input error-message="Invalid input!" label="Input label"></paper-input>
+        <paper-input char-counter label="Input label"></paper-input>
+        <paper-radio-group selected="small">
+            <paper-radio-button name="small">Small</paper-radio-button>
+            <paper-radio-button name="medium">Medium</paper-radio-button>
+            <paper-radio-button name="large">Large</paper-radio-button>
+        </paper-radio-group>
+        <p>toggle button: <paper-toggle-button></paper-toggle-button></p>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'content-2'
+        });
+    })();
+</script>
