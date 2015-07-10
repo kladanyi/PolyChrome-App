@@ -1,5 +1,16 @@
 <dom-module id="content-2">
     <style is="custom-style">
+        paper-fab.fab-left-bottom {
+            position: fixed;
+            bottom: 32px;
+            right: 52px;
+            z-index: 9999;
+        }
+
+        paper-toast {
+            z-index: 9999;
+            /*left: 268px;*/
+        }
     </style>
     <template>
         <h1>Form styling</h1>
@@ -15,12 +26,22 @@
             <paper-radio-button name="large">Large</paper-radio-button>
         </paper-radio-group>
         <p>toggle button: <paper-toggle-button></paper-toggle-button></p>
+        <paper-fab icon="add" class="fab-left-bottom" on-click="showToast" ></paper-fab>
+        <paper-fab mini icon="favorite"></paper-fab>
     </template>
 </dom-module>
 <script>
     (function () {
         Polymer({
-            is: 'content-2'
+            is: 'content-2',
+            showToast: function () {
+                var app = document.getElementById('app');
+                var toastService = app.querySelector('#toast-service');
+                toastService.addToast('content-2-ből hozzáadva.', 6000);
+            },
+            ready: function() {
+                console.log(this);
+            }
         });
     })();
 </script>

@@ -11208,6 +11208,220 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     });
   
 ;
+  Polymer({
+    is: 'paper-fab',
+
+    behaviors: [
+      Polymer.PaperButtonBehavior
+    ],
+
+    properties: {
+      /**
+       * The URL of an image for the icon. If the src property is specified,
+       * the icon property should not be.
+       *
+       * @attribute src
+       * @type string
+       * @default ''
+       */
+      src: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * Specifies the icon name or index in the set of icons available in
+       * the icon's icon set. If the icon property is specified,
+       * the src property should not be.
+       *
+       * @attribute icon
+       * @type string
+       * @default ''
+       */
+      icon: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * Set this to true to style this is a "mini" FAB.
+       *
+       * @attribute mini
+       * @type boolean
+       * @default false
+       */
+      mini: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    _computeContentClass: function(receivedFocusFromKeyboard) {
+      var className = 'content';
+      if (receivedFocusFromKeyboard) {
+        className += ' keyboard-focus';
+      }
+      return className;
+    }
+
+  });
+
+;
+
+    (function() {
+      'use strict';
+
+      Polymer.IronA11yAnnouncer = Polymer({
+        is: 'iron-a11y-announcer',
+
+        properties: {
+
+          /**
+           * The value of mode is used to set the `aria-live` attribute
+           * for the element that will be announced. Valid values are: `off`,
+           * `polite` and `assertive`.
+           */
+          mode: {
+            type: String,
+            value: 'polite'
+          },
+
+          _text: {
+            type: String,
+            value: ''
+          }
+        },
+
+        created: function() {
+          if (!Polymer.IronA11yAnnouncer.instance) {
+            Polymer.IronA11yAnnouncer.instance = this;
+          }
+
+          document.body.addEventListener('iron-announce', this._onIronAnnounce.bind(this));
+        },
+
+        /**
+         * Cause a text string to be announced by screen readers.
+         *
+         * @param {string} text The text that should be announced.
+         */
+        announce: function(text) {
+          this._text = '';
+          this.async(function() {
+            this._text = text;
+          }, 100);
+        },
+
+        _onIronAnnounce: function(event) {
+          if (event.detail && event.detail.text) {
+            this.announce(event.detail.text);
+          }
+        }
+      });
+
+      Polymer.IronA11yAnnouncer.instance = null;
+
+      Polymer.IronA11yAnnouncer.requestAvailability = function() {
+        if (!Polymer.IronA11yAnnouncer.instance) {
+          Polymer.IronA11yAnnouncer.instance = document.createElement('iron-a11y-announcer');
+        }
+
+        document.body.appendChild(Polymer.IronA11yAnnouncer.instance);
+      };
+    })();
+
+  
+;
+(function() {
+
+  var PaperToast = Polymer({
+    is: 'paper-toast',
+
+    properties: {
+      /**
+       * The duration in milliseconds to show the toast.
+       */
+      duration: {
+        type: Number,
+        value: 3000
+      },
+
+      /**
+       * The text to display in the toast.
+       */
+      text: {
+        type: String,
+        value: ""
+      },
+
+      /**
+       * True if the toast is currently visible.
+       */
+      visible: {
+        type: Boolean,
+        readOnly: true,
+        value: false,
+        observer: '_visibleChanged'
+      }
+    },
+
+    created: function() {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    },
+
+    ready: function() {
+      this.async(function() {
+        this.hide();
+      });
+    },
+
+    /**
+     * Show the toast.
+     * @method show
+     */
+    show: function() {
+      if (PaperToast.currentToast) {
+        PaperToast.currentToast.hide();
+      }
+      PaperToast.currentToast = this;
+      this.removeAttribute('aria-hidden');
+      this._setVisible(true);
+      this.fire('iron-announce', {
+        text: this.text
+      });
+      this.debounce('hide', this.hide, this.duration);
+    },
+
+    /**
+     * Hide the toast
+     */
+    hide: function() {
+      this.setAttribute('aria-hidden', 'true');
+      this._setVisible(false);
+    },
+
+    /**
+     * Toggle the opened state of the toast.
+     * @method toggle
+     */
+    toggle: function() {
+      if (!this.visible) {
+        this.show();
+      } else {
+        this.hide();
+      }
+    },
+
+    _visibleChanged: function(visible) {
+      this.toggleClass('paper-toast-open', visible);
+    }
+  });
+
+  PaperToast.currentToast = null;
+
+})();
+
+;
     (function () {
         Polymer({
             is: 'my-app',
@@ -11219,7 +11433,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
             },
             ready: function () {
                 console.log('MyApp is ready.');
-
             }
         });
     })();
@@ -11227,7 +11440,14 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 ;
     (function () {
         Polymer({
-            is: 'my-scrollable-app'
+            is: 'toast-service',
+            addToast: function (text, duration) {
+                this.$.toast.text = text;
+                if (duration) {
+                    this.$.toast.duration = duration;
+                }
+                this.$.toast.show();
+            }
         });
     })();
 
@@ -11241,6 +11461,24 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 ;
     (function () {
         Polymer({
-            is: 'content-2'
+            is: 'content-2',
+            showToast: function () {
+//                console.log('show toast');
+//                var myApp = document.getElementById('app');
+//                console.log(myApp);
+//                var toast = myApp.$.toast;
+//                console.log(toast);
+//                toast.show();
+                
+                console.log('show toast');
+                var app = document.getElementById('app');
+                console.log(app);
+                var toastService = app.querySelector('#toast-service');
+                console.log(toastService);
+                toastService.addToast('content-2-ből hozzáadva.', 6000);
+            },
+            ready: function() {
+                console.log(this);
+            }
         });
     })();
