@@ -11463,18 +11463,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         Polymer({
             is: 'content-2',
             showToast: function () {
-//                console.log('show toast');
-//                var myApp = document.getElementById('app');
-//                console.log(myApp);
-//                var toast = myApp.$.toast;
-//                console.log(toast);
-//                toast.show();
-                
-                console.log('show toast');
                 var app = document.getElementById('app');
-                console.log(app);
                 var toastService = app.querySelector('#toast-service');
-                console.log(toastService);
                 toastService.addToast('content-2-ből hozzáadva.', 6000);
             },
             ready: function() {

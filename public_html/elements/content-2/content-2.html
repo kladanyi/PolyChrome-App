@@ -1,3 +1,5 @@
+<link rel="import" href="../my-input/my-validator.html">
+
 <dom-module id="content-2">
     <style is="custom-style">
         paper-fab.fab-left-bottom {
@@ -14,20 +16,70 @@
     </style>
     <template>
         <h1>Form styling</h1>
-        <paper-button raised>ilyen már volt</paper-button>
+        
+        <h2>validate</h2>
+        <paper-input label="only type letters (auto-validate)" auto-validate pattern="[a-zA-Z]*" error-message="letters only!" class="floatingLabel"></paper-input>
+
+        <my-input lbel="my-input" value="{{szam::input}}"></my-input>
+        
+        <span value="{{egy}}"></span>
+
+        <h2>Form</h2>
+
         <paper-checkbox>label</paper-checkbox>
         <paper-checkbox checked> label</paper-checkbox>
-        <paper-input label="Input label"></paper-input>
-        <paper-input error-message="Invalid input!" label="Input label"></paper-input>
-        <paper-input char-counter label="Input label"></paper-input>
+
         <paper-radio-group selected="small">
             <paper-radio-button name="small">Small</paper-radio-button>
             <paper-radio-button name="medium">Medium</paper-radio-button>
             <paper-radio-button name="large">Large</paper-radio-button>
         </paper-radio-group>
-        <p>toggle button: <paper-toggle-button></paper-toggle-button></p>
+        <p>toggle button: <paper-toggle-button class="fun"></paper-toggle-button></p>
         <paper-fab icon="add" class="fab-left-bottom" on-click="showToast" ></paper-fab>
         <paper-fab mini icon="favorite"></paper-fab>
+
+        <paper-input-container>
+            <label>Your name</label>
+            <input is="iron-input" bind-value="{{name}}">
+        </paper-input-container>
+        <paper-input-container disabled>
+            <label>Disabled</label>
+            <input is="iron-input" bind-value="{{disValue}}">
+        </paper-input-container>
+        <paper-input-container>
+            <label>Jelszó</label>
+            <input is="iron-input" type="password">
+        </paper-input-container>
+        <paper-input-container>
+            <label>Max. 10 karakter (számlálóval)</label>
+            <input is="iron-input" maxlength="10">
+            <paper-input-char-counter></paper-input-char-counter>
+        </paper-input-container>
+        <!--        <paper-input-container>
+                    <label>Számjegyek (auto validate)</label>
+                    <input is="iron-input" id="szam" allowed-pattern="[0-9]">
+                </paper-input-container>
+                <paper-button class="default" on-click="validateNumber" class="right bottom">validate!</paper-button>-->
+        <br />
+        <!--        <div class="layout horizontal">
+                    <paper-input-container class="flex">
+                        <label>E-mail cím</label>
+                        <input is="iron-input" id="email" allowed-pattern="[0-9]+" invalid>
+                        <paper-input-error>pl. exaple@gmail.com</paper-input-error>
+                    </paper-input-container>
+                    <div class="layout vertical-reverse"><paper-button class="default" on-click="validateEmail" class="right bottom">validate!</paper-button></div>
+                </div>-->
+
+        <paper-input-container>
+            <label>Textarea</label>
+            <textarea id="t1"></textarea>
+        </paper-input-container>
+
+        <p>Sliders:</p>
+        <paper-slider min="10" max="200" value="110"></paper-slider>
+        <paper-slider min="10" max="200" value="110" pin></paper-slider>
+        <paper-slider min="1" max="5" value="4" pin></paper-slider>
+
     </template>
 </dom-module>
 <script>
@@ -39,8 +91,36 @@
                 var toastService = app.querySelector('#toast-service');
                 toastService.addToast('content-2-ből hozzáadva.', 6000);
             },
-            ready: function() {
+            validateNumber: function () {
+                console.log('szám: ' + this.$.szam.value);
+                console.log('validate: ' + this.$.szam.validate());
+                return false;
+            },
+//            validateEmail: function (elem) {
+//                console.log(this.$.email.validate());
+//            },
+            ready: function () {
                 console.log(this);
+            },
+            properties: {
+                disValue: {
+                    type: String,
+                    value: 'Nem módosítható'
+                },
+                name: {
+                    type: String,
+                    value: 'Kata'
+                },
+                egy: {
+                    type: Number,
+                    value: 13
+                },
+                ketto: {
+                    type: Number
+                },
+                harom: {
+                    type: Number
+                }
             }
         });
     })();

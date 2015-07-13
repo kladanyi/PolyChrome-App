@@ -1,0 +1,33 @@
+<link rel="import" href="my-validator.html">
+
+<dom-module id="my-input">
+    <template>
+        <paper-input-container invalid="{{invalid}}">
+            <label>Számjegyek</label>
+            <input is="iron-input" on-blur="validator" value="{{egy::input}}" id="value">
+            <paper-input-error>nem jó! nézzél már a szemeddel!</paper-input-error>
+        </paper-input-container>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'my-input',
+            properties: {
+                label: {
+                    type: String
+                },
+                value: {
+                    type: String
+                }
+            },
+            validator: function () {
+                console.log(this.querySelector('input'));
+                this.invalid = true;
+            },
+            ready: function () {
+                this.invalid = false;
+            }
+        });
+    })();
+</script>
