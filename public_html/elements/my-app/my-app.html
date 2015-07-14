@@ -61,18 +61,6 @@
             font-weight: 500;
             line-height: 28px;
         }
-
-        /*TOAST*/ 
-        #toast-container {
-            position: fixed;
-            height: 100%;
-            width: 100%;
-        }
-        #toast {
-            position: absolute;
-            z-index: 9999;
-        }
-        /*-TOAST-*/ 
     </style>
     <template>
         <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical">
@@ -102,6 +90,8 @@
             </div>
             <div main>
                 <toast-service id="toast-service"></toast-service>
+                <fab-service id="fab-service"></fab-service>
+                <my-utils id="utils"></my-utils>
                 <paper-header-panel mode="seamed" class="fullbleed layout vertical">
                     <!-- Main Toolbar -->
                     <paper-toolbar id="mainToolbar">
@@ -123,6 +113,9 @@
 
                             <section data-route="home">
                                 <paper-material elevation="1" class="card">
+                                    <content-3></content-3>
+                                </paper-material>
+                                <paper-material elevation="1" class="card">
                                     <content-2></content-2>
                                 </paper-material>
                                 <paper-material elevation="1" class="card">
@@ -138,8 +131,8 @@
                                 </paper-material>
                             </section>
 
-                            <section data-route="user-info" class="card">
-                                <paper-material elevation="1">
+                            <section data-route="user-info">
+                                <paper-material elevation="1" class="card">
                                     <h2 class="paper-font-display2">
                                         User:<span>{{params.name}}</span>
                                     </h2>

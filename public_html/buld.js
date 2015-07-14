@@ -6713,6 +6713,318 @@ this._removeChildren();
   })();
 
 ;
+
+  /**
+   * Use `Polymer.IronValidatableBehavior` to implement an element that validates user input.
+   *
+   * ### Accessiblity
+   *
+   * Changing the `invalid` property, either manually or by calling `validate()` will update the
+   * `aria-invalid` attribute.
+   *
+   * @demo demo/index.html
+   * @polymerBehavior
+   */
+  Polymer.IronValidatableBehavior = {
+
+    properties: {
+
+      /**
+       * Namespace for this validator.
+       */
+      validatorType: {
+        type: String,
+        value: 'validator'
+      },
+
+      /**
+       * Name of the validator to use.
+       */
+      validator: {
+        type: String
+      },
+
+      /**
+       * True if the last call to `validate` is invalid.
+       */
+      invalid: {
+        notify: true,
+        reflectToAttribute: true,
+        type: Boolean,
+        value: false
+      },
+
+      _validatorMeta: {
+        type: Object
+      }
+
+    },
+
+    observers: [
+      '_invalidChanged(invalid)'
+    ],
+
+    get _validator() {
+      return this._validatorMeta && this._validatorMeta.byKey(this.validator);
+    },
+
+    ready: function() {
+      this._validatorMeta = new Polymer.IronMeta({type: this.validatorType});
+    },
+
+    _invalidChanged: function() {
+      if (this.invalid) {
+        this.setAttribute('aria-invalid', 'true');
+      } else {
+        this.removeAttribute('aria-invalid');
+      }
+    },
+
+    /**
+     * @return {boolean} True if the validator `validator` exists.
+     */
+    hasValidator: function() {
+      return this._validator != null;
+    },
+
+    /**
+     * @param {Object} values Passed to the validator's `validate()` function.
+     * @return {boolean} True if `values` is valid.
+     */
+    validate: function(values) {
+      var valid = this._validator && this._validator.validate(values);
+      this.invalid = !valid;
+      return valid;
+    }
+
+  };
+
+
+;
+
+/*
+`<iron-input>` adds two-way binding and custom validators using `Polymer.IronValidatorBehavior`
+to `<input>`.
+
+### Two-way binding
+
+By default you can only get notified of changes to an `input`'s `value` due to user input:
+
+    <input value="{{myValue::input}}">
+
+`iron-input` adds the `bind-value` property that mirrors the `value` property, and can be used
+for two-way data binding. `bind-value` will notify if it is changed either by user input or by script.
+
+    <input is="iron-input" bind-value="{{myValue}}">
+
+### Custom validators
+
+You can use custom validators that implement `Polymer.IronValidatorBehavior` with `<iron-input>`.
+
+    <input is="iron-input" validator="my-custom-validator">
+
+### Stopping invalid input
+
+It may be desirable to only allow users to enter certain characters. You can use the
+`prevent-invalid-input` and `allowed-pattern` attributes together to accomplish this. This feature
+is separate from validation, and `allowed-pattern` does not affect how the input is validated.
+
+    <!-- only allow characters that match [0-9] -->
+    <input is="iron-input" prevent-invaild-input allowed-pattern="[0-9]">
+
+@hero hero.svg
+@demo demo/index.html
+*/
+
+  Polymer({
+
+    is: 'iron-input',
+
+    extends: 'input',
+
+    behaviors: [
+      Polymer.IronValidatableBehavior
+    ],
+
+    properties: {
+
+      /**
+       * Use this property instead of `value` for two-way data binding.
+       */
+      bindValue: {
+        observer: '_bindValueChanged',
+        type: String
+      },
+
+      /**
+       * Set to true to prevent the user from entering invalid input. The new input characters are
+       * matched with `allowedPattern` if it is set, otherwise it will use the `pattern` attribute if
+       * set, or the `type` attribute (only supported for `type=number`).
+       */
+      preventInvalidInput: {
+        type: Boolean
+      },
+
+      /**
+       * Regular expression to match valid input characters.
+       */
+      allowedPattern: {
+        type: String
+      },
+
+      _previousValidInput: {
+        type: String,
+        value: ''
+      },
+
+      _patternAlreadyChecked: {
+        type: Boolean,
+        value: false
+      }
+
+    },
+
+    listeners: {
+      'input': '_onInput',
+      'keypress': '_onKeypress'
+    },
+
+    get _patternRegExp() {
+      var pattern;
+      if (this.allowedPattern) {
+        pattern = new RegExp(this.allowedPattern);
+      } else if (this.pattern) {
+        pattern = new RegExp(this.pattern);
+      } else {
+        switch (this.type) {
+          case 'number':
+            pattern = /[0-9.,e-]/;
+            break;
+        }
+      }
+      return pattern;
+    },
+
+    ready: function() {
+      this.bindValue = this.value;
+    },
+
+    _bindValueChanged: function() {
+      if (this.value !== this.bindValue) {
+        this.value = !this.bindValue ? '' : this.bindValue;
+      }
+      // manually notify because we don't want to notify until after setting value
+      this.fire('bind-value-changed', {value: this.bindValue});
+    },
+
+    _onInput: function() {
+      // Need to validate each of the characters pasted if they haven't
+      // been validated inside `_onKeypress` already.
+      if (this.preventInvalidInput && !this._patternAlreadyChecked) {
+        var valid = this._checkPatternValidity();
+        if (!valid) {
+          this.value = this._previousValidInput;
+        }
+      }
+
+      this.bindValue = this.value;
+      this._previousValidInput = this.value;
+      this._patternAlreadyChecked = false;
+    },
+
+    _isPrintable: function(event) {
+      // What a control/printable character is varies wildly based on the browser.
+      // - most control characters (arrows, backspace) do not send a `keypress` event
+      //   in Chrome, but the *do* on Firefox
+      // - in Firefox, when they do send a `keypress` event, control chars have
+      //   a charCode = 0, keyCode = xx (for ex. 40 for down arrow)
+      // - printable characters always send a keypress event.
+      // - in Firefox, printable chars always have a keyCode = 0. In Chrome, the keyCode
+      //   always matches the charCode.
+      // None of this makes any sense.
+
+      var nonPrintable =
+        (event.keyCode == 8)   ||  // backspace
+        (event.keyCode == 19)  ||  // pause
+        (event.keyCode == 20)  ||  // caps lock
+        (event.keyCode == 27)  ||  // escape
+        (event.keyCode == 45)  ||  // insert
+        (event.keyCode == 46)  ||  // delete
+        (event.keyCode == 144) ||  // num lock
+        (event.keyCode == 145) ||  // scroll lock
+        (event.keyCode > 32 && event.keyCode < 41)   || // page up/down, end, home, arrows
+        (event.keyCode > 111 && event.keyCode < 124); // fn keys
+
+      return !(event.charCode == 0 && nonPrintable);
+    },
+
+    _onKeypress: function(event) {
+      if (!this.preventInvalidInput && this.type !== 'number') {
+        return;
+      }
+      var regexp = this._patternRegExp;
+      if (!regexp) {
+        return;
+      }
+
+      // Handle special keys and backspace
+      if (event.metaKey || event.ctrlKey || event.altKey)
+        return;
+
+      // Check the pattern either here or in `_onInput`, but not in both.
+      this._patternAlreadyChecked = true;
+
+      var thisChar = String.fromCharCode(event.charCode);
+      if (this._isPrintable(event) && !regexp.test(thisChar)) {
+        event.preventDefault();
+      }
+    },
+
+    _checkPatternValidity: function() {
+      var regexp = this._patternRegExp;
+      if (!regexp) {
+        return true;
+      }
+      for (var i = 0; i < this.value.length; i++) {
+        if (!regexp.test(this.value[i])) {
+          return false;
+        }
+      }
+      return true;
+    },
+
+    /**
+     * Returns true if `value` is valid. The validator provided in `validator` will be used first,
+     * then any constraints.
+     * @return {boolean} True if the value is valid.
+     */
+    validate: function() {
+      // Empty, non-required input is valid.
+      if (!this.required && this.value == '') {
+        this.invalid = false;
+        return true;
+      }
+
+      var valid;
+      if (this.hasValidator()) {
+        valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
+      } else {
+        this.invalid = !this.validity.valid;
+        valid = this.validity.valid;
+      }
+      this.fire('iron-input-validate');
+      return valid;
+    }
+
+  });
+
+  /*
+  The `iron-input-validate` event is fired whenever `validate()` is called.
+  @event iron-input-validate
+  */
+
+
+;
   /**
    * The `iron-iconset-svg` element allows users to define their own icon sets
    * that contain svg icons. The svg icon elements should be children of the
@@ -6890,6 +7202,102 @@ this._removeChildren();
     }
 
   });
+
+;
+
+  /**
+   * @demo demo/index.html
+   * @polymerBehavior
+   */
+  Polymer.IronControlState = {
+
+    properties: {
+
+      /**
+       * If true, the element currently has focus.
+       */
+      focused: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        readOnly: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * If true, the user cannot interact with this element.
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: '_disabledChanged',
+        reflectToAttribute: true
+      },
+
+      _oldTabIndex: {
+        type: Number
+      },
+
+      _boundFocusBlurHandler: {
+        type: Function,
+        value: function() {
+          return this._focusBlurHandler.bind(this);
+        }
+      }
+
+    },
+
+    observers: [
+      '_changedControlState(focused, disabled)'
+    ],
+
+    ready: function() {
+      // TODO(sjmiles): ensure read-only property is valued so the compound
+      // observer will fire
+      if (this.focused === undefined) {
+        this._setFocused(false);
+      }
+      this.addEventListener('focus', this._boundFocusBlurHandler, true);
+      this.addEventListener('blur', this._boundFocusBlurHandler, true);
+    },
+
+    _focusBlurHandler: function(event) {
+      var target = event.path ? event.path[0] : event.target;
+      if (target === this) {
+        var focused = event.type === 'focus';
+        this._setFocused(focused);
+      } else if (!this.shadowRoot) {
+        event.stopPropagation();
+        this.fire(event.type, {sourceEvent: event}, {
+          node: this,
+          bubbles: event.bubbles,
+          cancelable: event.cancelable
+        });
+      }
+    },
+
+    _disabledChanged: function(disabled, old) {
+      this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+      this.style.pointerEvents = disabled ? 'none' : '';
+      if (disabled) {
+        this._oldTabIndex = this.tabIndex;
+        this.focused = false;
+        this.tabIndex = -1;
+      } else if (this._oldTabIndex !== undefined) {
+        this.tabIndex = this._oldTabIndex;
+      }
+    },
+
+    _changedControlState: function() {
+      // _controlStateChanged is abstract, follow-on behaviors may implement it
+      if (this._controlStateChanged) {
+        this._controlStateChanged();
+      }
+    }
+
+  };
+
 
 ;
 
@@ -7720,102 +8128,6 @@ this._removeChildren();
 
   /**
    * @demo demo/index.html
-   * @polymerBehavior
-   */
-  Polymer.IronControlState = {
-
-    properties: {
-
-      /**
-       * If true, the element currently has focus.
-       */
-      focused: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        readOnly: true,
-        reflectToAttribute: true
-      },
-
-      /**
-       * If true, the user cannot interact with this element.
-       */
-      disabled: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        observer: '_disabledChanged',
-        reflectToAttribute: true
-      },
-
-      _oldTabIndex: {
-        type: Number
-      },
-
-      _boundFocusBlurHandler: {
-        type: Function,
-        value: function() {
-          return this._focusBlurHandler.bind(this);
-        }
-      }
-
-    },
-
-    observers: [
-      '_changedControlState(focused, disabled)'
-    ],
-
-    ready: function() {
-      // TODO(sjmiles): ensure read-only property is valued so the compound
-      // observer will fire
-      if (this.focused === undefined) {
-        this._setFocused(false);
-      }
-      this.addEventListener('focus', this._boundFocusBlurHandler, true);
-      this.addEventListener('blur', this._boundFocusBlurHandler, true);
-    },
-
-    _focusBlurHandler: function(event) {
-      var target = event.path ? event.path[0] : event.target;
-      if (target === this) {
-        var focused = event.type === 'focus';
-        this._setFocused(focused);
-      } else if (!this.shadowRoot) {
-        event.stopPropagation();
-        this.fire(event.type, {sourceEvent: event}, {
-          node: this,
-          bubbles: event.bubbles,
-          cancelable: event.cancelable
-        });
-      }
-    },
-
-    _disabledChanged: function(disabled, old) {
-      this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-      this.style.pointerEvents = disabled ? 'none' : '';
-      if (disabled) {
-        this._oldTabIndex = this.tabIndex;
-        this.focused = false;
-        this.tabIndex = -1;
-      } else if (this._oldTabIndex !== undefined) {
-        this.tabIndex = this._oldTabIndex;
-      }
-    },
-
-    _changedControlState: function() {
-      // _controlStateChanged is abstract, follow-on behaviors may implement it
-      if (this._controlStateChanged) {
-        this._controlStateChanged();
-      }
-    }
-
-  };
-
-
-;
-
-  /**
-   * @demo demo/index.html
    * @polymerBehavior Polymer.IronButtonState
    */
   Polymer.IronButtonStateImpl = {
@@ -8056,318 +8368,6 @@ this._removeChildren();
     Polymer.IronControlState,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
-
-
-;
-
-  /**
-   * Use `Polymer.IronValidatableBehavior` to implement an element that validates user input.
-   *
-   * ### Accessiblity
-   *
-   * Changing the `invalid` property, either manually or by calling `validate()` will update the
-   * `aria-invalid` attribute.
-   *
-   * @demo demo/index.html
-   * @polymerBehavior
-   */
-  Polymer.IronValidatableBehavior = {
-
-    properties: {
-
-      /**
-       * Namespace for this validator.
-       */
-      validatorType: {
-        type: String,
-        value: 'validator'
-      },
-
-      /**
-       * Name of the validator to use.
-       */
-      validator: {
-        type: String
-      },
-
-      /**
-       * True if the last call to `validate` is invalid.
-       */
-      invalid: {
-        notify: true,
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      },
-
-      _validatorMeta: {
-        type: Object
-      }
-
-    },
-
-    observers: [
-      '_invalidChanged(invalid)'
-    ],
-
-    get _validator() {
-      return this._validatorMeta && this._validatorMeta.byKey(this.validator);
-    },
-
-    ready: function() {
-      this._validatorMeta = new Polymer.IronMeta({type: this.validatorType});
-    },
-
-    _invalidChanged: function() {
-      if (this.invalid) {
-        this.setAttribute('aria-invalid', 'true');
-      } else {
-        this.removeAttribute('aria-invalid');
-      }
-    },
-
-    /**
-     * @return {boolean} True if the validator `validator` exists.
-     */
-    hasValidator: function() {
-      return this._validator != null;
-    },
-
-    /**
-     * @param {Object} values Passed to the validator's `validate()` function.
-     * @return {boolean} True if `values` is valid.
-     */
-    validate: function(values) {
-      var valid = this._validator && this._validator.validate(values);
-      this.invalid = !valid;
-      return valid;
-    }
-
-  };
-
-
-;
-
-/*
-`<iron-input>` adds two-way binding and custom validators using `Polymer.IronValidatorBehavior`
-to `<input>`.
-
-### Two-way binding
-
-By default you can only get notified of changes to an `input`'s `value` due to user input:
-
-    <input value="{{myValue::input}}">
-
-`iron-input` adds the `bind-value` property that mirrors the `value` property, and can be used
-for two-way data binding. `bind-value` will notify if it is changed either by user input or by script.
-
-    <input is="iron-input" bind-value="{{myValue}}">
-
-### Custom validators
-
-You can use custom validators that implement `Polymer.IronValidatorBehavior` with `<iron-input>`.
-
-    <input is="iron-input" validator="my-custom-validator">
-
-### Stopping invalid input
-
-It may be desirable to only allow users to enter certain characters. You can use the
-`prevent-invalid-input` and `allowed-pattern` attributes together to accomplish this. This feature
-is separate from validation, and `allowed-pattern` does not affect how the input is validated.
-
-    <!-- only allow characters that match [0-9] -->
-    <input is="iron-input" prevent-invaild-input allowed-pattern="[0-9]">
-
-@hero hero.svg
-@demo demo/index.html
-*/
-
-  Polymer({
-
-    is: 'iron-input',
-
-    extends: 'input',
-
-    behaviors: [
-      Polymer.IronValidatableBehavior
-    ],
-
-    properties: {
-
-      /**
-       * Use this property instead of `value` for two-way data binding.
-       */
-      bindValue: {
-        observer: '_bindValueChanged',
-        type: String
-      },
-
-      /**
-       * Set to true to prevent the user from entering invalid input. The new input characters are
-       * matched with `allowedPattern` if it is set, otherwise it will use the `pattern` attribute if
-       * set, or the `type` attribute (only supported for `type=number`).
-       */
-      preventInvalidInput: {
-        type: Boolean
-      },
-
-      /**
-       * Regular expression to match valid input characters.
-       */
-      allowedPattern: {
-        type: String
-      },
-
-      _previousValidInput: {
-        type: String,
-        value: ''
-      },
-
-      _patternAlreadyChecked: {
-        type: Boolean,
-        value: false
-      }
-
-    },
-
-    listeners: {
-      'input': '_onInput',
-      'keypress': '_onKeypress'
-    },
-
-    get _patternRegExp() {
-      var pattern;
-      if (this.allowedPattern) {
-        pattern = new RegExp(this.allowedPattern);
-      } else if (this.pattern) {
-        pattern = new RegExp(this.pattern);
-      } else {
-        switch (this.type) {
-          case 'number':
-            pattern = /[0-9.,e-]/;
-            break;
-        }
-      }
-      return pattern;
-    },
-
-    ready: function() {
-      this.bindValue = this.value;
-    },
-
-    _bindValueChanged: function() {
-      if (this.value !== this.bindValue) {
-        this.value = !this.bindValue ? '' : this.bindValue;
-      }
-      // manually notify because we don't want to notify until after setting value
-      this.fire('bind-value-changed', {value: this.bindValue});
-    },
-
-    _onInput: function() {
-      // Need to validate each of the characters pasted if they haven't
-      // been validated inside `_onKeypress` already.
-      if (this.preventInvalidInput && !this._patternAlreadyChecked) {
-        var valid = this._checkPatternValidity();
-        if (!valid) {
-          this.value = this._previousValidInput;
-        }
-      }
-
-      this.bindValue = this.value;
-      this._previousValidInput = this.value;
-      this._patternAlreadyChecked = false;
-    },
-
-    _isPrintable: function(event) {
-      // What a control/printable character is varies wildly based on the browser.
-      // - most control characters (arrows, backspace) do not send a `keypress` event
-      //   in Chrome, but the *do* on Firefox
-      // - in Firefox, when they do send a `keypress` event, control chars have
-      //   a charCode = 0, keyCode = xx (for ex. 40 for down arrow)
-      // - printable characters always send a keypress event.
-      // - in Firefox, printable chars always have a keyCode = 0. In Chrome, the keyCode
-      //   always matches the charCode.
-      // None of this makes any sense.
-
-      var nonPrintable =
-        (event.keyCode == 8)   ||  // backspace
-        (event.keyCode == 19)  ||  // pause
-        (event.keyCode == 20)  ||  // caps lock
-        (event.keyCode == 27)  ||  // escape
-        (event.keyCode == 45)  ||  // insert
-        (event.keyCode == 46)  ||  // delete
-        (event.keyCode == 144) ||  // num lock
-        (event.keyCode == 145) ||  // scroll lock
-        (event.keyCode > 32 && event.keyCode < 41)   || // page up/down, end, home, arrows
-        (event.keyCode > 111 && event.keyCode < 124); // fn keys
-
-      return !(event.charCode == 0 && nonPrintable);
-    },
-
-    _onKeypress: function(event) {
-      if (!this.preventInvalidInput && this.type !== 'number') {
-        return;
-      }
-      var regexp = this._patternRegExp;
-      if (!regexp) {
-        return;
-      }
-
-      // Handle special keys and backspace
-      if (event.metaKey || event.ctrlKey || event.altKey)
-        return;
-
-      // Check the pattern either here or in `_onInput`, but not in both.
-      this._patternAlreadyChecked = true;
-
-      var thisChar = String.fromCharCode(event.charCode);
-      if (this._isPrintable(event) && !regexp.test(thisChar)) {
-        event.preventDefault();
-      }
-    },
-
-    _checkPatternValidity: function() {
-      var regexp = this._patternRegExp;
-      if (!regexp) {
-        return true;
-      }
-      for (var i = 0; i < this.value.length; i++) {
-        if (!regexp.test(this.value[i])) {
-          return false;
-        }
-      }
-      return true;
-    },
-
-    /**
-     * Returns true if `value` is valid. The validator provided in `validator` will be used first,
-     * then any constraints.
-     * @return {boolean} True if the value is valid.
-     */
-    validate: function() {
-      // Empty, non-required input is valid.
-      if (!this.required && this.value == '') {
-        this.invalid = false;
-        return true;
-      }
-
-      var valid;
-      if (this.hasValidator()) {
-        valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
-      } else {
-        this.invalid = !this.validity.valid;
-        valid = this.validity.valid;
-      }
-      this.fire('iron-input-validate');
-      return valid;
-    }
-
-  });
-
-  /*
-  The `iron-input-validate` event is fired whenever `validate()` is called.
-  @event iron-input-validate
-  */
 
 
 ;
@@ -8651,6 +8651,24 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         type: Number
       },
 
+      // Nonstandard attributes for binding if needed
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocapitalize` property.
+       */
+      autocapitalize: {
+        type: String,
+        value: 'none'
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocorrect` property.
+       */
+      autocorrect: {
+        type: String,
+        value: 'off'
+      },
+
       _ariaDescribedBy: {
         type: String,
         value: ''
@@ -8661,6 +8679,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     listeners: {
       'addon-attached': '_onAddonAttached'
     },
+
+    observers: [
+      '_focusedControlStateChanged(focused)'
+    ],
 
     /**
      * Returns a reference to the input element.
@@ -8726,6 +8748,24 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       return placeholder || alwaysFloatLabel;
     },
 
+    _focusedControlStateChanged: function(focused) {
+      // IronControlState stops the focus and blur events in order to redispatch them on the host
+      // element, but paper-input-container listens to those events. Since there are more
+      // pending work on focus/blur in IronControlState, I'm putting in this hack to get the
+      // input focus state working for now.
+      if (!this.$.container) {
+        this.$.container = Polymer.dom(this.root).querySelector('paper-input-container');
+        if (!this.$.container) {
+          return;
+        }
+      }
+      if (focused) {
+        this.$.container._onFocus();
+      } else {
+        this.$.container._onBlur();
+      }
+    },
+
     _updateAriaLabelledBy: function() {
       var label = Polymer.dom(this.root).querySelector('label');
       if (!label) {
@@ -8744,6 +8784,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
   };
 
+  /** @polymerBehavior */
   Polymer.PaperInputBehavior = [Polymer.IronControlState, Polymer.PaperInputBehaviorImpl];
 
 
@@ -8781,6 +8822,103 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
   };
 
+
+;
+
+ /** 
+ * `iron-range-behavior` provides the behavior for something with a minimum to maximum range.
+ *
+ * @demo demo/index.html
+ * @polymerBehavior 
+ */
+ Polymer.IronRangeBehavior = {
+
+  properties: {
+
+    /**
+     * The number that represents the current value.
+     */
+    value: {
+      type: Number,
+      value: 0,
+      notify: true,
+      reflectToAttribute: true
+    },
+
+    /**
+     * The number that indicates the minimum value of the range.
+     */
+    min: {
+      type: Number,
+      value: 0,
+      notify: true
+    },
+
+    /**
+     * The number that indicates the maximum value of the range.
+     */
+    max: {
+      type: Number,
+      value: 100,
+      notify: true
+    },
+
+    /**
+     * Specifies the value granularity of the range's value.
+     */
+    step: {
+      type: Number,
+      value: 1,
+      notify: true
+    },
+
+    /**
+     * Returns the ratio of the value.
+     */
+    ratio: {
+      type: Number,
+      value: 0,
+      readOnly: true,
+      notify: true
+    },
+  },
+
+  observers: [
+    '_update(value, min, max, step)'
+  ],
+
+  _calcRatio: function(value) {
+    return (this._clampValue(value) - this.min) / (this.max - this.min);
+  },
+
+  _clampValue: function(value) {
+    return Math.min(this.max, Math.max(this.min, this._calcStep(value)));
+  },
+
+  _calcStep: function(value) {
+   /**
+    * if we calculate the step using
+    * `Math.round(value / step) * step` we may hit a precision point issue 
+    * eg. 0.1 * 0.2 =  0.020000000000000004
+    * http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
+    *
+    * as a work around we can divide by the reciprocal of `step`
+    */
+    return this.step ? (Math.round(value / this.step) / (1 / this.step)) : value;
+  },
+
+  _validateValue: function() {
+    var v = this._clampValue(this.value);
+    this.value = this.oldValue = isNaN(v) ? this.oldValue : v;
+    return this.value !== v;
+  },
+
+  _update: function() {
+    this._validateValue();
+    this._setRatio(this._calcRatio(this.value) * 100);
+  }
+
+};
 
 ;
     window.addEventListener('WebComponentsReady', function () {
@@ -8924,6 +9062,182 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     });
 
   
+;
+
+  Polymer({
+
+    is: 'iron-autogrow-textarea',
+
+    behaviors: [
+      Polymer.IronValidatableBehavior,
+      Polymer.IronControlState
+    ],
+
+    properties: {
+
+      /**
+       * Use this property instead of `value` for two-way data binding.
+       */
+      bindValue: {
+        observer: '_bindValueChanged',
+        type: String
+      },
+
+      /**
+       * The initial number of rows.
+       *
+       * @attribute rows
+       * @type number
+       * @default 1
+       */
+      rows: {
+        type: Number,
+        value: 1,
+        observer: '_updateCached'
+      },
+
+      /**
+       * The maximum number of rows this element can grow to until it
+       * scrolls. 0 means no maximum.
+       *
+       * @attribute maxRows
+       * @type number
+       * @default 0
+       */
+      maxRows: {
+       type: Number,
+       value: 0,
+       observer: '_updateCached'
+      },
+
+      /**
+       * Bound to the textarea's `autocomplete` attribute.
+       */
+      autocomplete: {
+        type: String,
+        value: 'off'
+      },
+
+      /**
+       * Bound to the textarea's `autofocus` attribute.
+       */
+      autofocus: {
+        type: String,
+        value: 'off'
+      },
+
+      /**
+       * Bound to the textarea's `inputmode` attribute.
+       */
+      inputmode: {
+        type: String
+      },
+
+      /**
+       * Bound to the textarea's `name` attribute.
+       */
+      name: {
+        type: String
+      },
+
+      /**
+       * Bound to the textarea's `placeholder` attribute.
+       */
+      placeholder: {
+        type: String
+      },
+
+      /**
+       * Bound to the textarea's `readonly` attribute.
+       */
+      readonly: {
+        type: String
+      },
+
+      /**
+       * Set to true to mark the textarea as required.
+       */
+      required: {
+        type: Boolean
+      },
+
+      /**
+       * The maximum length of the input value.
+       */
+      maxlength: {
+        type: Number
+      }
+
+    },
+
+    listeners: {
+      'input': '_onInput'
+    },
+
+    /**
+     * Returns the underlying textarea.
+     */
+    get textarea() {
+      return this.$.textarea;
+    },
+
+    _update: function() {
+      this.$.mirror.innerHTML = this._valueForMirror();
+
+      var textarea = this.textarea;
+      // If the value of the textarea was updated imperatively, then we
+      // need to manually update bindValue as well.
+      if (textarea && this.bindValue != textarea.value) {
+        this.bindValue = textarea.value;
+      }
+    },
+
+    _bindValueChanged: function() {
+      var textarea = this.textarea;
+      if (!textarea) {
+        return;
+      }
+
+      textarea.value = this.bindValue;
+      this._update();
+      // manually notify because we don't want to notify until after setting value
+      this.fire('bind-value-changed', {value: this.bindValue});
+    },
+
+    _onInput: function(event) {
+      this.bindValue = event.path ? event.path[0].value : event.target.value;
+      this._update();
+    },
+
+    _constrain: function(tokens) {
+      var _tokens;
+      tokens = tokens || [''];
+      // Enforce the min and max heights for a multiline input to avoid measurement
+      if (this.maxRows > 0 && tokens.length > this.maxRows) {
+        _tokens = tokens.slice(0, this.maxRows);
+      } else {
+        _tokens = tokens.slice(0);
+      }
+      while (this.rows > 0 && _tokens.length < this.rows) {
+        _tokens.push('');
+      }
+      return _tokens.join('<br>') + '&nbsp;';
+    },
+
+    _valueForMirror: function() {
+      var input = this.textarea;
+      if (!input) {
+        return;
+      }
+      this.tokens = (input && input.value) ? input.value.replace(/&/gm, '&amp;').replace(/"/gm, '&quot;').replace(/'/gm, '&#39;').replace(/</gm, '&lt;').replace(/>/gm, '&gt;').split('\n') : [''];
+      return this._constrain(this.tokens);
+    },
+
+    _updateCached: function() {
+      this.$.mirror.innerHTML = this._constrain(this.tokens);
+    }
+  })
+
 ;
 
   (function() {
@@ -10755,10 +11069,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       Polymer.PaperInputAddonBehavior
     ],
 
-    hostAttributes: {
-      'role': 'alert'
-    },
-
     properties: {
 
       /**
@@ -10832,6 +11142,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     is: 'paper-input',
 
     behaviors: [
+      Polymer.IronFormElementBehavior,
       Polymer.PaperInputBehavior,
       Polymer.IronControlState
     ]
@@ -11422,6 +11733,491 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 })();
 
 ;
+
+(function() {
+
+  Polymer({
+
+    is: 'paper-textarea',
+
+    behaviors: [
+      Polymer.PaperInputBehavior
+    ],
+
+    properties: {
+
+      _ariaLabelledBy: {
+        observer: '_ariaLabelledByChanged',
+        type: String
+      },
+
+      _ariaDescribedBy: {
+        observer: '_ariaDescribedByChanged',
+        type: String
+      }
+
+    },
+
+    _ariaLabelledByChanged: function(ariaLabelledBy) {
+      this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);
+    },
+
+    _ariaDescribedByChanged: function(ariaDescribedBy) {
+      this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
+    }
+
+  });
+
+})();
+
+
+;
+  Polymer({
+
+    is: 'paper-progress',
+
+    behaviors: [
+      Polymer.IronRangeBehavior
+    ],
+
+    properties: {
+
+      /**
+       * The number that represents the current secondary progress.
+       */
+      secondaryProgress: {
+        type: Number,
+        value: 0,
+        notify: true
+      },
+
+      /**
+       * The secondary ratio
+       */
+      secondaryRatio: {
+        type: Number,
+        value: 0,
+        readOnly: true,
+        observer: '_secondaryRatioChanged'
+      },
+
+      /**
+       * Use an indeterminate progress indicator.
+       */
+      indeterminate: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: '_toggleIndeterminate'
+      }
+    },
+
+    observers: [
+      '_ratioChanged(ratio)',
+      '_secondaryProgressChanged(secondaryProgress, min, max)'
+    ],
+
+    _toggleIndeterminate: function() {
+      // If we use attribute/class binding, the animation sometimes doesn't translate properly
+      // on Safari 7.1. So instead, we toggle the class here in the update method.
+      this.toggleClass('indeterminate', this.indeterminate, this.$.activeProgress);
+    },
+
+    _transformProgress: function(progress, ratio) {
+      var transform = 'scaleX(' + (ratio / 100) + ')';
+      progress.style.transform = progress.style.webkitTransform = transform;
+    },
+
+    _ratioChanged: function(ratio) {
+      this._transformProgress(this.$.activeProgress, ratio);
+    },
+
+    _secondaryRatioChanged: function(secondaryRatio) {
+      this._transformProgress(this.$.secondaryProgress, secondaryRatio);
+    },
+
+    _secondaryProgressChanged: function() {
+      this.secondaryProgress = this._clampValue(this.secondaryProgress);
+      this._setSecondaryRatio(this._calcRatio(this.secondaryProgress) * 100);
+    }
+
+  });
+
+
+;
+
+  Polymer({
+    is: 'paper-slider',
+
+    behaviors: [
+      Polymer.IronA11yKeysBehavior,
+      Polymer.PaperInkyFocusBehavior,
+      Polymer.IronFormElementBehavior,
+      Polymer.IronRangeBehavior
+    ],
+
+    properties: {
+
+      /**
+       * If true, the slider thumb snaps to tick marks evenly spaced based
+       * on the `step` property value.
+       */
+      snaps: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * If true, a pin with numeric value label is shown when the slider thumb
+       * is pressed. Use for settings for which users need to know the exact
+       * value of the setting.
+       */
+      pin: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+
+      /**
+       * The number that represents the current secondary progress.
+       */
+      secondaryProgress: {
+        type: Number,
+        value: 0,
+        notify: true,
+        observer: '_secondaryProgressChanged'
+      },
+
+      /**
+       * If true, an input is shown and user can use it to set the slider value.
+       */
+      editable: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * The immediate value of the slider.  This value is updated while the user
+       * is dragging the slider.
+       */
+      immediateValue: {
+        type: Number,
+        value: 0,
+        readOnly: true
+      },
+
+      /**
+       * The maximum number of markers
+       */
+      maxMarkers: {
+        type: Number,
+        value: 0,
+        notify: true,
+        observer: '_maxMarkersChanged'
+      },
+
+      /**
+       * If true, the knob is expanded
+       */
+      expand: {
+        type: Boolean,
+        value: false,
+        readOnly: true
+      },
+
+      /**
+       * True when the user is dragging the slider.
+       */
+      dragging: {
+        type: Boolean,
+        value: false,
+        readOnly: true
+      },
+
+      transiting: {
+        type: Boolean,
+        value: false,
+        readOnly: true
+      },
+
+      markers: {
+        type: Array,
+        readOnly: true,
+        value: []
+      },
+    },
+
+    observers: [
+      '_updateKnob(value, min, max, snaps, step)',
+      '_minChanged(min)',
+      '_maxChanged(max)',
+      '_valueChanged(value)',
+      '_immediateValueChanged(immediateValue)'
+    ],
+
+    hostAttributes: {
+      role: 'slider',
+      tabindex: 0
+    },
+
+    keyBindings: {
+      'left down pagedown home': '_decrementKey',
+      'right up pageup end': '_incrementKey'
+    },
+
+    ready: function() {
+      // issue polymer/polymer#1305
+      this.async(function() {
+        this._updateKnob(this.value);
+        this._updateInputValue();
+      }, 1);
+    },
+
+    /**
+     * Increases value by `step` but not above `max`.
+     * @method increment
+     */
+    increment: function() {
+      this.value = this._clampValue(this.value + this.step);
+    },
+
+    /**
+     * Decreases value by `step` but not below `min`.
+     * @method decrement
+     */
+    decrement: function() {
+      this.value = this._clampValue(this.value - this.step);
+    },
+
+    _updateKnob: function(value) {
+      this._positionKnob(this._calcRatio(value));
+    },
+
+    _minChanged: function() {
+      this.setAttribute('aria-valuemin', this.min);
+    },
+
+    _maxChanged: function() {
+      this.setAttribute('aria-valuemax', this.max);
+    },
+
+    _valueChanged: function() {
+      this.setAttribute('aria-valuenow', this.value);
+      this.fire('value-change');
+    },
+
+    _immediateValueChanged: function() {
+      if (this.dragging) {
+        this.fire('immediate-value-change');
+      } else {
+        this.value = this.immediateValue;
+      }
+      this._updateInputValue();
+    },
+
+    _secondaryProgressChanged: function() {
+      this.secondaryProgress = this._clampValue(this.secondaryProgress);
+    },
+
+    _updateInputValue: function() {
+      if (this.editable) {
+        this.$$('#input').value = this.immediateValue.toString();
+      }
+    },
+
+    _expandKnob: function() {
+      this._setExpand(true);
+    },
+
+    _resetKnob: function() {
+      this.cancelDebouncer('expandKnob');
+      this._setExpand(false);
+    },
+
+    _positionKnob: function(ratio) {
+      this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
+      this._setRatio(this._calcRatio(this.immediateValue));
+
+      this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
+    },
+
+    _inputChange: function() {
+      this.value = this.$$('#input').value;
+      this.fire('change');
+    },
+
+    _calcKnobPosition: function(ratio) {
+      return (this.max - this.min) * ratio + this.min;
+    },
+
+    _onTrack: function(event) {
+      switch (event.detail.state) {
+        case 'start':
+          this._trackStart(event);
+          break;
+        case 'track':
+          this._trackX(event);
+          break;
+        case 'end':
+          this._trackEnd();
+          break;
+      }
+    },
+
+    _trackStart: function(event) {
+      this._w = this.$.sliderBar.offsetWidth;
+      this._x = this.ratio * this._w;
+      this._startx = this._x || 0;
+      this._minx = - this._startx;
+      this._maxx = this._w - this._startx;
+      this.$.sliderKnob.classList.add('dragging');
+
+      this._setDragging(true);
+    },
+
+    _trackX: function(e) {
+      if (!this.dragging) {
+        this._trackStart(e);
+      }
+
+      var dx = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
+      this._x = this._startx + dx;
+
+      var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
+      this._setImmediateValue(immediateValue);
+
+      // update knob's position
+      var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
+      this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
+    },
+
+    _trackEnd: function() {
+      var s = this.$.sliderKnob.style;
+
+      this.$.sliderKnob.classList.remove('dragging');
+      this._setDragging(false);
+      this._resetKnob();
+      this.value = this.immediateValue;
+
+      s.transform = s.webkitTransform = '';
+
+      this.fire('change');
+    },
+
+    _knobdown: function(event) {
+      this._expandKnob();
+
+      // cancel selection
+      event.detail.sourceEvent.preventDefault();
+
+      // set the focus manually because we will called prevent default
+      this.focus();
+    },
+
+    _bardown: function(event) {
+      this._w = this.$.sliderBar.offsetWidth;
+      var rect = this.$.sliderBar.getBoundingClientRect();
+      var ratio = (event.detail.x - rect.left) / this._w;
+      var prevRatio = this.ratio;
+
+      this._setTransiting(true);
+
+      this._positionKnob(ratio);
+
+      this.debounce('expandKnob', this._expandKnob, 60);
+
+      // if the ratio doesn't change, sliderKnob's animation won't start
+      // and `_knobTransitionEnd` won't be called
+      // Therefore, we need to manually update the `transiting` state
+
+      if (prevRatio === this.ratio) {
+        this._setTransiting(false);
+      }
+
+      this.async(function() {
+        this.fire('change');
+      });
+
+      // cancel selection
+      event.detail.sourceEvent.preventDefault();
+    },
+
+    _knobTransitionEnd: function(event) {
+      if (event.target === this.$.sliderKnob) {
+        this._setTransiting(false);
+      }
+    },
+
+    _maxMarkersChanged: function(maxMarkers) {
+      var l = (this.max - this.min) / this.step;
+      if (!this.snaps && l > maxMarkers) {
+        this._setMarkers([]);
+      } else {
+        this._setMarkers(new Array(l));
+      }
+    },
+
+    _getClassNames: function() {
+      var classes = {};
+
+      classes.disabled = this.disabled;
+      classes.pin = this.pin;
+      classes.snaps = this.snaps;
+      classes.ring = this.immediateValue <= this.min;
+      classes.expand = this.expand;
+      classes.dragging = this.dragging;
+      classes.transiting = this.transiting;
+      classes.editable = this.editable;
+
+      return Object.keys(classes).filter(
+        function(className) {
+          return classes[className];
+        }).join(' ');
+    },
+
+    _incrementKey: function(event) {
+      if (event.detail.key === 'end') {
+        this.value = this.max;
+      } else {
+        this.increment();
+      }
+      this.fire('change');
+    },
+
+    _decrementKey: function(event) {
+      if (event.detail.key === 'home') {
+        this.value = this.min;
+      } else {
+        this.decrement();
+      }
+      this.fire('change');
+    }
+  });
+
+  /**
+   * Fired when the slider's value changes.
+   *
+   * @event value-change
+   */
+
+  /**
+   * Fired when the slider's immediateValue changes.
+   *
+   * @event immediate-value-change
+   */
+
+  /**
+   * Fired when the slider's value changes due to user interaction.
+   *
+   * Changes to the slider's value due to changes in an underlying
+   * bound variable will not trigger this event.
+   *
+   * @event change
+   */
+
+
+;
     (function () {
         Polymer({
             is: 'my-app',
@@ -11454,6 +12250,36 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 ;
     (function () {
         Polymer({
+            is: 'fab-service',
+            properties: {
+                fabs: {
+                    type: Object,
+                    value: []
+                }
+            },
+            addFab: function (id, icon, onClick) {
+                this.fabs.push({
+                    id: id,
+                    icon: icon,
+                    onClick: onClick
+                });
+                console.log(this.fabs.length);
+            },
+            removeFab: function(id) {
+                // ...
+            },
+            lastFab: function() {
+                if (this.fabs.length === 0) {
+                    return null;
+                }
+                return this.fabs[this.fabs.length - 1];
+            }
+        });
+    })();
+
+;
+    (function () {
+        Polymer({
             is: 'content-1'
         });
     })();
@@ -11467,8 +12293,44 @@ is separate from validation, and `allowed-pattern` does not affect how the input
                 var toastService = app.querySelector('#toast-service');
                 toastService.addToast('content-2-ből hozzáadva.', 6000);
             },
-            ready: function() {
+            toggle: function () {
+                this.setEditable(this.$.editableToggle.checked);
+            },
+            setEditable: function (editable) {
+                this.editable = editable;
+            },
+            ready: function () {
                 console.log(this);
+                this.setEditable(false);
+            },
+            properties: {
+                disValue: {
+                    type: String,
+                    value: 'Nem módosítható'
+                },
+                name: {
+                    type: String,
+                    value: 'Shawn Spencer'
+                }
+            }
+        });
+    })();
+
+;
+    (function () {
+        Polymer({
+            is: 'content-3',
+            addToast: function() {
+                var app = document.getElementById('app');
+                var toastService = app.querySelector('#toast-service');
+                toastService.addToast('content-3-ból hozzáadva.');
+            },
+            addFab: function() {
+                var app = document.getElementById('app');
+                var fabService = app.querySelector('#fab-service');
+                fabService.addFab('cont3', 'social:mood', function() {
+                    alert('content-3-ból hozzáadva.');
+                });
             }
         });
     })();

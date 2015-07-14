@@ -1,0 +1,89 @@
+<dom-module id="fab-service">
+    <style is="custom-style">
+        :host {
+            display: block;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+        }
+        paper-fab.fab-left-bottom {
+            position: absolute;
+            bottom: 32px;
+            right: 52px;
+            z-index: 9999;
+        }
+    </style>
+    <template>
+        <span style="position: absolute; bottom: 50px; right: 0; z-index: 9999; background-color: #00BCD4; width: 300px; height: 50px;">{{lastFab()}}</span>
+        <span style="position: absolute; bottom: 100px; right: 0; z-index: 9999; background-color: #b2ebf2; width: 300px; height: 50px;">{{jsontest.def.icon}}</span>
+        <template is="dom-if" if="{{actFab}}">
+            <paper-fab id="def" icon="{{jsontest.def.icon}}" class="fab-left-bottom" on-click="clickFab"></paper-fab>
+        </template>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'fab-service',
+            properties: {
+                fabs: {
+                    type: Object,
+                    value: {}
+                },
+                actFab: String,
+                length: Number,
+                test: String,
+                jsontest: {
+                    type: Object,
+                    value: {
+                        def: {
+                            icon: 'add',
+                            onClick: function () {
+                                console.log('this.utils');
+                                console.log(this.utils);
+//                                alert('default fab vagyok. dejó nekem.');
+                            }
+                        }
+                    }
+                }
+            },
+            addFab: function (id, icon, onClick) {
+                this.fabs[id] = {
+                    icon: icon,
+                    onClick: onClick
+                };
+                this.actFab = id;
+            },
+            removeFab: function (id) {
+                // ...
+            },
+            lastFab: function () {
+//                if (!this.fabs || this.fabs.length === 0) {
+//                    return null;
+//                }
+//                return this.fabs[this.actFab];
+                return 'lastfab :)';
+            },
+            clickFab: function () {
+//                console.log(this.actFab);
+//                console.log(this.fabs);
+                this.jsontest.def.onClick();
+            },
+            ready: function () {
+                var app = document.getElementById('app');
+                console.log(app);
+                var ut = app.querySelector('#utils');
+                console.log('utils: ' + ut);
+//                var u = document.getElementById('utils');
+//                console.log('#utils: ' + app.querySelector('#utils'));
+//                console.log('my-utils: ' + app.querySelector('my-utils'));
+//                console.log('$.utils: ' + app.$.utils);
+//                
+//                console.log(this.utils);
+//                console.log(app.$.utils);
+//                console.log(app.querySelector('#utils'));
+                this.actFab = 'def';
+            }
+        });
+    })();
+</script>

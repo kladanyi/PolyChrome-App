@@ -68,7 +68,7 @@
         --paper-toggle-button-checked-ink-color: var(--accent-color);
 
         --paper-input-container-focus-color: var(--accent-color);
-        
+
         --paper-slider-active-color: var(--accent-color);
         --paper-slider-knob-color: var(--accent-color);
         --paper-slider-pin-color: var(--accent-color);
@@ -85,6 +85,14 @@
     }
     /* -CARDS- */
 
+    /* SELECTED ELEMENTS */
+    /deep/ ::-moz-selection { /* Code for Firefox */
+        background: var(--light-primary-color);
+    }
+    /deep/ ::selection {
+        background: var(--light-primary-color);
+    }
+    /* -SELECTED ELEMENTS- */
 
     /* Material Design Adaptive Breakpoints */
     /*

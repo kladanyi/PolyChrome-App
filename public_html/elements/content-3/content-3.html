@@ -1,0 +1,32 @@
+<dom-module id="content-3">
+    <style is="custom-style">
+    </style>
+    <template>
+        <h1>Toast, fab</h1>
+
+        <paper-button class="default" on-click="addToast">Add toast</paper-button>
+        <paper-button id="fab1" class="default" on-click="addFab">Add fab 1</paper-button>
+        <paper-button id="fab2" class="default" on-click="addFab">Add fab 2</paper-button>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'content-3',
+            addToast: function() {
+                var app = document.getElementById('app');
+                console.log(app);
+                var toastService = app.querySelector('#toast-service');
+                toastService.addToast('content-3-ból hozzáadva.');
+            },
+            addFab: function(event) {
+                var id = event.target.id;
+                var app = document.getElementById('app');
+                var fabService = app.querySelector('#fab-service');
+                fabService.addFab('cont3-' + id, 'social:mood', function() {
+                    alert('content-3-ból hozzáadva. (' + id + ')');
+                });
+            }
+        });
+    })();
+</script>
