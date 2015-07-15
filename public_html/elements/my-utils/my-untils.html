@@ -1,26 +1,42 @@
-<dom-module id="my-utils">
-    <template></template>
-</dom-module>
 <script>
-    (function () {
-        Polymer({
-            is: 'my-utils',
-            getJsonElement: function (json, key) {
+    MyUtils = {
+        JSON: {
+            getElement: function (json, key) {
                 if (!json || !key) {
                     return null;
                 }
-                var obj = angular.fromJson(json);
+                if (typeof key !== String) {
+                    console.error('The key must be a string!');
+                    console.error(key);
+                }
+                console.log('key ' + key);
                 var key_strings = key.split('.');
                 if (key_strings.length === 1) {
                     try {
-                        return angular.fromJson(json)[key];
+                        return json[key];
                     } catch (e) {
                         return json;
                     }
                 } else {
-                    return getJsonElement(obj[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
+                    return getJsonElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
+                }
+            },
+            addElement: function (json, key, value) {
+                var key_strings = key.split('.');
+                if (key_strings.length === 1) {
+                    json[key] = value;
+                } else {
+                    addElementToJson(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'), value);
+                }
+            },
+            removeElement: function (json, key) {
+                var key_strings = key.split('.');
+                if (key_strings.length === 1) {
+                    delete json[key];
+                } else {
+                    removeJsonElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
                 }
             }
-        });
-    })();
+        }
+    };
 </script>
