@@ -9,7 +9,6 @@
                     console.error('The key must be a string!');
                     console.error(key);
                 }
-                console.log('key ' + key);
                 var key_strings = key.split('.');
                 if (key_strings.length === 1) {
                     try {
@@ -22,6 +21,14 @@
                 }
             },
             addElement: function (json, key, value) {
+                if (!json || !key) {
+                    return null;
+                }
+                if (typeof key !== typeof '') {
+                    console.error('The key must be a string!');
+                    console.error(key);
+                }
+                
                 var key_strings = key.split('.');
                 if (key_strings.length === 1) {
                     json[key] = value;
@@ -30,6 +37,14 @@
                 }
             },
             removeElement: function (json, key) {
+                if (!json || !key) {
+                    return null;
+                }
+                if (typeof key !== typeof '') {
+                    console.error('The key must be a string!');
+                    console.error(key);
+                }
+                
                 var key_strings = key.split('.');
                 if (key_strings.length === 1) {
                     delete json[key];
