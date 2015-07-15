@@ -1,0 +1,21 @@
+<dom-module id="fab-element">
+    
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'fab-element',
+            behaviors: [FabBehavior],
+            properties: {
+                id: String,
+                icon: String,
+                clickFn: Object
+            },
+            ready: function () {
+                console.log('fab-element ready: ' + this.id);
+                console.log(this.clickFn);
+                FabBehavior.addFab(this.id, this.icon, this.clickFn);
+            }
+        });
+    })();
+</script>

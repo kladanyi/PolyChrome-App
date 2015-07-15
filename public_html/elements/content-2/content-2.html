@@ -2,6 +2,8 @@
     <style is="custom-style">
     </style>
     <template>
+        <!--<fab-element id="cont2Fab" icon="add" click="showToast"></fab-element>-->
+        
         <h1>Form styling</h1>
 
         <paper-checkbox>label</paper-checkbox>
@@ -13,8 +15,8 @@
             <paper-radio-button name="large">Large</paper-radio-button>
         </paper-radio-group>
         <p>toggle button: <paper-toggle-button class="fun"></paper-toggle-button></p>
-        <paper-fab icon="add" on-click="showToast" ></paper-fab>
-        <paper-fab mini icon="favorite"></paper-fab>
+        <!--<paper-fab icon="add" on-click="showToast" ></paper-fab>-->
+        <paper-fab mini icon="favorite" on-click="teszt"></paper-fab>
 
         <paper-input label="Your name" value="{{name::input}}"></paper-input>
         <paper-input label="Disabled" disabled value="{{disValue}}"></paper-input>
@@ -41,9 +43,10 @@
     (function () {
         Polymer({
             is: 'content-2',
+            behaviors: [FabBehavior, ToastBehavior],
             showToast: function () {
                 var app = document.getElementById('app');
-                var toastService = app.querySelector('#toast-service');
+                var toastService = app.querySelector('toast-service');
                 toastService.addToast('content-2-ből hozzáadva.', 6000);
             },
             toggle: function () {
@@ -64,6 +67,9 @@
                     type: String,
                     value: 'Shawn Spencer'
                 }
+            },
+            teszt: function() {
+                FabBehavior.addFab('cont2', 'social:person', function() {ToastBehavior.addToast('content 2-ből FabService segítségével')});
             }
         });
     })();

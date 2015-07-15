@@ -2,30 +2,77 @@
     <style is="custom-style">
     </style>
     <template>
+        <fab-element id="cont3Fab" icon="clear" click="toast"></fab-element>
+        
         <h1>Toast, fab</h1>
+        
+        toast: <span>{{toast}}</span>
 
-        <paper-button class="default" on-click="addToast">Add toast</paper-button>
-        <paper-button id="fab1" class="default" on-click="addFab">Add fab 1</paper-button>
-        <paper-button id="fab2" class="default" on-click="addFab">Add fab 2</paper-button>
+        <paper-button class="default" on-click="toast">Add toast</paper-button>
+        <paper-button class="default" on-click="fab1">Add fab 1</paper-button>
+        <paper-button class="default" on-click="fab1r">Remove fab 1</paper-button>
+        <paper-button class="default" on-click="fab2">Add fab 2</paper-button>
+        <paper-button class="default" on-click="fab2r">Remove fab 2</paper-button>
+        
+        <paper-input label="Fab id" value="{{fabId::input}}"></paper-input>
+        <paper-button on-click="remFab">Töröl</paper-button>
     </template>
 </dom-module>
 <script>
     (function () {
         Polymer({
             is: 'content-3',
-            addToast: function() {
-                var app = document.getElementById('app');
-                console.log(app);
-                var toastService = app.querySelector('#toast-service');
-                toastService.addToast('content-3-ból hozzáadva.');
+            behaviors: [MyUtils, ToastBehavior, FabBehavior],
+            ready: function () {
+                var content3 = this;
+                this.fabs = {
+                    fab1: {
+                        icon: 'social:mood',
+                        onClick: function () {
+                            content3.addToast('Első fab content-3');
+                        }
+                    },
+                    fab2: {
+                        icon: 'device:wallpaper',
+                        onClick: function () {
+                            content3.addToast('Második fab content-3');
+                        }
+                    }
+                };
             },
-            addFab: function(event) {
-                var id = event.target.id;
-                var app = document.getElementById('app');
-                var fabService = app.querySelector('#fab-service');
-                fabService.addFab('cont3-' + id, 'social:mood', function() {
-                    alert('content-3-ból hozzáadva. (' + id + ')');
-                });
+            addToast: function (content) {
+//                var app = document.getElementById('app');
+//                var toastService = app.querySelector('#toast-service');
+//                toastService.addToast(content);
+                ToastBehavior.addToast(content);
+            },
+            addFab: function (id) {
+//                var app = document.getElementById('app');
+//                var fabService = app.querySelector('#fab-service');
+                FabBehavior.addFab(id, MyUtils.JSON.getElement(this.fabs, id + '.icon'), MyUtils.JSON.getElement(this.fabs, id + '.onClick'));
+            },
+            removeFab: function(id) {
+//                var app = document.getElementById('app');
+//                var fabService = app.querySelector('#fab-service');
+                FabBehavior.removeFab(id);
+            },
+            toast: function() {
+                this.addToast('content-3-ból hozzáadva.');
+            },
+            fab1: function() {
+                this.addFab('fab1');
+            },
+            fab2: function() {
+                this.addFab('fab2');
+            },
+            fab1r: function() {
+                this.removeFab('fab1');
+            },
+            fab2r: function() {
+                this.removeFab('fab2');
+            },
+            remFab: function() {
+                this.removeFab(this.fabId);
             }
         });
     })();

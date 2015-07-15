@@ -63,6 +63,10 @@
         }
     </style>
     <template>
+        <fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>
+        <span>{{fab}}</span>
+        <span>{{fabclick}}</span>
+
         <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical">
             <div drawer>
                 <!-- Drawer Toolbar -->
@@ -90,7 +94,7 @@
             </div>
             <div main>
                 <toast-service id="toast-service"></toast-service>
-                <fab-service id="fab-service"></fab-service>
+                <fab-container id="fab-container"></fab-container>
                 <paper-header-panel mode="seamed" class="fullbleed layout vertical">
                     <!-- Main Toolbar -->
                     <paper-toolbar id="mainToolbar">
@@ -111,6 +115,7 @@
                         <iron-pages attr-for-selected="data-route" selected="{{route}}">
 
                             <section data-route="home">
+                                <span>{{}}</span>
                                 <paper-material elevation="1" class="card">
                                     <content-3></content-3>
                                 </paper-material>
@@ -157,10 +162,19 @@
     (function () {
         Polymer({
             is: 'my-app',
+            behaviors: [ToastBehavior],
             properties: {
                 route: {
                     type: String,
                     value: 'home'
+                },
+                fabclick: {
+                    type: Object,
+                    value: function () {
+                        return function () {
+                            ToastBehavior.addToast('my-app elején elhelyezett fab-element.');
+                        };
+                    }
                 }
             },
             ready: function () {

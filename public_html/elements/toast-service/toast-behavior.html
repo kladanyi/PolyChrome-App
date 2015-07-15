@@ -1,0 +1,15 @@
+<link rel="import" href="toast-service.html">
+
+<script>
+    ToastBehavior = {
+        addToast: function (text, duration) {
+            var app = document.getElementById('app');
+            var toastService = app.querySelector('toast-service');
+            if (!toastService) {
+                console.error('<toast-service> element not found.');
+                return;
+            }
+            toastService.addToast(text, duration);
+        }
+    }
+</script>

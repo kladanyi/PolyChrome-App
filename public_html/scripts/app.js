@@ -23,10 +23,12 @@
     // have resolved and content has been stamped to the page
     app.addEventListener('dom-change', function () {
         console.log('Our app is ready to rock!');
+
+        document.querySelector('fab-container').register();
+
         document.querySelector('#app').removeAttribute('unresolved');
         setTimeout(function () {
             document.querySelector('#loader').setAttribute('style', 'display: none');
-//            document.querySelector('#paperDrawerPanel').setAttribute('class', 'resolved');
         });
     });
 

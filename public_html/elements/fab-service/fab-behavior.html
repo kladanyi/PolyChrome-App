@@ -1,0 +1,37 @@
+<script>
+    var waitingList = [];
+    var FabBehavior = {
+        properties: {
+            fabContainer: Object
+        },
+        setFabContainer: function (container) {
+            this.fabContainer = container;
+            if (!this.fabContainer) {
+                console.error('<fab-service> element not found.');
+                return;
+            }
+            for (var i = 0; i < waitingList.length; i++) {
+                this.addFab(waitingList[i].id, waitingList[i].icon, waitingList[i].onClick);
+            }
+            waitingList = [];
+        },
+        addFab: function (id, icon, onClick) {
+            if (this.fabContainer) {
+                this.fabContainer.addFab(id, icon, onClick);
+            } else {
+                waitingList.push({id: id, icon: icon, onClick: onClick});
+            }
+        },
+        removeFab: function (id) {
+            if (this.fabContainer) {
+                this.fabContainer.removeFab(id);
+            } else {
+                for (var i = waitingList.length - 1; i >= 0; i--) {
+                    if (waitingList[i].id === id) {
+                        waitingList.splice(i, 1);
+                    }
+                }
+            }
+        }
+    };
+</script>

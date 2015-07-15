@@ -8921,6 +8921,113 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 };
 
 ;
+    MyUtils = {
+        JSON: {
+            getElement: function (json, key) {
+                if (!json || !key) {
+                    return null;
+                }
+                if (typeof key !== typeof '') {
+                    console.error('The key must be a string!');
+                    console.error(key);
+                }
+                var key_strings = key.split('.');
+                if (key_strings.length === 1) {
+                    try {
+                        return json[key];
+                    } catch (e) {
+                        return json;
+                    }
+                } else {
+                    return MyUtils.JSON.getElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
+                }
+            },
+            addElement: function (json, key, value) {
+                if (!json || !key) {
+                    return null;
+                }
+                if (typeof key !== typeof '') {
+                    console.error('The key must be a string!');
+                    console.error(key);
+                }
+                
+                var key_strings = key.split('.');
+                if (key_strings.length === 1) {
+                    json[key] = value;
+                } else {
+                    MyUtils.JSON.addElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'), value);
+                }
+            },
+            removeElement: function (json, key) {
+                if (!json || !key) {
+                    return null;
+                }
+                if (typeof key !== typeof '') {
+                    console.error('The key must be a string!');
+                    console.error(key);
+                }
+                
+                var key_strings = key.split('.');
+                if (key_strings.length === 1) {
+                    delete json[key];
+                } else {
+                    MyUtils.JSON.removeElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
+                }
+            }
+        }
+    };
+
+;
+    ToastBehavior = {
+        addToast: function (text, duration) {
+            var app = document.getElementById('app');
+            var toastService = app.querySelector('toast-service');
+            if (!toastService) {
+                console.error('<toast-service> element not found.');
+                return;
+            }
+            toastService.addToast(text, duration);
+        }
+    }
+
+;
+    var waitingList = [];
+    var FabBehavior = {
+        properties: {
+            fabContainer: Object
+        },
+        setFabContainer: function (container) {
+            this.fabContainer = container;
+            if (!this.fabContainer) {
+                console.error('<fab-service> element not found.');
+                return;
+            }
+            for (var i = 0; i < waitingList.length; i++) {
+                this.addFab(waitingList[i].id, waitingList[i].icon, waitingList[i].onClick);
+            }
+            waitingList = [];
+        },
+        addFab: function (id, icon, onClick) {
+            if (this.fabContainer) {
+                this.fabContainer.addFab(id, icon, onClick);
+            } else {
+                waitingList.push({id: id, icon: icon, onClick: onClick});
+            }
+        },
+        removeFab: function (id) {
+            if (this.fabContainer) {
+                this.fabContainer.removeFab(id);
+            } else {
+                for (var i = waitingList.length - 1; i >= 0; i--) {
+                    if (waitingList[i].id === id) {
+                        waitingList.splice(i, 1);
+                    }
+                }
+            }
+        }
+    };
+
+;
     window.addEventListener('WebComponentsReady', function () {
 
         // We use Page.js for routing. This is a Micro
@@ -12220,22 +12327,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 ;
     (function () {
         Polymer({
-            is: 'my-app',
-            properties: {
-                route: {
-                    type: String,
-                    value: 'home'
-                }
-            },
-            ready: function () {
-                console.log('MyApp is ready.');
-            }
-        });
-    })();
-
-;
-    (function () {
-        Polymer({
             is: 'toast-service',
             addToast: function (text, duration) {
                 this.$.toast.text = text;
@@ -12250,29 +12341,92 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 ;
     (function () {
         Polymer({
-            is: 'fab-service',
+            is: 'fab-container',
+            behaviors: [MyUtils, FabBehavior],
             properties: {
                 fabs: {
                     type: Object,
+                    value: {}
+                },
+                fabList: {
+                    type: Array,
                     value: []
-                }
+                },
+                actFab: Object
             },
             addFab: function (id, icon, onClick) {
-                this.fabs.push({
-                    id: id,
+                console.log('Add fab: ' + id);
+                if (this.fabList.indexOf(id) > -1) {
+                    this.removeFab(id);
+                }
+                this.actFab = {
                     icon: icon,
                     onClick: onClick
-                });
-                console.log(this.fabs.length);
+                };
+                MyUtils.JSON.addElement(this.fabs, id, this.actFab);
+                this.fabList.push(id);
             },
-            removeFab: function(id) {
-                // ...
-            },
-            lastFab: function() {
-                if (this.fabs.length === 0) {
-                    return null;
+            removeFab: function (id) {
+                var index = this.fabList.indexOf(id);
+                if (index > -1) {
+                    this.fabList.splice(index, 1);
+                    MyUtils.JSON.removeElement(this.fabs, id);
                 }
-                return this.fabs[this.fabs.length - 1];
+                index = this.fabList.length - 1;
+                if (index > -1) {
+                    this.actFab = MyUtils.JSON.getElement(this.fabs, this.fabList[index]);
+                } else {
+                    this.actFab = null;
+                }
+            },
+            clickFab: function () {
+                this.actFab.onClick();
+            },
+            register: function () {
+                FabBehavior.setFabContainer(this);
+            }
+        });
+    })();
+
+;
+    (function () {
+        Polymer({
+            is: 'fab-element',
+            behaviors: [FabBehavior],
+            properties: {
+                id: String,
+                icon: String,
+                clickFn: Object
+            },
+            ready: function () {
+                console.log('fab-element ready: ' + this.id);
+                console.log(this.clickFn);
+                FabBehavior.addFab(this.id, this.icon, this.clickFn);
+            }
+        });
+    })();
+
+;
+    (function () {
+        Polymer({
+            is: 'my-app',
+            behaviors: [ToastBehavior],
+            properties: {
+                route: {
+                    type: String,
+                    value: 'home'
+                },
+                fabclick: {
+                    type: Object,
+                    value: function () {
+                        return function () {
+                            ToastBehavior.addToast('my-app elején elhelyezett fab-element.');
+                        };
+                    }
+                }
+            },
+            ready: function () {
+                console.log('MyApp is ready.');
             }
         });
     })();
@@ -12288,9 +12442,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     (function () {
         Polymer({
             is: 'content-2',
+            behaviors: [FabBehavior, ToastBehavior],
             showToast: function () {
                 var app = document.getElementById('app');
-                var toastService = app.querySelector('#toast-service');
+                var toastService = app.querySelector('toast-service');
                 toastService.addToast('content-2-ből hozzáadva.', 6000);
             },
             toggle: function () {
@@ -12300,7 +12455,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
                 this.editable = editable;
             },
             ready: function () {
-                console.log(this);
                 this.setEditable(false);
             },
             properties: {
@@ -12312,6 +12466,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
                     type: String,
                     value: 'Shawn Spencer'
                 }
+            },
+            teszt: function() {
+                FabBehavior.addFab('cont2', 'social:person', function() {ToastBehavior.addToast('content 2-ből FabService segítségével')});
             }
         });
     })();
@@ -12320,17 +12477,57 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     (function () {
         Polymer({
             is: 'content-3',
-            addToast: function() {
-                var app = document.getElementById('app');
-                var toastService = app.querySelector('#toast-service');
-                toastService.addToast('content-3-ból hozzáadva.');
+            behaviors: [MyUtils, ToastBehavior, FabBehavior],
+            ready: function () {
+                var content3 = this;
+                this.fabs = {
+                    fab1: {
+                        icon: 'social:mood',
+                        onClick: function () {
+                            content3.addToast('Első fab content-3');
+                        }
+                    },
+                    fab2: {
+                        icon: 'device:wallpaper',
+                        onClick: function () {
+                            content3.addToast('Második fab content-3');
+                        }
+                    }
+                };
             },
-            addFab: function() {
-                var app = document.getElementById('app');
-                var fabService = app.querySelector('#fab-service');
-                fabService.addFab('cont3', 'social:mood', function() {
-                    alert('content-3-ból hozzáadva.');
-                });
+            addToast: function (content) {
+//                var app = document.getElementById('app');
+//                var toastService = app.querySelector('#toast-service');
+//                toastService.addToast(content);
+                ToastBehavior.addToast(content);
+            },
+            addFab: function (id) {
+//                var app = document.getElementById('app');
+//                var fabService = app.querySelector('#fab-service');
+                FabBehavior.addFab(id, MyUtils.JSON.getElement(this.fabs, id + '.icon'), MyUtils.JSON.getElement(this.fabs, id + '.onClick'));
+            },
+            removeFab: function(id) {
+//                var app = document.getElementById('app');
+//                var fabService = app.querySelector('#fab-service');
+                FabBehavior.removeFab(id);
+            },
+            toast: function() {
+                this.addToast('content-3-ból hozzáadva.');
+            },
+            fab1: function() {
+                this.addFab('fab1');
+            },
+            fab2: function() {
+                this.addFab('fab2');
+            },
+            fab1r: function() {
+                this.removeFab('fab1');
+            },
+            fab2r: function() {
+                this.removeFab('fab2');
+            },
+            remFab: function() {
+                this.removeFab(this.fabId);
             }
         });
     })();

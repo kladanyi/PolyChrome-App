@@ -1,4 +1,4 @@
-<dom-module id="fab-service">
+<dom-module id="fab-container">
     <style is="custom-style">
         :host {
             display: block;
@@ -22,8 +22,8 @@
 <script>
     (function () {
         Polymer({
-            is: 'fab-service',
-            behaviors: [MyUtils],
+            is: 'fab-container',
+            behaviors: [MyUtils, FabBehavior],
             properties: {
                 fabs: {
                     type: Object,
@@ -36,6 +36,10 @@
                 actFab: Object
             },
             addFab: function (id, icon, onClick) {
+                console.log('Add fab: ' + id);
+                if (this.fabList.indexOf(id) > -1) {
+                    this.removeFab(id);
+                }
                 this.actFab = {
                     icon: icon,
                     onClick: onClick
@@ -45,8 +49,10 @@
             },
             removeFab: function (id) {
                 var index = this.fabList.indexOf(id);
-                this.fabList.splice(index, 1);
-                MyUtils.JSON.removeElement(this.fabs, id);
+                if (index > -1) {
+                    this.fabList.splice(index, 1);
+                    MyUtils.JSON.removeElement(this.fabs, id);
+                }
                 index = this.fabList.length - 1;
                 if (index > -1) {
                     this.actFab = MyUtils.JSON.getElement(this.fabs, this.fabList[index]);
@@ -56,6 +62,9 @@
             },
             clickFab: function () {
                 this.actFab.onClick();
+            },
+            register: function () {
+                FabBehavior.setFabContainer(this);
             }
         });
     })();
