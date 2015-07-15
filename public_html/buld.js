@@ -12467,8 +12467,19 @@ is separate from validation, and `allowed-pattern` does not affect how the input
                     value: 'Shawn Spencer'
                 }
             },
-            teszt: function() {
-                FabBehavior.addFab('cont2', 'social:person', function() {ToastBehavior.addToast('content 2-ből FabService segítségével')});
+            teszt: function () {
+                FabBehavior.addFab('cont2', 'social:person', function () {
+                    ToastBehavior.addToast('content 2-ből FabService segítségével')
+                });
+            },
+            created: function () {
+                console.log(this.localName + '#' + this.id + ' was created');
+            },
+            attached: function () {
+                console.log(this.localName + '#' + this.id + ' was attached');
+            },
+            detached: function () {
+                console.log(this.localName + '#' + this.id + ' was detached');
             }
         });
     })();

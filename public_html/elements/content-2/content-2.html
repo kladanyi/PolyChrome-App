@@ -3,7 +3,7 @@
     </style>
     <template>
         <!--<fab-element id="cont2Fab" icon="add" click="showToast"></fab-element>-->
-        
+
         <h1>Form styling</h1>
 
         <paper-checkbox>label</paper-checkbox>
@@ -68,8 +68,19 @@
                     value: 'Shawn Spencer'
                 }
             },
-            teszt: function() {
-                FabBehavior.addFab('cont2', 'social:person', function() {ToastBehavior.addToast('content 2-ből FabService segítségével')});
+            teszt: function () {
+                FabBehavior.addFab('cont2', 'social:person', function () {
+                    ToastBehavior.addToast('content 2-ből FabService segítségével')
+                });
+            },
+            created: function () {
+                console.log(this.localName + '#' + this.id + ' was created');
+            },
+            attached: function () {
+                console.log(this.localName + '#' + this.id + ' was attached');
+            },
+            detached: function () {
+                console.log(this.localName + '#' + this.id + ' was detached');
             }
         });
     })();

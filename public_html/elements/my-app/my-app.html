@@ -64,8 +64,6 @@
     </style>
     <template>
         <fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>
-        <span>{{fab}}</span>
-        <span>{{fabclick}}</span>
 
         <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical">
             <div drawer>
@@ -113,9 +111,7 @@
                     <!-- Main Content -->
                     <div class="content" class="flex">
                         <iron-pages attr-for-selected="data-route" selected="{{route}}">
-
                             <section data-route="home">
-                                <span>{{}}</span>
                                 <paper-material elevation="1" class="card">
                                     <content-3></content-3>
                                 </paper-material>
