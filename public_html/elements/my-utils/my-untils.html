@@ -5,7 +5,7 @@
                 if (!json || !key) {
                     return null;
                 }
-                if (typeof key !== String) {
+                if (typeof key !== typeof '') {
                     console.error('The key must be a string!');
                     console.error(key);
                 }
@@ -18,7 +18,7 @@
                         return json;
                     }
                 } else {
-                    return getJsonElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
+                    return MyUtils.JSON.getElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
                 }
             },
             addElement: function (json, key, value) {
@@ -26,7 +26,7 @@
                 if (key_strings.length === 1) {
                     json[key] = value;
                 } else {
-                    addElementToJson(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'), value);
+                    MyUtils.JSON.addElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'), value);
                 }
             },
             removeElement: function (json, key) {
@@ -34,7 +34,7 @@
                 if (key_strings.length === 1) {
                     delete json[key];
                 } else {
-                    removeJsonElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
+                    MyUtils.JSON.removeElement(json[key_strings[0]], key_strings.slice(1, key_strings.length).join('.'));
                 }
             }
         }
