@@ -14,8 +14,8 @@
         }
     </style>
     <template>
-        <template is="dom-if" if="{{actFab}}">
-            <paper-fab id="def" icon="{{actFab.icon}}" class="fab-left-bottom" on-click="clickFab"></paper-fab>
+        <template is="dom-if" if="{{currentFab}}">
+            <paper-fab id="def" icon="{{currentFab.icon}}" class="fab-left-bottom" on-click="clickFab"></paper-fab>
         </template>
     </template>
 </dom-module>
@@ -33,18 +33,18 @@
                     type: Array,
                     value: []
                 },
-                actFab: Object
+                currentFab: Object
             },
             addFab: function (id, icon, onClick) {
                 console.log('Add fab: ' + id);
                 if (this.fabList.indexOf(id) > -1) {
                     this.removeFab(id);
                 }
-                this.actFab = {
+                this.currentFab = {
                     icon: icon,
                     onClick: onClick
                 };
-                MyUtils.JSON.addElement(this.fabs, id, this.actFab);
+                MyUtils.JSON.addElement(this.fabs, id, this.currentFab);
                 this.fabList.push(id);
             },
             removeFab: function (id) {
@@ -55,13 +55,13 @@
                 }
                 index = this.fabList.length - 1;
                 if (index > -1) {
-                    this.actFab = MyUtils.JSON.getElement(this.fabs, this.fabList[index]);
+                    this.currentFab = MyUtils.JSON.getElement(this.fabs, this.fabList[index]);
                 } else {
-                    this.actFab = null;
+                    this.currentFab = null;
                 }
             },
             clickFab: function () {
-                this.actFab.onClick();
+                this.currentFab.onClick();
             },
             register: function () {
                 FabBehavior.setFabContainer(this);

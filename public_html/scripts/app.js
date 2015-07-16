@@ -38,11 +38,11 @@
     });
 
     // Close drawer after menu item is selected if drawerPanel is narrow
-    app.onMenuSelect = function () {
-        var drawerPanel = document.querySelector('#paperDrawerPanel');
-        if (drawerPanel.narrow) {
-            drawerPanel.closeDrawer();
-        }
-    };
+//    app.onMenuSelect = function () {
+//        var drawerPanel = document.querySelector('#paperDrawerPanel');
+//        if (drawerPanel.narrow) {
+//            drawerPanel.closeDrawer();
+//        }
+//    };
 
 })(document);

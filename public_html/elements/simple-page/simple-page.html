@@ -1,0 +1,18 @@
+<dom-module id="simple-page">
+    <style is="custom-style">
+        #simple-page-container {
+            padding: 16px;
+            @apply(--card-background);
+        }
+    </style>
+    <template>
+        <div id="simple-page-container"><content></content></div>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'simple-page'
+        });
+    })();
+</script>

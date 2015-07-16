@@ -33,68 +33,12 @@
         /* paper-menu */
         --paper-menu-background-color: #fff;
         --menu-link-color: #111111;
+
+        /* card */
+        --card-background: {
+            background-color: #fff;
+        };
     }
-
-    body {
-        font-family: 'Roboto', 'Noto', sans-serif;
-        font-size: 16px;
-    }
-
-    /* BUTTONS */
-    /deep/ paper-button:not([disabled]).default::shadow {
-        color: var(--accent-color);
-    }
-
-    /deep/ paper-button:not([disabled])[raised].default::shadow {
-        background: var(--accent-color);
-        color: var(--text-primary-color);
-    }
-
-    /deep/ paper-button:not([disabled])[raised].default::shadow paper-ripple {
-        color: var(--text-primary-color);
-    }
-    /* -BUTTONS- */
-
-    /* CHECKBOX, RADIO BUTTON, TOGGLE BUTTON, INPUT, SLIDER, FAB */
-    * {
-        --paper-checkbox-checked-color: var(--accent-color);
-        --paper-checkbox-checked-ink-color: var(--accent-color);
-
-        --paper-radio-button-checked-color: var(--accent-color);
-        --paper-radio-button-checked-ink-color: var(--accent-color);
-
-        --paper-toggle-button-checked-bar-color: var(--accent-color);
-        --paper-toggle-button-checked-button-color: var(--accent-color);
-        --paper-toggle-button-checked-ink-color: var(--accent-color);
-
-        --paper-input-container-focus-color: var(--accent-color);
-
-        --paper-slider-active-color: var(--accent-color);
-        --paper-slider-knob-color: var(--accent-color);
-        --paper-slider-pin-color: var(--accent-color);
-        
-        --paper-fab-keyboard-focus-background: var(--accent-color);
-    }
-    /* -CHECKBOX, RADIO BUTTON, TOGGLE BUTTON? INPUT, SLIDER, FAB- */
-
-    /* CARDS */
-    /deep/ paper-material.card {
-        border-radius: 2px;
-        height: 100%;
-        padding: 16px;
-        margin: 16px;
-        background: white;
-    }
-    /* -CARDS- */
-
-    /* SELECTED ELEMENTS */
-    /deep/ ::-moz-selection { /* Code for Firefox */
-        background: var(--light-primary-color);
-    }
-    /deep/ ::selection {
-        background: var(--light-primary-color);
-    }
-    /* -SELECTED ELEMENTS- */
 
     /* Material Design Adaptive Breakpoints */
     /*

@@ -1,5 +1,74 @@
 <dom-module id="my-app">
     <style is="custom-style">
+        /deep/ body {
+            font-family: 'Roboto', 'Noto', sans-serif;
+            font-size: 16px;
+        }
+
+        /* BUTTONS */
+        /deep/ paper-button:not([disabled]).default::shadow {
+            color: var(--accent-color);
+        }
+
+        /deep/ paper-button:not([disabled])[raised].default::shadow {
+            background: var(--accent-color);
+            color: var(--text-primary-color);
+        }
+
+        /deep/ paper-button:not([disabled])[raised].default::shadow paper-ripple {
+            color: var(--text-primary-color);
+        }
+        /* -BUTTONS- */
+
+        /* CHECKBOX, RADIO BUTTON, TOGGLE BUTTON, INPUT, SLIDER, FAB */
+        * {
+            --paper-checkbox-checked-color: var(--accent-color);
+            --paper-checkbox-checked-ink-color: var(--accent-color);
+
+            --paper-radio-button-checked-color: var(--accent-color);
+            --paper-radio-button-checked-ink-color: var(--accent-color);
+
+            --paper-toggle-button-checked-bar-color: var(--accent-color);
+            --paper-toggle-button-checked-button-color: var(--accent-color);
+            --paper-toggle-button-checked-ink-color: var(--accent-color);
+
+            --paper-input-container-focus-color: var(--accent-color);
+
+            --paper-slider-active-color: var(--accent-color);
+            --paper-slider-knob-color: var(--accent-color);
+            --paper-slider-pin-color: var(--accent-color);
+
+            --paper-fab-keyboard-focus-background: var(--accent-color);
+        }
+        /* -CHECKBOX, RADIO BUTTON, TOGGLE BUTTON? INPUT, SLIDER, FAB- */
+
+        /* CARDS */
+        /deep/ paper-material.card {
+            border-radius: 2px;
+            height: 100%;
+            padding: 16px;
+            margin: 16px;
+
+            @apply(--card-background);
+        }
+        /* -CARDS- */
+
+        /* SIMPLE PAGE */
+        .simple-page {
+            padding: 16px;
+            background: white;
+        }
+        /* -SIMPLE PAGE- */
+
+        /* SELECTED ELEMENTS */
+        /deep/ ::-moz-selection { /* Code for Firefox */
+            background: var(--light-primary-color);
+        }
+        /deep/ ::selection {
+            background: var(--light-primary-color);
+        }
+        /* -SELECTED ELEMENTS- */
+
         #drawerToolbar {
             color: var(--secondary-text-color);
             background-color: var(--drawer-menu-color);
@@ -63,7 +132,7 @@
         }
     </style>
     <template>
-        <fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>
+        <!--<fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>-->
 
         <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical">
             <div drawer>
@@ -87,6 +156,11 @@
                     <a data-route="contact" href="/contact">
                         <iron-icon icon="mail"></iron-icon>
                         <span>Kapcsolat</span>
+                    </a>
+
+                    <a data-route="content-2" href="/content-2">
+                        <iron-icon icon="social:domain"></iron-icon>
+                        <span><code>content-2</code></span>
                     </a>
                 </paper-menu>
             </div>
@@ -112,6 +186,11 @@
                     <div class="content" class="flex">
                         <iron-pages attr-for-selected="data-route" selected="{{route}}">
                             <section data-route="home">
+                                <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
+
+                                <paper-material elevation="1" class="card">
+                                    <content-4></content-4>
+                                </paper-material>
                                 <paper-material elevation="1" class="card">
                                     <content-3></content-3>
                                 </paper-material>
@@ -141,10 +220,18 @@
                             </section>
 
                             <section data-route="contact">
+                                <fab-element id="contactFab" icon="mail" click-fn="[[contactFabClick]]" page="contact"></fab-element>
+
                                 <paper-material elevation="1" class="card">
                                     <h2 class="paper-font-display2">Contact</h2>
                                     <p>This is the contact section</p>
                                 </paper-material>
+                            </section>
+
+                            <section data-route="content-2">
+                                <simple-page>
+                                    <content-2></content-2>
+                                </simple-page>
                             </section>
 
                         </iron-pages>
@@ -158,7 +245,7 @@
     (function () {
         Polymer({
             is: 'my-app',
-            behaviors: [ToastBehavior],
+            behaviors: [ToastBehavior, FabBehavior],
             properties: {
                 route: {
                     type: String,
@@ -171,10 +258,34 @@
                             ToastBehavior.addToast('my-app elején elhelyezett fab-element.');
                         };
                     }
+                },
+                homeFabClick: {
+                    type: Object,
+                    value: function () {
+                        return function () {
+                            ToastBehavior.addToast('Home fab');
+                        };
+                    }
+                },
+                contactFabClick: {
+                    type: Object,
+                    value: function () {
+                        return function () {
+                            ToastBehavior.addToast('Contact fab');
+                        };
+                    }
                 }
             },
             ready: function () {
                 console.log('MyApp is ready.');
+                FabBehavior.setCurrentPage(this.route);
+            },
+            onMenuSelect: function () {
+                var drawerPanel = this.$.paperDrawerPanel;
+                if (drawerPanel.narrow) {
+                    drawerPanel.closeDrawer();
+                }
+                FabBehavior.setCurrentPage(this.route);
             }
         });
     })();

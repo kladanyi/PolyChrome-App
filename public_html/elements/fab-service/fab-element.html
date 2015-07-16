@@ -9,12 +9,12 @@
             properties: {
                 id: String,
                 icon: String,
-                clickFn: Object
+                clickFn: Object,
+                page: String
             },
             ready: function () {
-                console.log('fab-element ready: ' + this.id);
-                console.log(this.clickFn);
-                FabBehavior.addFab(this.id, this.icon, this.clickFn);
+                console.log('fab-element ready: ' + this.id + ' |' + this.page + '|');
+                FabBehavior.addFab(this.id, this.icon, this.clickFn, this.page);
             }
         });
     })();

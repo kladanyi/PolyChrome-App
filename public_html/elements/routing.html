@@ -22,7 +22,11 @@
             app.route = 'contact';
         });
 
-        // add #! before urls
+        page('/content-2', function () {
+            app.route = 'content-2';
+        });
+
+        // add #! before urls // if true
         page({
             hashbang: true
         });

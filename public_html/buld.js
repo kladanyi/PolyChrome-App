@@ -5871,6 +5871,778 @@ this._removeChildren();
 }
 });
 ;
+if (!window.Promise) {
+  window.Promise = MakePromise(Polymer.Base.async);
+}
+
+;
+  'use strict'
+
+  Polymer({
+    is: 'iron-request',
+
+    properties: {
+
+      /**
+       * A reference to the XMLHttpRequest instance used to generate the
+       * network request.
+       *
+       * @attribute xhr
+       * @type XMLHttpRequest
+       * @default `new XMLHttpRequest`
+       */
+      xhr: {
+        type: Object,
+        notify: true,
+        readOnly: true,
+        value: function() {
+          return new XMLHttpRequest();
+        }
+      },
+
+      /**
+       * A reference to the parsed response body, if the `xhr` has completely
+       * resolved.
+       *
+       * @attribute response
+       * @type {*}
+       * @default null
+       */
+      response: {
+        type: Object,
+        notify: true,
+        readOnly: true,
+        value: function() {
+         return null;
+        }
+      },
+
+      /**
+       * A reference to the status code, if the `xhr` has completely resolved.
+       *
+       * @attribute status
+       * @type short
+       * @default 0
+       */
+      status: {
+        type: Number,
+        notify: true,
+        readOnly: true,
+        value: 0
+      },
+
+      /**
+       * A reference to the status text, if the `xhr` has completely resolved.
+       *
+       * @attribute statusText
+       * @type String
+       * @default ""
+       */
+      statusText: {
+        type: String,
+        notify: true,
+        readOnly: true,
+        value: ''
+      },
+
+      /**
+       * A promise that resolves when the `xhr` response comes back, or rejects
+       * if there is an error before the `xhr` completes.
+       *
+       * @attribute completes
+       * @type Promise
+       * @default `new Promise`
+       */
+      completes: {
+        type: Object,
+        readOnly: true,
+        notify: true,
+        value: function() {
+          return new Promise(function (resolve, reject) {
+            this.resolveCompletes = resolve;
+            this.rejectCompletes = reject;
+          }.bind(this));
+        }
+      },
+
+      /**
+       * An object that contains progress information emitted by the XHR if
+       * available.
+       *
+       * @attribute progress
+       * @type Object
+       * @default {}
+       */
+      progress: {
+        type: Object,
+        notify: true,
+        readOnly: true,
+        value: function() {
+          return {};
+        }
+      },
+
+      /**
+       * Aborted will be true if an abort of the request is attempted.
+       *
+       * @attribute aborted
+       * @type boolean
+       * @default false
+       */
+      aborted: {
+        type: Boolean,
+        notify: true,
+        readOnly: true,
+        value: false,
+      }
+    },
+
+    /**
+     * Succeeded is true if the request succeeded. The request succeeded if the
+     * status code is greater-than-or-equal-to 200, and less-than 300. Also,
+     * the status code 0 is accepted as a success even though the outcome may
+     * be ambiguous.
+     *
+     * @return {boolean}
+     */
+    get succeeded() {
+      var status = this.xhr.status || 0;
+
+      // Note: if we are using the file:// protocol, the status code will be 0
+      // for all outcomes (successful or otherwise).
+      return status === 0 ||
+        (status >= 200 && status < 300);
+    },
+
+    /**
+     * Sends an HTTP request to the server and returns the XHR object.
+     *
+     * @param {{
+     *   url: string,
+     *   method: (string|undefined),
+     *   async: (boolean|undefined),
+     *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined|Object),
+     *   headers: (Object|undefined),
+     *   handleAs: (string|undefined),
+     *   withCredentials: (boolean|undefined)}} options -
+     *     url The url to which the request is sent.
+     *     method The HTTP method to use, default is GET.
+     *     async By default, all requests are sent asynchronously. To send synchronous requests,
+     *         set to true.
+     *     body The content for the request body for POST method.
+     *     headers HTTP request headers.
+     *     handleAs The response type. Default is 'text'.
+     *     withCredentials Whether or not to send credentials on the request. Default is false.
+     * @return {Promise}
+     */
+    send: function (options) {
+      var xhr = this.xhr;
+
+      if (xhr.readyState > 0) {
+        return null;
+      }
+
+      xhr.addEventListener('readystatechange', function () {
+        if (xhr.readyState === 4 && !this.aborted) {
+          this._updateStatus();
+
+          if (!this.succeeded) {
+            this.rejectCompletes(new Error('The request failed with status code: ' + this.xhr.status));
+            return;
+          }
+
+          this._setResponse(this.parseResponse());
+          this.resolveCompletes(this);
+        }
+      }.bind(this));
+
+      xhr.addEventListener('progress', function (progress) {
+        this._setProgress({
+          lengthComputable: progress.lengthComputable,
+          loaded: progress.loaded,
+          total: progress.total
+        });
+      }.bind(this))
+
+      xhr.addEventListener('error', function (error) {
+        this._updateStatus();
+        this.rejectCompletes(error);
+      }.bind(this));
+
+      xhr.addEventListener('abort', function () {
+        this._updateStatus();
+        this.rejectCompletes(new Error('Request aborted.'));
+      }.bind(this));
+
+      xhr.open(
+        options.method || 'GET',
+        options.url,
+        options.async !== false
+      );
+
+      if (options.headers) {
+        Object.keys(options.headers).forEach(function (requestHeader) {
+          xhr.setRequestHeader(
+            requestHeader,
+            options.headers[requestHeader]
+          );
+        }, this);
+      }
+
+      var contentType;
+      if (options.headers) {
+        contentType = options.headers['Content-Type'];
+      }
+      var body = this._encodeBodyObject(options.body, contentType);
+
+
+      // In IE, `xhr.responseType` is an empty string when the response
+      // returns. Hence, caching it as `xhr._responseType`.
+      xhr.responseType = xhr._responseType = (options.handleAs || 'text');
+      xhr.withCredentials = !!options.withCredentials;
+
+
+
+      xhr.send(body);
+
+      return this.completes;
+    },
+
+    /**
+     * Attempts to parse the response body of the XHR. If parsing succeeds,
+     * the value returned will be deserialized based on the `responseType`
+     * set on the XHR.
+     *
+     * @return {*} The parsed response,
+     * or undefined if there was an empty response or parsing failed.
+     */
+    parseResponse: function () {
+      var xhr = this.xhr;
+      var responseType = this.xhr.responseType ||
+        this.xhr._responseType;
+      // If we don't have a natural `xhr.responseType`, we prefer parsing
+      // `xhr.responseText` over returning `xhr.response`..
+      var preferResponseText = !this.xhr.responseType;
+
+      try {
+        switch (responseType) {
+          case 'json':
+            // If xhr.response is undefined, responseType `json` may
+            // not be supported.
+            if (preferResponseText || xhr.response === undefined) {
+              // If accessing `xhr.responseText` throws, responseType `json`
+              // is supported and the result is rightly `undefined`.
+              try {
+                xhr.responseText;
+              } catch (e) {
+                return xhr.response;
+              }
+
+              // Otherwise, attempt to parse `xhr.responseText` as JSON.
+              if (xhr.responseText) {
+                return JSON.parse(xhr.responseText);
+              }
+            }
+
+            return xhr.response;
+          case 'xml':
+            return xhr.responseXML;
+          case 'blob':
+          case 'document':
+          case 'arraybuffer':
+            return xhr.response;
+          case 'text':
+          default:
+            return xhr.responseText;
+        }
+      } catch (e) {
+        this.rejectCompletes(new Error('Could not parse response. ' + e.message));
+      }
+    },
+
+    /**
+     * Aborts the request.
+     */
+    abort: function () {
+      this._setAborted(true);
+      this.xhr.abort();
+    },
+
+    /**
+     * @param {*} body The given body of the request to try and encode.
+     * @param {?string} contentType The given content type, to infer an encoding
+     *     from.
+     * @return {?string|*} Either the encoded body as a string, if successful,
+     *     or the unaltered body object if no encoding could be inferred.
+     */
+    _encodeBodyObject: function(body, contentType) {
+      if (typeof body == 'string') {
+        return body;  // Already encoded.
+      }
+      switch(contentType) {
+        case('application/json'):
+          return JSON.stringify(body);
+        case('application/x-www-form-urlencoded'):
+          return this._wwwFormUrlEncode(body);
+      }
+      return body;  // Unknown, make no change.
+    },
+
+    /**
+     * @param {Object} object The object to encode as x-www-form-urlencoded.
+     * @return {string} .
+     */
+    _wwwFormUrlEncode: function(object) {
+      if (!object) {
+        return '';
+      }
+      var pieces = [];
+      Object.keys(object).forEach(function(key) {
+        // TODO(rictic): handle array values here, in a consistent way with
+        //   iron-ajax params.
+        pieces.push(
+            this._wwwFormUrlEncodePiece(key) + '=' +
+            this._wwwFormUrlEncodePiece(object[key]));
+      }, this);
+      return pieces.join('&');
+    },
+
+    /**
+     * @param {*} str A key or value to encode as x-www-form-urlencoded.
+     * @return {string} .
+     */
+    _wwwFormUrlEncodePiece: function(str) {
+      // Spec says to normalize newlines to \r\n and replace %20 spaces with +.
+      // jQuery does this as well, so this is likely to be widely compatible.
+      return encodeURIComponent(str.toString().replace(/\r?\n/g, '\r\n'))
+          .replace(/%20/g, '+');
+    },
+
+    /**
+     * Updates the status code and status text.
+     */
+    _updateStatus: function() {
+      this._setStatus(this.xhr.status);
+      this._setStatusText((this.xhr.statusText === undefined) ? '' : this.xhr.statusText);
+    }
+  });
+
+;
+  'use strict';
+
+  Polymer({
+
+    is: 'iron-ajax',
+
+    /**
+     * Fired when a request is sent.
+     *
+     * @event request
+     */
+
+    /**
+     * Fired when a response is received.
+     *
+     * @event response
+     */
+
+    /**
+     * Fired when an error is received.
+     *
+     * @event error
+     */
+
+    properties: {
+      /**
+       * The URL target of the request.
+       */
+      url: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * An object that contains query parameters to be appended to the
+       * specified `url` when generating a request. If you wish to set the body
+       * content when making a POST request, you should use the `body` property
+       * instead.
+       */
+      params: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+
+      /**
+       * The HTTP method to use such as 'GET', 'POST', 'PUT', or 'DELETE'.
+       * Default is 'GET'.
+       */
+      method: {
+        type: String,
+        value: 'GET'
+      },
+
+      /**
+       * HTTP request headers to send.
+       *
+       * Example:
+       *
+       *     <iron-ajax
+       *         auto
+       *         url="http://somesite.com"
+       *         headers='{"X-Requested-With": "XMLHttpRequest"}'
+       *         handle-as="json"></iron-ajax>
+       *
+       * Note: setting a `Content-Type` header here will override the value
+       * specified by the `contentType` property of this element.
+       */
+      headers: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+
+      /**
+       * Content type to use when sending data. If the `contentType` property
+       * is set and a `Content-Type` header is specified in the `headers`
+       * property, the `headers` property value will take precedence.
+       */
+      contentType: {
+        type: String,
+        value: null
+      },
+
+      /**
+       * Body content to send with the request, typically used with "POST"
+       * requests.
+       *
+       * If body is a string it will be sent unmodified.
+       *
+       * If Content-Type is set to a value listed below, then
+       * the body will be encoded accordingly.
+       *
+       *    * `content-type="application/json"`
+       *      * body is encoded like `{"foo":"bar baz","x":1}`
+       *    * `content-type="application/x-www-form-urlencoded"`
+       *      * body is encoded like `foo=bar+baz&x=1`
+       *
+       * Otherwise the body will be passed to the browser unmodified, and it
+       * will handle any encoding (e.g. for FormData, Blob, ArrayBuffer).
+       *
+       * @type (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined|Object)
+       */
+      body: {
+        type: Object,
+        value: null
+      },
+
+      /**
+       * Toggle whether XHR is synchronous or asynchronous. Don't change this
+       * to true unless You Know What You Are Doing™.
+       */
+      sync: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Specifies what data to store in the `response` property, and
+       * to deliver as `event.detail.response` in `response` events.
+       *
+       * One of:
+       *
+       *    `text`: uses `XHR.responseText`.
+       *
+       *    `xml`: uses `XHR.responseXML`.
+       *
+       *    `json`: uses `XHR.responseText` parsed as JSON.
+       *
+       *    `arraybuffer`: uses `XHR.response`.
+       *
+       *    `blob`: uses `XHR.response`.
+       *
+       *    `document`: uses `XHR.response`.
+       */
+      handleAs: {
+        type: String,
+        value: 'json'
+      },
+
+      /**
+       * Set the withCredentials flag on the request.
+       */
+      withCredentials: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * If true, automatically performs an Ajax request when either `url` or
+       * `params` changes.
+       */
+      auto: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * If true, error messages will automatically be logged to the console.
+       */
+      verbose: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Will be set to true if there is at least one in-flight request
+       * associated with this iron-ajax element.
+       */
+      loading: {
+        type: Boolean,
+        notify: true,
+        readOnly: true
+      },
+
+      /**
+       * Will be set to the most recent request made by this iron-ajax element.
+       */
+      lastRequest: {
+        type: Object,
+        notify: true,
+        readOnly: true
+      },
+
+      /**
+       * Will be set to the most recent response received by a request
+       * that originated from this iron-ajax element. The type of the response
+       * is determined by the value of `handleAs` at the time that the request
+       * was generated.
+       */
+      lastResponse: {
+        type: Object,
+        notify: true,
+        readOnly: true
+      },
+
+      /**
+       * Will be set to the most recent error that resulted from a request
+       * that originated from this iron-ajax element.
+       */
+      lastError: {
+        type: Object,
+        notify: true,
+        readOnly: true
+      },
+
+      /**
+       * An Array of all in-flight requests originating from this iron-ajax
+       * element.
+       */
+      activeRequests: {
+        type: Array,
+        notify: true,
+        readOnly: true,
+        value: function() {
+          return [];
+        }
+      },
+
+      /**
+       * Length of time in milliseconds to debounce multiple requests.
+       */
+      debounceDuration: {
+        type: Number,
+        value: 0,
+        notify: true
+      },
+
+      _boundHandleResponse: {
+        type: Function,
+        value: function() {
+          return this._handleResponse.bind(this);
+        }
+      }
+    },
+
+    observers: [
+      '_requestOptionsChanged(url, method, params, headers,' +
+        'contentType, body, sync, handleAs, withCredentials, auto)'
+    ],
+
+    /**
+     * The query string that should be appended to the `url`, serialized from
+     * the current value of `params`.
+     *
+     * @return {string}
+     */
+    get queryString () {
+      var queryParts = [];
+      var param;
+      var value;
+
+      for (param in this.params) {
+        value = this.params[param];
+        param = window.encodeURIComponent(param);
+
+        if (value !== null) {
+          param += '=' + window.encodeURIComponent(value);
+        }
+
+        queryParts.push(param);
+      }
+
+      return queryParts.join('&');
+    },
+
+    /**
+     * The `url` with query string (if `params` are specified), suitable for
+     * providing to an `iron-request` instance.
+     *
+     * @return {string}
+     */
+    get requestUrl() {
+      var queryString = this.queryString;
+
+      if (queryString) {
+        return this.url + '?' + queryString;
+      }
+
+      return this.url;
+    },
+
+    /**
+     * An object that maps header names to header values, first applying the
+     * the value of `Content-Type` and then overlaying the headers specified
+     * in the `headers` property.
+     *
+     * @return {Object}
+     */
+    get requestHeaders() {
+      var headers = {};
+      var contentType = this.contentType;
+      if (contentType == null && (typeof this.body === 'string')) {
+        contentType = 'application/x-www-form-urlencoded';
+      }
+      if (contentType) {
+        headers['Content-Type'] = contentType;
+      }
+      var header;
+
+      if (this.headers instanceof Object) {
+        for (header in this.headers) {
+          headers[header] = this.headers[header].toString();
+        }
+      }
+
+      return headers;
+    },
+
+    /**
+     * Request options suitable for generating an `iron-request` instance based
+     * on the current state of the `iron-ajax` instance's properties.
+     *
+     * @return {{
+     *   url: string,
+     *   method: (string|undefined),
+     *   async: (boolean|undefined),
+     *   body: (ArrayBuffer|ArrayBufferView|Blob|Document|FormData|null|string|undefined|Object),
+     *   headers: (Object|undefined),
+     *   handleAs: (string|undefined),
+     *   withCredentials: (boolean|undefined)}}
+     */
+    toRequestOptions: function() {
+      return {
+        url: this.requestUrl,
+        method: this.method,
+        headers: this.requestHeaders,
+        body: this.body,
+        async: !this.sync,
+        handleAs: this.handleAs,
+        withCredentials: this.withCredentials
+      };
+    },
+
+    /**
+     * Performs an AJAX request to the specified URL.
+     *
+     * @return {!IronRequestElement}
+     */
+    generateRequest: function() {
+      var request = /** @type {!IronRequestElement} */ (document.createElement('iron-request'));
+      var requestOptions = this.toRequestOptions();
+
+      this.activeRequests.push(request);
+
+      request.completes.then(
+        this._boundHandleResponse
+      ).catch(
+        this._handleError.bind(this, request)
+      ).then(
+        this._discardRequest.bind(this, request)
+      );
+
+      request.send(requestOptions);
+
+      this._setLastRequest(request);
+      this._setLoading(true);
+
+      this.fire('request', {
+        request: request,
+        options: requestOptions
+      });
+
+      return request;
+    },
+
+    _handleResponse: function(request) {
+      this._setLastResponse(request.response);
+      this.fire('response', request);
+    },
+
+    _handleError: function(request, error) {
+      if (this.verbose) {
+        console.error(error);
+      }
+
+      this._setLastError({
+        request: request,
+        error: error
+      });
+      this.fire('error', {
+        request: request,
+        error: error
+      });
+    },
+
+    _discardRequest: function(request) {
+      var requestIndex = this.activeRequests.indexOf(request);
+
+      if (requestIndex > -1) {
+        this.activeRequests.splice(requestIndex, 1);
+      }
+
+      if (this.activeRequests.length === 0) {
+        this._setLoading(false);
+      }
+    },
+
+    _requestOptionsChanged: function() {
+      this.debounce('generate-request', function() {
+        if (!this.url && this.url !== '') {
+          return;
+        }
+
+        if (this.auto) {
+          this.generateRequest();
+        }
+      }, this.debounceDuration);
+    },
+
+  });
+
+;
   /**
    * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
    * coordinate the flow of resize events between "resizers" (elements that control the
@@ -8992,26 +9764,48 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 ;
     var waitingList = [];
+    var pages = {};
+    var currentPage;
     var FabBehavior = {
         properties: {
             fabContainer: Object
         },
         setFabContainer: function (container) {
+            console.log("setFabContainer");
             this.fabContainer = container;
             if (!this.fabContainer) {
                 console.error('<fab-service> element not found.');
                 return;
             }
             for (var i = 0; i < waitingList.length; i++) {
-                this.addFab(waitingList[i].id, waitingList[i].icon, waitingList[i].onClick);
+                this.addFab(waitingList[i].id, waitingList[i].icon, waitingList[i].onClick, waitingList[i].page);
             }
             waitingList = [];
         },
-        addFab: function (id, icon, onClick) {
+        setCurrentPage: function (page) {
+            console.log('törlendő fabok: ' + JSON.stringify());
+            for (var i in pages[currentPage]) {
+                this.removeFab(pages[currentPage][i]['id']);
+            }
+            console.log('hozzá adandó fabok: ' + JSON.stringify(pages[page]));
+            currentPage = page;
+            for (var i in pages[currentPage]) {
+                this.addFab(pages[currentPage][i].id, pages[currentPage][i].icon, pages[currentPage][i].onClick, pages[currentPage][i].page);
+            }
+        },
+        addFab: function (id, icon, onClick, page) {
+            console.log('page: ' + page + ' currentPage: ' + currentPage);
+            var fab = {id: id, icon: icon, onClick: onClick, page: page};
             if (this.fabContainer) {
-                this.fabContainer.addFab(id, icon, onClick);
+                if (!page || page === currentPage) {
+                    this.fabContainer.addFab(id, icon, onClick);
+                }
+                if (!pages[page]) {
+                    pages[page] = [];
+                }
+                pages[page].push(fab);
             } else {
-                waitingList.push({id: id, icon: icon, onClick: onClick});
+                waitingList.push(fab);
             }
         },
         removeFab: function (id) {
@@ -9050,7 +9844,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
             app.route = 'contact';
         });
 
-        // add #! before urls
+        page('/content-2', function () {
+            app.route = 'content-2';
+        });
+
+        // add #! before urls // if true
         page({
             hashbang: true
         });
@@ -12352,18 +13150,18 @@ is separate from validation, and `allowed-pattern` does not affect how the input
                     type: Array,
                     value: []
                 },
-                actFab: Object
+                currentFab: Object
             },
             addFab: function (id, icon, onClick) {
                 console.log('Add fab: ' + id);
                 if (this.fabList.indexOf(id) > -1) {
                     this.removeFab(id);
                 }
-                this.actFab = {
+                this.currentFab = {
                     icon: icon,
                     onClick: onClick
                 };
-                MyUtils.JSON.addElement(this.fabs, id, this.actFab);
+                MyUtils.JSON.addElement(this.fabs, id, this.currentFab);
                 this.fabList.push(id);
             },
             removeFab: function (id) {
@@ -12374,13 +13172,13 @@ is separate from validation, and `allowed-pattern` does not affect how the input
                 }
                 index = this.fabList.length - 1;
                 if (index > -1) {
-                    this.actFab = MyUtils.JSON.getElement(this.fabs, this.fabList[index]);
+                    this.currentFab = MyUtils.JSON.getElement(this.fabs, this.fabList[index]);
                 } else {
-                    this.actFab = null;
+                    this.currentFab = null;
                 }
             },
             clickFab: function () {
-                this.actFab.onClick();
+                this.currentFab.onClick();
             },
             register: function () {
                 FabBehavior.setFabContainer(this);
@@ -12396,12 +13194,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
             properties: {
                 id: String,
                 icon: String,
-                clickFn: Object
+                clickFn: Object,
+                page: String
             },
             ready: function () {
-                console.log('fab-element ready: ' + this.id);
-                console.log(this.clickFn);
-                FabBehavior.addFab(this.id, this.icon, this.clickFn);
+                console.log('fab-element ready: ' + this.id + ' |' + this.page + '|');
+                FabBehavior.addFab(this.id, this.icon, this.clickFn, this.page);
             }
         });
     })();
@@ -12410,7 +13208,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     (function () {
         Polymer({
             is: 'my-app',
-            behaviors: [ToastBehavior],
+            behaviors: [ToastBehavior, FabBehavior],
             properties: {
                 route: {
                     type: String,
@@ -12423,11 +13221,42 @@ is separate from validation, and `allowed-pattern` does not affect how the input
                             ToastBehavior.addToast('my-app elején elhelyezett fab-element.');
                         };
                     }
+                },
+                homeFabClick: {
+                    type: Object,
+                    value: function () {
+                        return function () {
+                            ToastBehavior.addToast('Home fab');
+                        };
+                    }
+                },
+                contactFabClick: {
+                    type: Object,
+                    value: function () {
+                        return function () {
+                            ToastBehavior.addToast('Contact fab');
+                        };
+                    }
                 }
             },
             ready: function () {
                 console.log('MyApp is ready.');
+                FabBehavior.setCurrentPage(this.route);
+            },
+            onMenuSelect: function () {
+                var drawerPanel = this.$.paperDrawerPanel;
+                if (drawerPanel.narrow) {
+                    drawerPanel.closeDrawer();
+                }
+                FabBehavior.setCurrentPage(this.route);
             }
+        });
+    })();
+
+;
+    (function () {
+        Polymer({
+            is: 'simple-page'
         });
     })();
 
@@ -12469,17 +13298,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
             },
             teszt: function () {
                 FabBehavior.addFab('cont2', 'social:person', function () {
-                    ToastBehavior.addToast('content 2-ből FabService segítségével')
+                    ToastBehavior.addToast('content 2-ből FabBehavior segítségével');
                 });
-            },
-            created: function () {
-                console.log(this.localName + '#' + this.id + ' was created');
-            },
-            attached: function () {
-                console.log(this.localName + '#' + this.id + ' was attached');
-            },
-            detached: function () {
-                console.log(this.localName + '#' + this.id + ' was detached');
             }
         });
     })();
@@ -12539,6 +13359,20 @@ is separate from validation, and `allowed-pattern` does not affect how the input
             },
             remFab: function() {
                 this.removeFab(this.fabId);
+            }
+        });
+    })();
+
+;
+    (function () {
+        Polymer({
+            is: 'content-4',
+            toString: function(obj) {
+                return JSON.stringify(obj);
+            },
+            handleResponse: function(response) {
+                console.log('handleResponse');
+                console.log(this.fruits);
             }
         });
     })();

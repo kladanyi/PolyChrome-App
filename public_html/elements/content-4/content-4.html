@@ -1,0 +1,34 @@
+<dom-module id="content-4">
+    <style is="custom-style">
+
+    </style>
+    <template>
+        <h1><pre>&#60;iron-ajax&#62;</pre></h1>
+        <iron-ajax
+            auto
+            url="http://localhost:3005/fruits"
+            method="GET"
+            handle-as="json"
+            last-response="{{fruits}}"
+            on-response="handleResponse"></iron-ajax>
+        
+        fruits: <code>[[toString(fruits)]]</code>
+
+
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'content-4',
+            toString: function(obj) {
+                console.log(obj);
+                return JSON.stringify(obj);
+            },
+            handleResponse: function(response) {
+                console.log('handleResponse');
+                console.log(this.fruits);
+            }
+        });
+    })();
+</script>
