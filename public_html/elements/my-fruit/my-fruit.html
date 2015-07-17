@@ -1,0 +1,30 @@
+<dom-module id="my-fruit">
+    <style is="custom-style">
+        :host {
+            display: block;
+            padding: 6px;
+            margin: 12px;
+            background-color: var(--dark-primary-color);
+            color: var(--text-primary-color);
+        }
+    </style>
+    <template>
+        <!--<div>-->
+        id: <span>[[data.id]]</span>
+        név: <span>[[data.name]]</span>
+        <!--</div>-->
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'my-fruit',
+            properties: {
+                data: Object
+            },
+            ready: function() {
+                console.log('ready. data: ' + JSON.stringify(this.data));
+            }
+        });
+    })();
+</script>

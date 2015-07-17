@@ -11,8 +11,23 @@
             handle-as="json"
             last-response="{{fruits}}"
             on-response="handleResponse"></iron-ajax>
-        
-        fruits: <code>[[toString(fruits)]]</code>
+
+        <p>fruits: <code>[[toString(fruits)]]</code></p>
+
+        <p>Új gyümölcs:</p>
+        <paper-input label="id" value="{{newId}}" auto-validate pattern="[0-9]+"></paper-input>
+        <paper-input label="név" value="{{newName}}"></paper-input>
+        <paper-button on-click="addFruit">Hozzáad</paper-button> (id: <span>[[newId]]</span>, name: <span>[[newName]]</span>)
+
+        <p>Gyümölcsök:</p>
+        <my-fruit data="[[tesztgyumi]]"></my-fruit>
+        <div class="layout horizontal">
+            <div class="flex">
+                <template is="dom-repeat" items="{{fruits}}">
+                    <my-fruit data="[[item]]"></my-fruit>
+                </template></div>
+            <div class="flex"></div>
+        </div>
 
 
     </template>
@@ -21,13 +36,34 @@
     (function () {
         Polymer({
             is: 'content-4',
-            toString: function(obj) {
+            behaviors: [ToastBehavior],
+            observe: {
+                'tesztgyumi.id': 'tesztgyumiUpdated'
+            },
+            toString: function (obj) {
                 console.log(obj);
                 return JSON.stringify(obj);
             },
-            handleResponse: function(response) {
+            handleResponse: function (response) {
                 console.log('handleResponse');
                 console.log(this.fruits);
+            },
+            addFruit: function () {
+//                this.fruits.push({id: this.newId, name: this.newName});
+//                this.set('fruits.0.name', 'teszt');
+                console.log(JSON.stringify(this.fruits));
+//                ToastBehavior.addToast('Új gyümölcs érkezett.');
+            },
+            changeFruits: function () {
+                console.log('gyümi lista változott.');
+                console.log(this.fruits);
+            },
+            tesztgyumiUpdated: function(oldValue, newValue) {
+                console.log('tesztgyumiUpdated: ' + oldValue + ' -> ' + newValue);
+            },
+            ready: function() {
+                this.set('tesztgyumi.id', 0);
+                this.set('tesztgyumi.name', 'bananaaa! :)');
             }
         });
     })();
