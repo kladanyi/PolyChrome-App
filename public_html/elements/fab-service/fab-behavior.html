@@ -7,7 +7,6 @@
             fabContainer: Object
         },
         setFabContainer: function (container) {
-            console.log("setFabContainer");
             this.fabContainer = container;
             if (!this.fabContainer) {
                 console.error('<fab-service> element not found.');
@@ -19,18 +18,15 @@
             waitingList = [];
         },
         setCurrentPage: function (page) {
-            console.log('törlendő fabok: ' + JSON.stringify());
             for (var i in pages[currentPage]) {
                 this.removeFab(pages[currentPage][i]['id']);
             }
-            console.log('hozzá adandó fabok: ' + JSON.stringify(pages[page]));
             currentPage = page;
             for (var i in pages[currentPage]) {
                 this.addFab(pages[currentPage][i].id, pages[currentPage][i].icon, pages[currentPage][i].onClick, pages[currentPage][i].page);
             }
         },
         addFab: function (id, icon, onClick, page) {
-            console.log('page: ' + page + ' currentPage: ' + currentPage);
             var fab = {id: id, icon: icon, onClick: onClick, page: page};
             if (this.fabContainer) {
                 if (!page || page === currentPage) {
