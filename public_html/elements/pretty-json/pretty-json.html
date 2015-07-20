@@ -1,0 +1,29 @@
+<dom-module id="pretty-json">
+    <style is="custom-style">
+
+    </style>
+    <template>
+        adat: 
+        <pre>[[toString(jsonData)]]</pre>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'pretty-json',
+            properties: {
+                jsonData: {
+                    type: Object,
+                    observer: 'jsonDataChanged'
+                }
+            },
+            jsonDataChanged: function (newValue, oldValue) {
+                console.log('jsonDataChanged ' + JSON.stringify(oldValue) + ' -> ' + JSON.stringify(newValue));
+//                console.log('aktuális érték: ' + JSON.stringify(this.jsonData));
+            },
+            toString: function (data) {
+                return JSON.stringify(data);
+            }
+        });
+    })();
+</script>

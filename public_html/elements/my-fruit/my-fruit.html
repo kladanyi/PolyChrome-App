@@ -9,10 +9,12 @@
         }
     </style>
     <template>
-        <!--<div>-->
         id: <span>[[data.id]]</span>
         név: <span>[[data.name]]</span>
-        <!--</div>-->
+        <!--<paper-input label="név" value="{{data.name}}" style="display: inline-block"></paper-input>-->
+        <template is="dom-if" if="[[data.description]]">
+            <p>[[data.description]]</p>
+        </template>
     </template>
 </dom-module>
 <script>
@@ -20,11 +22,12 @@
         Polymer({
             is: 'my-fruit',
             properties: {
-                data: Object
+                data: Object,
+                notify: true
             },
-            ready: function() {
-                console.log('ready. data: ' + JSON.stringify(this.data));
-            }
+//            ready: function() {
+//                console.log('ready. data: ' + JSON.stringify(this.data));
+//            }
         });
     })();
 </script>

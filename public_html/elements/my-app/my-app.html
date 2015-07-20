@@ -162,6 +162,12 @@
                         <iron-icon icon="social:domain"></iron-icon>
                         <span><code>content-2</code></span>
                     </a>
+
+                    <a data-route="fruits" href="/fruits">
+                        <iron-icon src="../../img/grape.svg"></iron-icon>
+                        <iron-icon icon="my-iconset:grape"></iron-icon>
+                        <span>Gyümölcsös</span>
+                    </a>
                 </paper-menu>
             </div>
             <div main>
@@ -189,7 +195,8 @@
                                 <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
 
                                 <paper-material elevation="1" class="card">
-                                    <content-4></content-4>
+                                    <content-5></content-5>
+                                    <!--<content-4></content-4>-->
                                 </paper-material>
                                 <paper-material elevation="1" class="card">
                                     <content-3></content-3>
@@ -232,6 +239,10 @@
                                 <simple-page>
                                     <content-2></content-2>
                                 </simple-page>
+                            </section>
+                            
+                            <section data-route="fruits">
+                                <fruit-page></fruit-page>
                             </section>
 
                         </iron-pages>

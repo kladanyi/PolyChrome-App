@@ -1,0 +1,64 @@
+<dom-module id="content-5">
+    <style is="custom-style">
+
+    </style>
+    <template>
+        <h1>Lekérdezősdi</h1>
+        <iron-ajax
+            auto
+            url="http://localhost:3005/fruits"
+            method="GET"
+            handle-as="json"
+            last-response="{{fruits}}"></iron-ajax>
+        <iron-ajax
+            auto
+            url="[[getURL(fruitID)]]"
+            method="GET"
+            handle-as="json"
+            last-response="{{fruit}}"></iron-ajax>
+        <iron-ajax
+            id="fruitData"
+            url="[[getURL(selectedFruitID)]]"
+            method="GET"
+            handle-as="json"
+            last-response="{{fruit}}"></iron-ajax>
+
+        <template is="dom-repeat" items="[[fruits]]" as="fruit">
+            <paper-button on-click="getFruitData" my-attr="[[fruit.id]]">[[fruit.name]]</paper-button>
+        </template>
+        <paper-radio-group selected="{{selectedFruitID}}">
+            <template is="dom-repeat" items="[[fruits]]" as="fruit">
+                <paper-radio-button name="[[fruit.id]]" style="display: block;">[[fruit.name]]</paper-radio-button>
+            </template>
+        </paper-radio-group>
+        <paper-button on-click="getFruitData2">Kérem az adatait!</paper-button>
+
+
+        <template is="dom-if" if="[[fruit]]">
+            <my-fruit data="[[fruit]]"></my-fruit>
+        </template>
+
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'content-5',
+            properties: {
+                fruits: Object,
+                fruit: Object
+            },
+            getURL: function (id) {
+                return 'http://localhost:3005/fruits/' + id;
+            },
+            getFruitData: function (event) {
+                this.fruitID = event.target.parentNode.myAttr;
+            },
+            getFruitData2: function (event) {
+                console.log('selectedFruitID: ' + this.selectedFruitID);
+                var ajax = this.$.fruitData;
+                ajax.generateRequest();
+            }
+        });
+    })();
+</script>

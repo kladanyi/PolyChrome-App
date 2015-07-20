@@ -12,7 +12,11 @@
             last-response="{{fruits}}"
             on-response="handleResponse"></iron-ajax>
 
+        <p>[[teszt]]</p>
+        <pretty-json json-data="[[teszt]]"></pretty-json>
+
         <p>fruits: <code>[[toString(fruits)]]</code></p>
+        <pretty-json json-data="[[fruits]]"></pretty-json>
 
         <p>Új gyümölcs:</p>
         <paper-input label="id" value="{{newId}}" auto-validate pattern="[0-9]+"></paper-input>
@@ -28,42 +32,57 @@
                 </template></div>
             <div class="flex"></div>
         </div>
-
-
+<!--        <div class="layout horizontal">
+            <div class="flex">
+                <iron-list items="[[fruits]]" as="item">
+                    <template>
+                        <my-fruit data="[[item]]"></my-fruit>
+                    </template>
+                </iron-list>
+                <div class="flex"></div>
+            </div>
+        </div>-->
     </template>
 </dom-module>
 <script>
     (function () {
         Polymer({
             is: 'content-4',
-            behaviors: [ToastBehavior],
-            observe: {
-                'tesztgyumi.id': 'tesztgyumiUpdated'
+            properties: {
+                fruits: Object
+//                tesztgyumi: {
+//                    type: Object,
+//                    observer: 'tesztgyumiUpdated'
+//                },
             },
             toString: function (obj) {
                 console.log(obj);
                 return JSON.stringify(obj);
             },
             handleResponse: function (response) {
-                console.log('handleResponse');
-                console.log(this.fruits);
+//                console.log('handleResponse');
+//                console.log(this.fruits);
             },
             addFruit: function () {
-//                this.fruits.push({id: this.newId, name: this.newName});
-//                this.set('fruits.0.name', 'teszt');
-                console.log(JSON.stringify(this.fruits));
-//                ToastBehavior.addToast('Új gyümölcs érkezett.');
+                this.push('fruits', {id: this.newId, name: this.newName});
+//                var fruits = this.fruits;
+//                this.set('fruits');
+//                this.set('fruits', fruits);
+                this.newId = null;
+                this.newName = null;
+
+                this.set('tesztgyumi', {id: 0, name: 'bananaaa! :)'});
+                this.set('teszt', this.fruits);
             },
             changeFruits: function () {
                 console.log('gyümi lista változott.');
                 console.log(this.fruits);
             },
-            tesztgyumiUpdated: function(oldValue, newValue) {
-                console.log('tesztgyumiUpdated: ' + oldValue + ' -> ' + newValue);
+            tesztgyumiUpdated: function (newValue, oldValue) {
+                console.log('tesztgyumiUpdated: ' + JSON.stringify(oldValue) + ' -> ' + JSON.stringify(newValue));
             },
-            ready: function() {
-                this.set('tesztgyumi.id', 0);
-                this.set('tesztgyumi.name', 'bananaaa! :)');
+            ready: function () {
+                this.teszt = 'egyedi vagyok. teszt vagyok.';
             }
         });
     })();
