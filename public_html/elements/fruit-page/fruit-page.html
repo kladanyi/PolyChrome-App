@@ -2,13 +2,38 @@
     <style is="custom-style">
     </style>
     <template>
-        <paper-material elevation="1" class="card">Gyümölcsös</paper-material>
+        <iron-ajax
+            id="listAjax"
+            url="http://localhost:3005/fruits"
+            method="GET"
+            handle-as="json"
+            last-response="{{fruits}}"></iron-ajax>
+
+        <pretty-json json-data="[[fruits]]"></pretty-json>
+
     </template>
 </dom-module>
 <script>
     (function () {
         Polymer({
-            is: 'fruit-page'
+            is: 'fruit-page',
+            behaviors: [AppBehavior],
+            properties: {
+                isCurrent: {
+                    type: Boolean,
+                    observer: 'isCurrentChanged'
+                }
+            },
+            isCurrentChanged: function () {
+                if (this.isCurrent) {
+                    if (!this.fruits) {
+                        this.$.listAjax.generateRequest();
+                    }
+                    AppBehavior.setTitle('Gyümölcsös');
+                } else {
+                    AppBehavior.setTitle();
+                }
+            }
         });
     })();
 </script>

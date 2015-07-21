@@ -141,33 +141,35 @@
                     <span class="menu-title">Menü</span>
                 </paper-toolbar>
 
-                <!-- Drawer Content -->
-                <paper-menu class="list" attr-for-selected="data-route" selected="{{route}}" on-iron-select="onMenuSelect">
-                    <a data-route="home" href="/">
-                        <iron-icon icon="home"></iron-icon>
-                        <span>Kezdőlap</span>
-                    </a>
+                <more-route-selector>
+                    <!-- Drawer Content -->
+                    <paper-menu class="list">
+                        <a route="home" href="[[makeUrl('home')]]">
+                            <iron-icon icon="home"></iron-icon>
+                            <span>Kezdőlap</span>
+                        </a>
 
-                    <a data-route="users" href="/users">
-                        <iron-icon icon="info"></iron-icon>
-                        <span>Felhasználók</span>
-                    </a>
+                        <a route="users" href="[[makeUrl('users')]]">
+                            <iron-icon icon="info"></iron-icon>
+                            <span>Felhasználók</span>
+                        </a>
 
-                    <a data-route="contact" href="/contact">
-                        <iron-icon icon="mail"></iron-icon>
-                        <span>Kapcsolat</span>
-                    </a>
+                        <a route="contact" href="[[makeUrl('contact')]]">
+                            <iron-icon icon="mail"></iron-icon>
+                            <span>Kapcsolat</span>
+                        </a>
 
-                    <a data-route="content-2" href="/content-2">
-                        <iron-icon icon="social:domain"></iron-icon>
-                        <span><code>content-2</code></span>
-                    </a>
+                        <a route="content-2" href="[[makeUrl('content-2')]]">
+                            <iron-icon icon="social:domain"></iron-icon>
+                            <span><code>content-2</code></span>
+                        </a>
 
-                    <a data-route="fruits" href="/fruits">
-                        <iron-icon icon="my-iconset:grape"></iron-icon>
-                        <span>Gyümölcsös</span>
-                    </a>
-                </paper-menu>
+                        <a route="fruits" href="[[makeUrl('fruits')]]">
+                            <iron-icon icon="my-iconset:grape"></iron-icon>
+                            <span>Gyümölcsös</span>
+                        </a>
+                    </paper-menu>
+                </more-route-selector>
             </div>
             <div main>
                 <toast-service id="toast-service"></toast-service>
@@ -178,7 +180,8 @@
                         <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
 
                         <!-- Application name -->
-                        <div class="app-name">PolyChrome App</div>
+                        <!--<div class="app-name">PolyChrome App</div>-->
+                        <div class="app-name">[[appTitle]]</div>
                         <span class="flex"></span>
 
                         <!--Toolbar icons--> 
@@ -189,62 +192,67 @@
 
                     <!-- Main Content -->
                     <div class="content" class="flex">
-                        <iron-pages attr-for-selected="data-route" selected="{{route}}">
-                            <section data-route="home">
-                                <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
+                        <more-route-selector selectedParams="{{params}}" on-more-route-change="routeChanged">
+                            <iron-pages attr-for-selected="route" selected="{{route}}">
+                                <section route="home">
+                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
 
-                                <paper-material elevation="1" class="card">
-                                    <content-5></content-5>
-                                    <!--<content-4></content-4>-->
-                                </paper-material>
-                                <paper-material elevation="1" class="card">
-                                    <content-3></content-3>
-                                </paper-material>
-                                <paper-material elevation="1" class="card">
-                                    <content-2></content-2>
-                                </paper-material>
-                                <paper-material elevation="1" class="card">
-                                    <content-1></content-1>
-                                </paper-material>
-                            </section>
+                                    <paper-material elevation="1" class="card">
+                                        <content-5></content-5>
+                                    </paper-material>
+<!--                                    <paper-material elevation="1" class="card">
+                                        <content-4></content-4>
+                                    </paper-material>-->
+                                    <paper-material elevation="1" class="card">
+                                        <content-3></content-3>
+                                    </paper-material>
+                                    <paper-material elevation="1" class="card">
+                                        <content-2></content-2>
+                                    </paper-material>
+                                    <paper-material elevation="1" class="card">
+                                        <content-1></content-1>
+                                    </paper-material>
+                                </section>
 
-                            <section data-route="users">
-                                <paper-material elevation="1" class="card">
-                                    <h2 class="paper-font-display2">Users</h2>
-                                    <p>This is the users section</p>
-                                    <a href="/users/Rob">Rob</a>
-                                </paper-material>
-                            </section>
+                                <section route="users">
+                                    <paper-material elevation="1" class="card">
+                                        <h2 class="paper-font-display2">Users</h2>
+                                        <p>This is the users section</p>
+                                        <a href="[[userInfoUrl('Rob')]]">Rob</a>
+                                    </paper-material>
+                                </section>
 
-                            <section data-route="user-info">
-                                <paper-material elevation="1" class="card">
-                                    <h2 class="paper-font-display2">
-                                        User:<span>{{params.name}}</span>
-                                    </h2>
-                                    <div>This is <span>{{params.name}}</span>'s section</div>
-                                </paper-material>
-                            </section>
+                                <section route="user-info">
+                                    <paper-material elevation="1" class="card">
+                                        <h2 class="paper-font-display2">
+                                            User:<span>{{params.name}}</span>
+                                        </h2>
+                                        <div>This is <span>{{params.name}}</span>'s section</div>
+                                        <paper-input value="{{userName}}" label="User name"></paper-input>
+                                        <paper-button on-click="goToUserInfo">Ugrás a felhasználóhoz</paper-button>
+                                    </paper-material>
+                                </section>
 
-                            <section data-route="contact">
-                                <fab-element id="contactFab" icon="mail" click-fn="[[contactFabClick]]" page="contact"></fab-element>
+                                <section route="contact">
+                                    <fab-element id="contactFab" icon="mail" click-fn="[[contactFabClick]]" page="contact"></fab-element>
 
-                                <paper-material elevation="1" class="card">
-                                    <h2 class="paper-font-display2">Contact</h2>
-                                    <p>This is the contact section</p>
-                                </paper-material>
-                            </section>
+                                    <paper-material elevation="1" class="card">
+                                        <h2 class="paper-font-display2">Contact</h2>
+                                        <p>This is the contact section</p>
+                                    </paper-material>
+                                </section>
 
-                            <section data-route="content-2">
-                                <simple-page>
-                                    <content-2></content-2>
-                                </simple-page>
-                            </section>
-                            
-                            <section data-route="fruits">
-                                <fruit-page></fruit-page>
-                            </section>
+                                <section route="content-2">
+                                    <simple-page>
+                                        <content-2></content-2>
+                                    </simple-page>
+                                </section>
 
-                        </iron-pages>
+                                <section route="fruits">
+                                    <fruit-page is-current="[[isFruitsPage]]"></fruit-page>
+                                </section>
+                            </iron-pages>
+                        </more-route-selector>
                     </div>
                 </paper-header-panel>
             </div>
@@ -260,6 +268,10 @@
                 route: {
                     type: String,
                     value: 'home'
+                },
+                appTitle: {
+                    type: String,
+                    observer: 'titleChanged'
                 },
                 fabclick: {
                     type: Object,
@@ -284,18 +296,48 @@
                             ToastBehavior.addToast('Contact fab');
                         };
                     }
-                }
+                },
+//                isFruitsPage: {
+//                    type: Boolean,
+//                    computed: "isThisPage(route, 'fruits')"
+//                }
             },
             ready: function () {
                 console.log('MyApp is ready.');
                 FabBehavior.setCurrentPage(this.route);
             },
-            onMenuSelect: function () {
+            makeUrl: function (pathOrName, params) {
+                return MoreRouting.urlFor(pathOrName, params);
+            },
+            routeChanged: function() {
                 var drawerPanel = this.$.paperDrawerPanel;
                 if (drawerPanel.narrow) {
                     drawerPanel.closeDrawer();
                 }
                 FabBehavior.setCurrentPage(this.route);
+                if (MoreRouting.isCurrentUrl('user-info')) {
+                    console.log(MoreRouting.getRoute('user-info').params.name);
+                }
+                var p = MoreRouting.getRoute(this.route).params;
+                console.log(this.route + ' ' + JSON.stringify(p));
+            },
+            isThisPage: function (route, page) {
+                return route === page;
+            },
+            titleChanged: function (newTitle, oldTitle) {
+                if (!this.defaultTitle && oldTitle) {
+                    this.defaultTitle = oldTitle;
+                }
+
+                if (!newTitle) {
+                    this.appTitle = this.defaultTitle;
+                }
+            },
+            userInfoUrl: function(name) {
+                return this.makeUrl('user-info', {name: name});
+            },
+            goToUserInfo: function() {
+                MoreRouting.navigateTo('user-info', {name: this.userName});
             }
         });
     })();
