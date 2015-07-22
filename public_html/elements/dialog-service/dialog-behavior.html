@@ -1,0 +1,19 @@
+<script>
+    var DialogBehavior = {
+        showSpinnerDialog: function (titleOrParamsObject, text) {
+            var dialogContainer = document.getElementById('app').$.dialogContainer;
+            if (typeof titleOrParamsObject === typeof '' || !titleOrParamsObject) {
+                dialogContainer.spinnerDialogTitle = titleOrParamsObject;
+                dialogContainer.spinnerDialogText = text;
+            } else {
+                dialogContainer.spinnerDialogTitle = titleOrParamsObject.title;
+                dialogContainer.spinnerDialogText = titleOrParamsObject.text;
+            }
+            dialogContainer.$.spinnerDialog.open();
+        },
+        hideSpinnerDialog: function () {
+            var dialogContainer = document.getElementById('app').$.dialogContainer;
+            dialogContainer.$.spinnerDialog.close();
+        }
+    };
+</script>

@@ -1,15 +1,27 @@
+<link rel="import" href="fruit-filter.html">
+
 <dom-module id="fruit-page">
     <style is="custom-style">
     </style>
     <template>
         <iron-ajax
             id="listAjax"
-            url="http://localhost:3005/fruits"
+            url="[[listAjaxUrl]]"
             method="GET"
             handle-as="json"
             last-response="{{fruits}}"></iron-ajax>
 
-        <pretty-json json-data="[[fruits]]"></pretty-json>
+        <div class="layout horizontal">
+            <div class="flex">
+                <template is="dom-repeat" items="{{fruits}}">
+                    <my-fruit data="[[item]]"></my-fruit>
+                </template></div>
+            <div style="width: 250px;">
+                <paper-material elevation="1" class="card">
+                    <fruit-filter name="{{filter}}" filter-changed="filterChanged"></fruit-filter>
+                </paper-material>
+            </div>
+        </div>
 
     </template>
 </dom-module>
@@ -22,6 +34,14 @@
                 isCurrent: {
                     type: Boolean,
                     observer: 'isCurrentChanged'
+                },
+                filter: {
+                    type: Object,
+                    value: {}
+                },
+                listAjaxUrl: {
+                    type: String,
+                    computed: 'listAjaxUrlCompute(filter)'
                 }
             },
             isCurrentChanged: function () {
@@ -33,6 +53,13 @@
                 } else {
                     AppBehavior.setTitle();
                 }
+            },
+            filterChanged: function() {
+                console.log('filterChanged: ' + JSON.stringify(this.filter));
+                this.$.listAjax.generateRequest();
+            },
+            listAjaxUrlCompute: function(filter) {
+                return'http://localhost:3005/fruits' + (filter.name ? ('?name=' + filter.name) : '');
             }
         });
     })();

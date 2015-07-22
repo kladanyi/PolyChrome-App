@@ -1,0 +1,36 @@
+<dom-module id="dialog-container">
+    <style is="custom-style">
+        :host paper-dialog {
+            @apply(--card-background);
+        }
+        
+        #spinnerDialog {
+            min-width: 250px;
+            max-width: 100%;
+        }
+        #spinnerDialog paper-spinner {
+            width: 34px;
+            height: 34px;
+        }
+        #spinnerText {
+            line-height: 34px;
+            margin-left: 12px;
+        }
+    </style>
+    <template>
+        <paper-dialog id="spinnerDialog" modal>
+            <h3>[[spinnerDialogTitle]]</h3>
+            <div class="layout horizontal">
+                <paper-spinner active></paper-spinner>
+                <span id="spinnerText" class="flex">[[spinnerDialogText]]</span>
+            </div>
+        </paper-dialog>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'dialog-container',
+        });
+    })();
+</script>

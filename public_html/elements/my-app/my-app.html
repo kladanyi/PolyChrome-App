@@ -133,7 +133,8 @@
     </style>
     <template>
         <!--<fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>-->
-
+        <dialog-container id="dialogContainer"></dialog-container>
+        
         <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical">
             <div drawer>
                 <!-- Drawer Toolbar -->
@@ -168,6 +169,9 @@
                             <iron-icon icon="my-iconset:grape"></iron-icon>
                             <span>Gyümölcsös</span>
                         </a>
+
+                        <!-- hidden -->
+                        <a route="test" hidden="true">oij</a>
                     </paper-menu>
                 </more-route-selector>
             </div>
@@ -192,7 +196,7 @@
 
                     <!-- Main Content -->
                     <div class="content" class="flex">
-                        <more-route-selector selectedParams="{{params}}" on-more-route-change="routeChanged">
+                        <more-route-selector selected-params="{{params}}" on-more-route-change="routeChanged">
                             <iron-pages attr-for-selected="route" selected="{{route}}">
                                 <section route="home">
                                     <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
@@ -200,9 +204,9 @@
                                     <paper-material elevation="1" class="card">
                                         <content-5></content-5>
                                     </paper-material>
-<!--                                    <paper-material elevation="1" class="card">
-                                        <content-4></content-4>
-                                    </paper-material>-->
+                                    <!--                                    <paper-material elevation="1" class="card">
+                                                                            <content-4></content-4>
+                                                                        </paper-material>-->
                                     <paper-material elevation="1" class="card">
                                         <content-3></content-3>
                                     </paper-material>
@@ -251,6 +255,14 @@
                                 <section route="fruits">
                                     <fruit-page is-current="[[isFruitsPage]]"></fruit-page>
                                 </section>
+
+                                <section route="test">
+                                    <paper-material elevation="1" class="card">
+                                        <h2>Teszt</h2>
+                                        <p>a: <span>[[params.a]]</span></p>
+                                        <p>b: <span>[[params.b]]</span></p>
+                                    </paper-material>
+                                </section>
                             </iron-pages>
                         </more-route-selector>
                     </div>
@@ -263,7 +275,7 @@
     (function () {
         Polymer({
             is: 'my-app',
-            behaviors: [ToastBehavior, FabBehavior],
+            behaviors: [ToastBehavior, FabBehavior, DialogBehavior],
             properties: {
                 route: {
                     type: String,
@@ -285,7 +297,8 @@
                     type: Object,
                     value: function () {
                         return function () {
-                            ToastBehavior.addToast('Home fab');
+                            DialogBehavior.showSpinnerDialog('Home fab', 'Türelem...');
+                            setTimeout(function(){ DialogBehavior.hideSpinnerDialog(); }, 3000);
                         };
                     }
                 },
@@ -293,14 +306,15 @@
                     type: Object,
                     value: function () {
                         return function () {
-                            ToastBehavior.addToast('Contact fab');
+                            DialogBehavior.showSpinnerDialog({title: 'Contact fab', text: 'JSON paraméterezés'});
+                            setTimeout(function(){ DialogBehavior.hideSpinnerDialog() }, 6000);
                         };
                     }
                 },
-//                isFruitsPage: {
-//                    type: Boolean,
-//                    computed: "isThisPage(route, 'fruits')"
-//                }
+                isFruitsPage: {
+                    type: Boolean,
+                    computed: "isThisPage(route, 'fruits')"
+                }
             },
             ready: function () {
                 console.log('MyApp is ready.');
@@ -309,7 +323,7 @@
             makeUrl: function (pathOrName, params) {
                 return MoreRouting.urlFor(pathOrName, params);
             },
-            routeChanged: function() {
+            routeChanged: function (p1, p2) {
                 var drawerPanel = this.$.paperDrawerPanel;
                 if (drawerPanel.narrow) {
                     drawerPanel.closeDrawer();
@@ -318,8 +332,10 @@
                 if (MoreRouting.isCurrentUrl('user-info')) {
                     console.log(MoreRouting.getRoute('user-info').params.name);
                 }
-                var p = MoreRouting.getRoute(this.route).params;
-                console.log(this.route + ' ' + JSON.stringify(p));
+//                var p = MoreRouting.getRoute(this.route).params;
+//                console.log(this.route + ' ' + JSON.stringify(p));
+//                this.params = p1.detail.newParams;
+//                console.log(this.params);
             },
             isThisPage: function (route, page) {
                 return route === page;
@@ -333,10 +349,10 @@
                     this.appTitle = this.defaultTitle;
                 }
             },
-            userInfoUrl: function(name) {
+            userInfoUrl: function (name) {
                 return this.makeUrl('user-info', {name: name});
             },
-            goToUserInfo: function() {
+            goToUserInfo: function () {
                 MoreRouting.navigateTo('user-info', {name: this.userName});
             }
         });
