@@ -45,7 +45,6 @@
         Polymer({
             is: 'dialog-container',
             isText: function (text) {
-                console.log('text: "' + text + '" ' + (text && text.length > 0));
                 return !!text && text.length > 0;
             }
         });

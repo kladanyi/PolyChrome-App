@@ -134,7 +134,7 @@
     <template>
         <!--<fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>-->
         <dialog-container id="dialogContainer"></dialog-container>
-        
+
         <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical">
             <div drawer>
                 <!-- Drawer Toolbar -->
@@ -171,7 +171,7 @@
                         </a>
 
                         <!-- hidden -->
-                        <a route="test" hidden="true">oij</a>
+                        <a route="test" hidden="true"></a>
                     </paper-menu>
                 </more-route-selector>
             </div>
@@ -253,7 +253,7 @@
                                 </section>
 
                                 <section route="fruits">
-                                    <fruit-page is-current="[[isFruitsPage]]"></fruit-page>
+                                        <fruit-page is-current="[[isFruitsPage]]" class="flex"></fruit-page>
                                 </section>
 
                                 <section route="test">
@@ -298,7 +298,9 @@
                     value: function () {
                         return function () {
                             DialogBehavior.showSpinnerDialog('Home fab', 'Türelem...');
-                            setTimeout(function(){ DialogBehavior.hideSpinnerDialog(); }, 3000);
+                            setTimeout(function () {
+                                DialogBehavior.hideSpinnerDialog();
+                            }, 3000);
                         };
                     }
                 },
@@ -307,7 +309,9 @@
                     value: function () {
                         return function () {
                             DialogBehavior.showSpinnerDialog({title: 'Contact fab', text: 'JSON paraméterezés'});
-                            setTimeout(function(){ DialogBehavior.hideSpinnerDialog() }, 3000);
+                            setTimeout(function () {
+                                DialogBehavior.hideSpinnerDialog()
+                            }, 3000);
                         };
                     }
                 },

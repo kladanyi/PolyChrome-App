@@ -3,7 +3,16 @@
     </style>
     <template>
         <h3>Filter</h3>
-        <paper-input value="{{filter.name::input}}" label="Név">
+        <paper-input value="{{filter.name}}" label="Név"></paper-input>
+        filter: <span>[[filter.name]]</span>
+
+        <div>
+            <paper-button on-click="add" class="default">add</paper-button>
+        </div>
+
+        <template is="dom-repeat" items="[[myArray]]" indexAs="index">
+            <div>[[arrayItem(myArray.*, index, 'name')]]</div>
+        </template>
     </template>
 </dom-module>
 <script>
@@ -14,13 +23,32 @@
                 filter: {
                     type: Object,
                     notify: true
+                },
+                myArray: {
+                    type: Array,
+                    value: [{name: 'Bob'}, {name: 'Doug'}],
+                    notify: true
                 }
             },
             observers: [
                 'change(filter.name)'
             ],
-            change: function(name) {
-                console.log('Itt belül tudom, hogy változott. (' + name + ') ' + JSON.stringify(this.filter));
+            change: function (name) {
+                this.set('filter', this.filter);
+            },
+            add: function () {
+                this.push('myArray', {name: 'Rob'});
+            },
+            arrayItem: function (change, index, path) {
+                // this.get(path, root) returns a value for a path
+                // relative to a root object.
+                return this.get(path, change.base[index]);
+            },
+            ready: function () {
+                // mutate the array
+                this.unshift('myArray', {name: 'Susan'});
+                // change a subproperty
+                this.set('myArray.1.name', 'Rupert');
             }
         });
     })();

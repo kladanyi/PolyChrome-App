@@ -1,0 +1,34 @@
+{
+  "name": "PolyChrome App",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kladanyi/PolyChrome-App.git"
+  },
+  "dependencies": {
+    "iron-flex-layout": "PolymerElements/iron-flex-layout",
+    "iron-ajax": "PolymerElements/iron-ajax",
+    "iron-pages": "PolymerElements/iron-pages",
+    "iron-input": "PolymerElements/iron-input",
+    "iron-icons": "PolymerElements/iron-icons",
+    "iron-autogrow-textarea": "PolymerElements/iron-autogrow-textarea",
+    "iron-list": "PolymerElements/iron-list",
+    "font-roboto": "Polymer/font-roboto",
+    "paper-drawer-panel": "PolymerElements/paper-drawer-panel",
+    "paper-header-panel": "PolymerElements/paper-header-panel",
+    "paper-toolbar": "PolymerElements/paper-toolbar",
+    "paper-menu": "PolymerElements/paper-menu",
+    "paper-icon-button": "PolymerElements/paper-icon-button",
+    "paper-button": "PolymerElements/paper-button",
+    "paper-material": "PolymerElements/paper-material",
+    "paper-input": "PolymerElements/paper-input",
+    "paper-checkbox": "PolymerElements/paper-checkbox",
+    "paper-radio-button": "PolymerElements/paper-radio-button",
+    "paper-radio-group": "PolymerElements/paper-radio-group",
+    "paper-toggle-button": "PolymerElements/paper-toggle-button",
+    "paper-fab": "PolymerElements/paper-fab",
+    "paper-toast": "PolymerElements/paper-toast",
+    "paper-slider": "PolymerElements/paper-slider",
+    "paper-dialog": "PolymerElements/paper-dialog#~1.0.1",
+    "paper-spinner": "PolymerElements/paper-spinner"
+  }
+}

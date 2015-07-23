@@ -2,6 +2,16 @@
 
 <dom-module id="fruit-page">
     <style is="custom-style">
+        .card.list {
+            margin: 6px 6px 6px 16px;
+            height: auto;
+        }
+        .card.list:first-child {
+            margin-top: 16px;
+        }
+        .card.list:last-child {
+            margin-bottom: 16px;
+        }
     </style>
     <template>
         <iron-ajax
@@ -12,15 +22,22 @@
             last-response="{{fruits}}"></iron-ajax>
 
         <div class="layout horizontal">
-            <div class="flex">
-                <template is="dom-repeat" items="{{fruits}}">
-                    <my-fruit data="[[item]]"></my-fruit>
-                </template></div>
-            <div style="width: 250px;">
-                <paper-material elevation="1" class="card">
-                    <fruit-filter name="{{filter}}" filter-changed="filterChanged"></fruit-filter>
-                </paper-material>
-            </div>
+            <div class="flex layout vertical" style="height: auto">
+                <!--<iron-list items="[[fruits]]" as="item">-->
+                <!--<template>-->
+                <template is="dom-repeat" items="[[fruits]]" as="item">
+                    <paper-material elevation="1" class="card list">
+                        <span>[[item.id]]</span> <span>[[item.name]]</span>
+                    </paper-material>
+                </template>
+                <!--</iron-list>-->
+            </div
+        </div>
+        <div style="width: 250px;" class="layout vertical">
+            <paper-material elevation="1" class="card" style="height: auto">
+                <fruit-filter filter="{{filter}}" my-array="{{array}}" filter-changed="filterChanged"></fruit-filter>
+            </paper-material>
+        </div>
         </div>
 
     </template>
@@ -41,9 +58,15 @@
                 },
                 listAjaxUrl: {
                     type: String,
-                    computed: 'listAjaxUrlCompute(filter)'
+                    computed: 'listAjaxUrlCompute(filter.name)'
+                },
+                array: {
+                    type: Array
                 }
             },
+            observers: [
+                'filterChanged(filter.name)'
+            ],
             isCurrentChanged: function () {
                 if (this.isCurrent) {
                     if (!this.fruits) {
@@ -54,12 +77,17 @@
                     AppBehavior.setTitle();
                 }
             },
-            filterChanged: function() {
+            filterChanged: function () {
                 console.log('filterChanged: ' + JSON.stringify(this.filter));
                 this.$.listAjax.generateRequest();
             },
-            listAjaxUrlCompute: function(filter) {
-                return'http://localhost:3005/fruits' + (filter.name ? ('?name=' + filter.name) : '');
+            listAjaxUrlCompute: function (name) {
+                return'http://localhost:3005/fruits' + (name ? ('?name=' + name) : '');
+            },
+            arrayItem: function (change, index, path) {
+                // this.get(path, root) returns a value for a path
+                // relative to a root object.
+                return this.get(path, change.base[index]);
             }
         });
     })();
