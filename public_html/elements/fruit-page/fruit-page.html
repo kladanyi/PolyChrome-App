@@ -2,15 +2,37 @@
 
 <dom-module id="fruit-page">
     <style is="custom-style">
-        .card.list {
+        .item-container .card.list {
             margin: 6px 6px 6px 16px;
             height: auto;
         }
-        .card.list:first-child {
+        .item-container:nth-child(2) .card.list {
             margin-top: 16px;
         }
-        .card.list:last-child {
+        .item-container:last-child .card.list {
             margin-bottom: 16px;
+        }
+
+        .card.list paper-ripple {
+            color: var(--accent-color);
+        }
+
+        .cont {
+            overflow-y: auto;
+
+        }
+        .cont .card {
+            height: auto;
+        }
+
+        #filterContainer {
+            width: 250px;
+        }
+
+        :host {
+            --paper-drawer-panel-right-drawer-container: {
+                background: none;
+            };
         }
     </style>
     <template>
@@ -21,24 +43,55 @@
             handle-as="json"
             last-response="{{fruits}}"></iron-ajax>
 
-        <div class="layout horizontal">
-            <div class="flex layout vertical" style="height: auto">
-                <!--<iron-list items="[[fruits]]" as="item">-->
-                <!--<template>-->
-                <template is="dom-repeat" items="[[fruits]]" as="item">
-                    <paper-material elevation="1" class="card list">
-                        <span>[[item.id]]</span> <span>[[item.name]]</span>
-                    </paper-material>
-                </template>
-                <!--</iron-list>-->
-            </div
-        </div>
-        <div style="width: 250px;" class="layout vertical">
-            <paper-material elevation="1" class="card" style="height: auto">
-                <fruit-filter filter="{{filter}}" my-array="{{array}}" filter-changed="filterChanged"></fruit-filter>
-            </paper-material>
-        </div>
-        </div>
+
+        <paper-drawer-panel right-drawer responsive-width="900px">
+            <div drawer class="ez">
+                <paper-material elevation="1" class="card" style="height: auto">
+                    <fruit-filter filter="{{filter}}" my-array="{{array}}" filter-changed="filterChanged"></fruit-filter>
+                </paper-material>
+            </div>
+            <div main class="layout vertical">
+                <div class="cont flex layout vertical">
+                    <iron-list items="[[fruits]]" as="item" class="flex">
+                        <template>
+                            <div class="item-container">
+                                <paper-material elevation="1" class="card list">
+                                    <paper-ripple></paper-ripple>
+                                    <span>[[item.id]]</span> <span>[[item.name]]</span>
+                                </paper-material>
+                            </div>
+                        </template>
+                    </iron-list>
+                </div>
+            </div>
+        </paper-drawer-panel>
+
+        <!--        <template is="dom-repeat" items="[[fruits]]" as="item">
+                                <paper-material elevation="1" class="card list">
+                                    <paper-ripple></paper-ripple>
+                                    <span>[[item.id]]</span> <span>[[item.name]]</span>
+                                </paper-material>
+                            </template>-->
+
+
+        <!--        <div class="layout horizontal">
+                    <div class="flex layout vertical" style="height: auto">
+                        <iron-list items="[[fruits]]" as="item"> !
+                        <template> !
+                        <template is="dom-repeat" items="[[fruits]]" as="item">
+                            <paper-material elevation="1" class="card list">
+                                <paper-ripple></paper-ripple>
+                                <span>[[item.id]]</span> <span>[[item.name]]</span>
+                            </paper-material>
+                        </template>
+                        </iron-list> !
+                    </div>
+                    <div id="filterContainer" class="layout vertical">
+                        <paper-material elevation="1" class="card" style="height: auto">
+                            <fruit-filter filter="{{filter}}" my-array="{{array}}" filter-changed="filterChanged"></fruit-filter>
+                        </paper-material>
+                    </div>
+                </div>-->
 
     </template>
 </dom-module>
