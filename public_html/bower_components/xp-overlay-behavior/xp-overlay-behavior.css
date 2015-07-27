@@ -1,0 +1,19 @@
+:host {
+    display: block;
+    opacity: 0;
+    overflow: visible;
+    position: fixed;
+    text-align: left;
+    transition: opacity 0.2s, visibility 0.2s;
+    visibility: hidden;
+    z-index: 9999;
+}
+
+:host([showed]) {
+    opacity: 1;
+    visibility: visible;
+}
+
+:host(:not([showed])) {
+    pointer-events: none !important;
+}

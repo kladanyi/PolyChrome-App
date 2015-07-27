@@ -10,11 +10,14 @@
                 id: String,
                 icon: String,
                 clickFn: Object,
+                signalName: String,
+                signalData: Object,
                 page: String
             },
             ready: function () {
 //                console.log('fab-element ready: ' + this.id + ' |' + this.page + '|');
-                FabBehavior.addFab(this.id, this.icon, this.clickFn, this.page);
+//                FabBehavior.addFab(this.id, this.icon, this.clickFn, this.page);
+                FabBehavior.addFab({id: this.id, icon: this.icon, onClick: this.clickFn, signalName: this.signalName, signalData: this.signalData, page: this.page});
             }
         });
     })();

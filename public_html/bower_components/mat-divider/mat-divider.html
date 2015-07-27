@@ -1,0 +1,174 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+An element used to display a [Material Design divider](http://www.google.com/design/spec/components/dividers.html#dividers-usage).
+
+By default the divider will act similarly to an `<hr/>`.
+
+```html
+<mat-option label="First option"></mat-option>
+<mat-divider></mat-divider>
+<mat-option label="Second option"></mat-option>
+```
+
+It can also be left intended, accordingly to [Material Design specifications](http://www.google.com/design/spec/components/dividers.html#dividers-types-of-dividers).
+
+```html
+<mat-divider inset></mat-divider>
+```
+
+If you want to make the divider part of a container, aligned at it's top or bottom,
+you can use either `cap` or `baseline`.
+
+```html
+<mat-paper z="2">
+
+    <div class="header" style="position: relative">
+        <h2>Title</h2>
+        <mat-divider baseline></mat-divider>
+    </div>
+
+    <mat-content class="body">...</mat-content>
+
+    <div class="actions" style="position: relative">
+        <mat-divider cap></mat-divider>
+        <mat-button label="Confirm"></mat-button>
+    </div>
+
+</mat-paper>
+```
+
+@element mat-divider
+@description A custom element used to display a Material Design divider
+@keywords material design, material divider, web app, html5, expandjs, web-components
+@group contents
+@homepage http://expandjs.com/elements/mat-divider
+@repository https://github.com/ExpandJS/mat-divider
+@demo http://expandjs.com/demo/mat-divider
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.9.5
+@dependency mat-ink ExpandJS/mat-ink#0.9.5
+
+@devDependency mat-demo ExpandJS/mat-demo#0.9.5
+@devDependency mat-option ExpandJS/mat-option#0.9.5
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+
+<dom-module id="mat-divider">
+
+    <style>
+        :host {
+            display: block;
+            margin: 7px 0 8px 0;
+            overflow: hidden;
+            transition: margin 0.33s cubic-bezier(0.55, 0, 0.01, 1);
+            will-change: margin;
+        }
+
+        :host([baseline]),
+        :host([cap]) {
+            left: 0;
+            margin: 0;
+            position: absolute;
+            right: 0;
+        }
+
+        :host([baseline]) {
+            bottom: 0;
+        }
+
+        :host([cap]) {
+            top: 0;
+        }
+
+        :host #matDividerWrapper {
+            border-top: 1px solid currentColor;
+        }
+
+        :host([inset]) #matDividerWrapper {
+            margin-left: 72px;
+        }
+    </style>
+
+    <template>
+        <mat-ink id="matDividerWrapper" opacity="divider"></mat-ink>
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-divider',
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * If set to true, the divider is aligned baseline.
+                 *
+                 * @attribute baseline
+                 * @type boolean
+                 * @default false
+                 */
+                baseline: {
+                    observer: '_baselineChanged',
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the divider is aligned cap.
+                 *
+                 * @attribute cap
+                 * @type boolean
+                 * @default false
+                 */
+                cap: {
+                    observer: '_capChanged',
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the element is indented.
+                 *
+                 * @attribute inset
+                 * @type boolean
+                 * @default false
+                 */
+                inset: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _baselineChanged: function (post) {
+                this.cap = this.cap && !post;
+            },
+
+            // OBSERVER
+            _capChanged: function (post) {
+                this.baseline = this.baseline && !post;
+            }
+        });
+    </script>
+
+</dom-module>

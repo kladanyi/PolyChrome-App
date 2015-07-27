@@ -1,0 +1,642 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+This element is used to decorate material inputs.
+
+@element mat-input-decorator
+@description A custom element used to decorate various inputs with the Material Design style
+@keywords material design, web app, html5, expandjs, web-components
+@group decorators
+@homepage http://expandjs.com/elements/mat-input-decorator
+@repository https://github.com/ExpandJS/mat-input-decorator
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.9.5
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-divider ExpandJS/mat-divider#0.9.5
+@dependency mat-ink ExpandJS/mat-ink#0.9.5
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-divider/mat-divider.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+
+<style>
+    html [fullWidth] + [fullWidth] #matInputDivider {
+        display: block;
+    }
+</style>
+
+<dom-module id="mat-input-decorator">
+
+    <style>
+        :host {
+            cursor: default;
+            display: block;
+            overflow: hidden;
+            position: relative;
+            text-align: left;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        :host([disabled]) {
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+        }
+
+        :host,
+        :host ::content input,
+        :host ::content textarea {
+            @apply(--mat-font-subhead);
+        }
+
+        :host ::content input,
+        :host ::content textarea {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            color: inherit;
+            font-family: inherit;
+            height: 100%;
+            margin: 0;
+            outline: 0;
+            padding: 0;
+            resize: none;
+            width: 100%;
+        }
+
+        :host ::content input,
+        :host #matInputPrefix,
+        :host #matInputSuffix,
+        :host #matInputPlaceholder {
+            overflow: hidden;
+            text-overflow: ellipsis !important; /* override */
+            white-space: nowrap !important; /* override */
+        }
+
+        :host ::content input:not([type="search"])::-ms-clear {
+            display: none !important;
+        }
+
+        :host #matInputWrapper {
+            display: block;
+            padding: 8px 0 4px 0;
+        }
+
+        :host([full-width]) #matInputWrapper {
+            padding: 16px 0;
+        }
+
+        :host([full-width]:not([mirrored])) #matInputWrapper {
+            @apply(--layout-horizontal);
+        }
+
+        :host #matInputDivider {
+            display: none;
+        }
+
+        :host #matInputLabel {
+            height: 16px;
+        }
+
+        :host([empty-label]) #matInputLabel,
+        :host([full-width]) #matInputLabel,
+        :host(:not([floating-label])) #matInputLabel {
+            display: none !important;
+        }
+
+        :host #matInputMain {
+            margin: 6px 0;
+            position: relative;
+        }
+
+        :host(:not([disabled])) #matInputMain {
+            cursor: text;
+        }
+
+        :host([full-width]) #matInputMain {
+            @apply(--layout-flex);
+            margin: 0;
+        }
+
+        :host #matInputPlaceholder {
+            @apply(--layout-fit);
+            pointer-events: none !important;
+            -webkit-transition: font-size 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                                font-weight 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                                letter-spacing 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                                line-height 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                                -webkit-transform 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            transition: font-size 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                        font-weight 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                        letter-spacing 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                        line-height 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                        transform 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            will-change: font-size, font-weight, letter-spacing, line-height, opacity, transform;
+        }
+
+        :host([floated]) #matInputPlaceholder {
+            @apply(--mat-font-caption);
+            -webkit-transform: translate3d(0, -22px, 0);
+            transform: translate3d(0, -22px, 0);
+            -webkit-transform-origin: 0 0 0;
+            transform-origin: 0 0 0;
+        }
+
+        :host([empty-label]) #matInputPlaceholder,
+        :host(:not([empty]):not([floating-label])) #matInputPlaceholder {
+            display: none !important;
+        }
+
+        :host #matInputPrefix {
+            float: left;
+        }
+
+        :host #matInputSuffix {
+            float: right;
+        }
+
+        :host #matInputMirror {
+            min-height: 20px;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            word-wrap: break-word !important;
+        }
+
+        :host(:not([mirrored])) #matInputMirror {
+            display: none !important;
+        }
+
+        :host #matInputHolder {
+            overflow: hidden;
+        }
+
+        :host([mirrored]) #matInputHolder {
+            @apply(--layout-fit);
+        }
+
+        :host #matInputUnderline {
+            margin: -2px 0 4px 0;
+        }
+
+        :host([full-width]) #matInputUnderline {
+            display: none !important;
+        }
+
+        :host #matInputUnderlineDefault {
+            border-top: 1px solid currentColor;
+            transition: border 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            will-change: border;
+        }
+
+        :host([disabled]) #matInputUnderlineDefault {
+            border-top-style: dashed;
+        }
+
+        :host #matInputUnderlineFocused {
+            border-top: 2px solid currentColor;
+            margin-top: -1px;
+            -webkit-transform: scale(0, 1);
+            transform: scale(0, 1);
+            -webkit-transition: -webkit-transform 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            transition: transform 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            will-change: transform;
+        }
+
+        :host([focused]) #matInputUnderlineFocused,
+        :host([invalid]) #matInputUnderlineFocused {
+            -webkit-transform: scale(1, 1);
+            transform: scale(1, 1);
+        }
+
+        :host #matInputHelper {
+            @apply(--mat-font-caption);
+            min-height: 16px;
+            white-space: normal !important; /* override */
+        }
+
+        :host([full-width]) #matInputHelper {
+            line-height: 24px !important; /* override */
+        }
+
+        :host([full-width][mirrored]) #matInputHelper {
+            margin-bottom: -4px;
+        }
+
+        :host #matInputCounter {
+            float: right;
+            margin-left: 16px;
+        }
+    </style>
+
+    <template>
+        <div id="matInputWrapper">
+            <mat-divider id="matInputDivider" cap></mat-divider>
+            <div id="matInputLabel"></div>
+            <mat-ink id="matInputMain" disabled="[[disabled]]">
+                <mat-ink id="matInputPlaceholder" color="[[_computePlaceholderColor(floated, focused)]]" disabled="[[disabled]]" opacity="[[_computePlaceholderOpacity(floated)]]">{{_computePlaceholder(floated, inputPrefix, label)}}</mat-ink>
+                <template is="dom-if" if="[[inputPrefix]]"><div id="matInputPrefix">{{inputPrefix}}</div></template>
+                <template is="dom-if" if="[[inputSuffix]]"><mat-ink id="matInputSuffix" disabled="[[disabled]]" opacity="secondary">{{inputSuffix}}</mat-ink></template>
+                <div id="matInputMirror"></div>
+                <div id="matInputHolder"><content id="input"></content></div>
+            </mat-ink>
+            <div id="matInputUnderline">
+                <mat-ink id="matInputUnderlineDefault" opacity="divider"></mat-ink>
+                <mat-ink id="matInputUnderlineFocused" color="[[_computeUnderlineColor(invalid)]]" opacity="divider"></mat-ink>
+            </div>
+            <mat-ink id="matInputHelper" color="[[_computeHelperColor(invalid)]]" disabled="[[disabled]]" opacity="hint">
+                <template is="dom-if" if="[[maxLength]]"><div id="matInputCounter">{{_computeCounter(maxLength, chars)}}</div></template>
+                <template is="dom-if" if="[[!fullWidth]]"><div id="matInputDescription">{{_computeDescription(invalid, error, invalidMessage, description)}}</div></template>
+                <div style="clear: both"></div>
+            </mat-ink>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-input-decorator',
+
+            /*********************************************************************/
+
+            /**
+             * Updates the mirror's content. Useful for auto growing inputs, like `textarea`.
+             *
+             * @method _mirror
+             * @param {string} value
+             * @returns {Element}
+             * @private
+             */
+            _mirror: function (value) {
+                var self = this;
+                if (self.mirrored) { self.$.matInputMirror.innerHTML = XP.escape(value).replace(/\n/g, '<br/>') + '&nbsp;'; }
+                return self;
+            },
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The input's character counter.
+                 *
+                 * @attribute chars
+                 * @type number
+                 * @default 0
+                 */
+                chars: {
+                    type: Number,
+                    value: 0
+                },
+
+                /**
+                 * The input's description.
+                 *
+                 * @attribute description
+                 * @type string
+                 */
+                description: {
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * If set to true, the input is disabled.
+                 *
+                 * @attribute disabled
+                 * @type boolean
+                 * @default false
+                 */
+                disabled: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input is empty.
+                 *
+                 * @attribute empty
+                 * @type boolean
+                 * @default false
+                 */
+                empty: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the label is hidden.
+                 *
+                 * @attribute empty-label
+                 * @type boolean
+                 * @notifies
+                 * @readonly
+                 */
+                emptyLabel: {
+                    computed: '_computeEmptyLabel(label)',
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean
+                },
+
+                /**
+                 * The input's custom error message, used instead of `invalidMessage`.
+                 *
+                 * @attribute error
+                 * @type string
+                 */
+                error: {
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * If set to true, the input's label is floated.
+                 *
+                 * @attribute floated
+                 * @type boolean
+                 * @notifies
+                 * @readonly
+                 */
+                floated: {
+                    computed: '_computeFloated(label, floatingLabel, fullWidth, focused, empty)',
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean
+                },
+
+                /**
+                 * If set to true, the input's label will float above the input.
+                 *
+                 * @attribute floating-label
+                 * @type boolean
+                 * @default false
+                 */
+                floatingLabel: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input is focused.
+                 *
+                 * @attribute focused
+                 * @type boolean
+                 * @default false
+                 */
+                focused: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input is full width.
+                 *
+                 * @attribute full-width
+                 * @type boolean
+                 * @default false
+                 */
+                fullWidth: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The appended input's element.
+                 *
+                 * @attribute input
+                 * @type Element
+                 */
+                input: {
+                    observer: '_inputChanged',
+                    value: null
+                },
+
+                /**
+                 * The input's prefix.
+                 *
+                 * @attribute input-prefix
+                 * @type string
+                 */
+                inputPrefix: {
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * The input's suffix.
+                 *
+                 * @attribute input-suffix
+                 * @type string
+                 */
+                inputSuffix: {
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * If set to true, the input's value is not valid.
+                 *
+                 * @attribute invalid
+                 * @type boolean
+                 * @default false
+                 */
+                invalid: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The input's system error message.
+                 *
+                 * @attribute invalid-message
+                 * @type string
+                 */
+                invalidMessage: {
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * The input's label.
+                 *
+                 * @attribute label
+                 * @type string
+                 */
+                label: {
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * The input's max characters number.
+                 *
+                 * @attribute max-length
+                 * @type number
+                 */
+                maxLength: {
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: null
+                },
+
+                /**
+                 * The input's max rows number.
+                 *
+                 * @attribute max-rows
+                 * @type number
+                 */
+                maxRows: {
+                    observer: '_maxRowsChanged',
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: null
+                },
+
+                /**
+                 * The input's min rows number.
+                 *
+                 * @attribute min-rows
+                 * @type number
+                 */
+                minRows: {
+                    observer: '_minRowsChanged',
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: null
+                },
+
+                /**
+                 * If set to true, the input is mirrored.
+                 *
+                 * @attribute mirrored
+                 * @type boolean
+                 * @default false
+                 */
+                mirrored: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The input's plain value.
+                 *
+                 * @attribute value
+                 * @type string
+                 */
+                value: {
+                    observer: '_valueChanged',
+                    type: String
+                }
+            },
+
+            /*********************************************************************/
+
+            // COMPUTER
+            _computeCounter: function (maxLength, chars) {
+                return maxLength ? (chars || 0) + ' / ' + maxLength : '';
+            },
+
+            // COMPUTER
+            _computeDescription: function (invalid, error, invalidMessage, description) {
+                return (invalid && (error || invalidMessage)) || description || '';
+            },
+
+            // COMPUTER
+            _computeEmptyLabel: function (label) {
+                return !label;
+            },
+
+            // COMPTUER
+            _computeFloated: function (label, floatingLabel, fullWidth, focused, empty) {
+                return !!label && floatingLabel && !fullWidth && (focused || !empty);
+            },
+
+            // COMPUTER
+            _computeHelperColor: function (invalid) {
+                return invalid ? 'red-400' : null;
+            },
+
+            // COMPUTER
+            _computePlaceholder: function (floated, inputPrefix, label) {
+                return ((!floated && inputPrefix) || '') + (label || '');
+            },
+
+            // COMPUTER
+            _computePlaceholderColor: function (floated, focused) {
+                return floated && focused ? 'light-blue-a700' : null;
+            },
+
+            // COMPUTER
+            _computePlaceholderOpacity: function (floated) {
+                return floated ? 'secondary' : 'hint';
+            },
+
+            // COMPUTER
+            _computeUnderlineColor: function (invalid) {
+                return invalid ? 'red-400' : 'light-blue-a700';
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _inputChanged: function (post, pre) {
+
+                // Vars
+                var self = this;
+
+                // Checking
+                if (arguments.length < 2) { return; }
+
+                // Listening
+                if (XP.isElement(pre)) { self.unlisten(pre, 'input', '_handleInput'); }
+                if (XP.isElement(post)) { self.listen(post, 'input', '_handleInput'); }
+            },
+
+            // OBSERVER
+            _maxRowsChanged: function (post) {
+                var self = this, rows = XP.toInt(post, true);
+                if (self.mirrored) { XP.setStyle(self.$.matInputMirror, 'max-height', rows ? (rows * 20) + 'px' : null); }
+            },
+
+            // OBSERVER
+            _minRowsChanged: function (post) {
+                var self = this, rows = XP.toInt(post, true) || 1;
+                if (self.mirrored) { XP.setStyle(self.$.matInputMirror, 'min-height', (rows * 20) + 'px'); }
+            },
+
+            // OBSERVER
+            _valueChanged: function (post) {
+                this._mirror(post);
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _handleInput: function () {
+                this._mirror(this.input.value);
+            }
+        });
+    </script>
+
+</dom-module>

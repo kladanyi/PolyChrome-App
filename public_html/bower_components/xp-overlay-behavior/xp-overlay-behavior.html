@@ -1,0 +1,199 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+This behavior is used to add overlay capabilities on the context element.
+
+@behavior xp-overlay-behavior
+@description A behavior used to add overlay capabilities on the context element
+@keywords web app, html5, expandjs, web-components
+@group behaviors
+@homepage http://expandjs.com/elements/xp-overlay-behavior
+@repository https://github.com/ExpandJS/xp-overlay-behavior
+
+@behavior xp-targeter-behavior /bower_components/xp-targeter-behavior/xp-targeter-behavior.html
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.9.5
+@dependency xp-targeter-behavior ExpandJS/xp-targeter-behavior#0.9.5
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-targeter-behavior/xp-targeter-behavior.html">
+
+<script>
+    Polymer.XPOverlayBehaviorImp = {
+
+        /**
+         * Fired when the showed state changes.
+         *
+         * @event xp-toggle
+         * @param {Element} firer
+         * @param {boolean} isShowed
+         * @bubbles
+         */
+
+        /*********************************************************************/
+
+        /**
+         * Hides the overlay.
+         *
+         * @method hide
+         * @returns {Element}
+         */
+        hide: function () {
+            var self = this;
+            self.showed = false;
+            return self;
+        },
+
+        /**
+         * Shows the overlay.
+         *
+         * @method show
+         * @param {Element | string} [target]
+         * @param {*} [data]
+         * @returns {Element}
+         */
+        show: function (target, data) {
+
+            // Asserting
+            XP.assertArgument(XP.isVoid(target) || XP.isElement(target) || XP.isString(target), 1, 'Element or string');
+
+            // Vars
+            var self = this;
+
+            // Setting
+            self.target = target || self.target;
+            self.data   = data || (self.findTarget() || self).data || self.data;
+            self.showed = true;
+
+            return self;
+        },
+
+        /**
+         * Toggles the overlay.
+         *
+         * @method toggle
+         * @param {Element | string} target
+         * @param {*} [data]
+         * @returns {Element}
+         */
+        toggle: function (target, data) {
+            return this[this.showed ? 'hide' : 'show'](target, data);
+        },
+
+        /*********************************************************************/
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the overlay will not close by clicking outside.
+             *
+             * @attribute auto-hide-disabled
+             * @type boolean
+             * @default false
+             */
+            autoHideDisabled: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The context element.
+             *
+             * @attribute context
+             * @type Element
+             */
+            context: {
+                value: null
+            },
+
+            /**
+             * The element's data.
+             *
+             * @attribute data
+             * @type *
+             * @notifies
+             */
+            data: {
+                notify: true,
+                value: null
+            },
+
+            /**
+             * If set to true, the overlay is showed.
+             *
+             * @attribute showed
+             * @type boolean
+             * @default false
+             * @notifies
+             */
+            showed: {
+                notify: true,
+                observer: '_showedChanged',
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            }
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _showedChanged: function (post) {
+
+            // Vars
+            var self = this;
+
+            // Firing
+            self.fire('xp-toggle', {firer: self, isShowed: post});
+
+            // Listening
+            XP.delay(function () {
+                self[post ? 'listen' : 'unlisten'](window, 'keyup', '_hideHandler');
+                self[post ? 'listen' : 'unlisten'](window, 'click', '_hideHandler');
+                self[post ? 'listen' : 'unlisten'](self, 'click', '_distinguishHandler');
+            });
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _distinguishHandler: function (event) {
+            (event.overlays = event.overlays || []).push(this);
+        },
+
+        // HANDLER
+        _hideHandler: function (event) {
+
+            // Vars
+            var self = this;
+
+            // Checking
+            if (event.overlays && XP.includes(event.overlays, self)) { return; }
+            if ((self.autoHideDisabled || event.keyCode) && event.keyCode !== 27) { return; }
+
+            // Unlistening
+            self.unlisten(window, 'keyup', '_hideHandler');
+            self.unlisten(window, 'click', '_hideHandler');
+            self.unlisten(self, 'click', '_distinguishHandler');
+
+            // Hiding
+            self.hide();
+        }
+    };
+
+    Polymer.XPOverlayBehavior = [
+        Polymer.XPTargeterBehavior,
+        Polymer.XPOverlayBehaviorImp
+    ];
+</script>

@@ -1,0 +1,49 @@
+<dom-module id="filter-test-response">
+    <style is="custom-style">
+    </style>
+    <template>
+        <h3>Eredmény</h3>
+        <div class="layout vertical">
+            <div class="layout horizontal">
+                <span class="flex-1">path paraméterek:</span>
+                <pretty-json class="flex-2" json-data="[[pathparams]]"></pretty-json>
+            </div>
+            <div class="layout horizontal">
+                <span class="flex-1">get paraméterek:</span>
+                <pretty-json class="flex-2" json-data="[[getparams]]"></pretty-json>
+            </div>
+            <div class="layout horizontal">
+                <span class="flex-1">body paraméterek:</span>
+                <pretty-json class="flex-2" json-data="[[bodyparams]]"></pretty-json>
+            </div>
+        </div>
+
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'filter-test-response',
+            properties: {
+                response: {
+                    type: Object
+                },
+                pathparams: {
+                    type: Object,
+                    computed: 'partOfData(response, "path_params")'
+                },
+                getparams: {
+                    type: Object,
+                    computed: 'partOfData(response, "get_params")'
+                },
+                bodyparams: {
+                    type: Object,
+                    computed: 'partOfData(response, "body_params")'
+                }
+            },
+            partOfData: function (resp, part) {
+                return resp[part];
+            }
+        });
+    })();
+</script>

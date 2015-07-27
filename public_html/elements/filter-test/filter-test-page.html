@@ -1,16 +1,124 @@
-<!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<html>
-    <head>
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
-</html>
+<link rel="import" href="filter-test-filter.html">
+<link rel="import" href="filter-test-response.html">
+
+<dom-module id="filter-test-page">
+    <style is="custom-style">
+        h2.title {
+            margin-left: 16px;
+            margin-right: 16px;
+            margin-bottom: 0;
+        }
+    </style>
+    <template>
+        <iron-ajax
+            id="listAjax"
+            url="[[listAjaxUrl]]"
+            method="GET"
+            handle-as="json"
+            last-response="{{response}}"></iron-ajax>
+
+        <fab-element id="refreshFab" icon="refresh" signal-name="refresh-filter-test" page="home"></fab-element>
+        <iron-signals on-iron-signal-refresh-filter-test="filterChanged"></iron-signals>
+
+        <h2 class="title">GET</h2>
+        <div class="layout horizontal">
+            <paper-material elevation="1" class="card flex">
+                <filter-test-filter filter="{{filter}}"></filter-test-filter>
+            </paper-material>
+
+            <paper-material elevation="1" class="card flex">
+                <filter-test-response response="[[response]]"></filter-test-response>
+            </paper-material>
+        </div>
+
+        <h2 class="title">POST</h2>
+        <div class="layout horizontal">
+            <paper-material elevation="1" class="card flex">
+                <filter-test-filter filter="{{filter}}"></filter-test-filter>
+            </paper-material>
+
+            <paper-material elevation="1" class="card flex">
+                <filter-test-response response="[[response]]"></filter-test-response>
+            </paper-material>
+        </div>
+
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'filter-test-page',
+            behaviors: [AppBehavior],
+            properties: {
+                isCurrent: {
+                    type: Boolean,
+                    observer: 'isCurrentChanged'
+                },
+                filter: {
+                    type: Object,
+                    value: {}
+                },
+                listAjaxUrl: {
+                    type: String
+                },
+                response: {
+                    type: Object,
+                    observer: 'responseChanged'
+                }
+            },
+            observers: [
+                'filterChanged(filter.name)',
+                'filterChanged(filter.number)',
+                'filterChanged(filter.dropdown)'
+            ],
+            isCurrentChanged: function () {
+                console.log('filter-test-page isCurrentChanged ' + this.isCurrent);
+                if (this.isCurrent) {
+                    AppBehavior.setTitle('Öszszetett szűrés');
+                } else {
+                    AppBehavior.setTitle();
+                }
+            },
+            filterChanged: function () {
+//                console.log('filterChanged: ' + JSON.stringify(this.filter));
+                this.listAjaxUrl = this.listAjaxUrlCompute();
+                this.$.listAjax.generateRequest();
+            },
+            listAjaxUrlCompute: function () {
+                var d = new Date();
+                var dString =
+                        [d.getFullYear(), ((d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1)), d.getDate()].join('-')
+                        + '_' +
+                        [
+                            ((d.getHours() < 10 ? '0' : '') + d.getHours()),
+                            ((d.getMinutes() < 10 ? '0' : '') + d.getMinutes()),
+                            ((d.getSeconds() < 10 ? '0' : '') + d.getSeconds())
+                        ].join(':')
+                        + '.' +
+                        ((d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
+
+                var paramString = '';
+                if (this.filter.name) {
+                    paramString = 'name=' + this.filter.name;
+                }
+                if (this.filter.number) {
+                    if (paramString) {
+                        paramString += '&';
+                    }
+                    paramString += 'number=' + this.filter.number;
+                }
+                if (this.filter.dropdown) {
+                    if (paramString) {
+                        paramString += '&';
+                    }
+                    paramString += 'dropdown=' + this.filter.dropdown;
+                }
+
+                return'http://localhost:3005/param/' + dString + (paramString ? ('?' + paramString) : '')
+            },
+            responseChanged: function () {
+                this.set('resopnse', this.response);
+            }
+        });
+    })();
+</script>

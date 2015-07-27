@@ -1,0 +1,706 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+This element is used to display a material dropdown.
+
+It must be used in conjunction with mat-option.
+
+@element mat-dropdown
+@description A custom element used to display a Material Design dropdown
+@keywords material design, material dropdown, input, web app, html5, expandjs, web-components
+@group inputs
+@homepage http://expandjs.com/elements/mat-dropdown
+@repository https://github.com/ExpandJS/mat-dropdown
+@demo http://expandjs.com/demo/mat-dropdown
+
+@behavior xp-input-behavior /bower_components/xp-input-behavior/xp-input-behavior.html
+@behavior xp-referral-behavior /bower_components/xp-referral-behavior/xp-referral-behavior.html
+@behavior xp-selected-behavior /bower_components/xp-selected-behavior/xp-selected-behavior.html
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.9.5
+@dependency mat-divider ExpandJS/mat-divider#0.9.5
+@dependency mat-icon ExpandJS/mat-icon#0.9.5
+@dependency mat-icons ExpandJS/mat-icons#0.9.5
+@dependency mat-input-decorator ExpandJS/mat-input-decorator#0.9.5
+@dependency mat-menu ExpandJS/mat-menu#0.9.5
+@dependency mat-option ExpandJS/mat-option#0.9.5
+@dependency xp-input-behavior ExpandJS/xp-input-behavior#0.9.5
+@dependency xp-referral-behavior ExpandJS/xp-referral-behavior#0.9.5
+@dependency xp-selected-behavior ExpandJS/xp-selected-behavior#0.9.5
+
+@devDependency mat-demo ExpandJS/mat-demo#0.9.5
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-divider/mat-divider.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-icons/navigation-icons.html">
+<link rel="import" href="../mat-input-decorator/mat-input-decorator.html">
+<link rel="import" href="../mat-menu/mat-menu.html">
+<link rel="import" href="../mat-option/mat-option.html">
+<link rel="import" href="../xp-input-behavior/xp-input-behavior.html">
+<link rel="import" href="../xp-referral-behavior/xp-referral-behavior.html">
+<link rel="import" href="../xp-selected-behavior/xp-selected-behavior.html">
+
+<dom-module id="mat-dropdown">
+
+    <style>
+        :host {
+            display: block;
+            overflow: visible;
+        }
+
+        :host([empty-items]) {
+            display: none !important;
+        }
+
+        :host([inline]) {
+            display: inline-block;
+        }
+
+        :host([full-width]) {
+            display: block;
+            margin: 0;
+            width: auto !important;
+        }
+
+        :host ::content input {
+            display: none !important;
+        }
+
+        :host #matDropdownDecorator::shadow #matInputPrefix,
+        :host #matDropdownDecorator::shadow #matInputSuffix,
+        :host #matDropdownOptions ::content mat-option #matOptionIcon,
+        :host #matDropdownOptions ::content mat-option #matOptionSecondaryText,
+        :host([full-width]) #matDropdownDecorator::shadow #matInputUnderline,
+        :host([full-width]) #matDropdownDecorator::shadow #matInputHelper,
+        :host([pulldown]) #matDropdownDecorator::shadow #matInputUnderline,
+        :host([pulldown]) #matDropdownDecorator::shadow #matInputHelper,
+        :host([pulldown]) #matDropdownOptions ::content mat-option[active] {
+            display: none !important;
+        }
+
+        :host([full-width]) #matDropdownDecorator::shadow #matInputWrapper,
+        :host([pulldown]) #matDropdownDecorator::shadow #matInputWrapper,
+        :host #matDropdownDecorator::shadow #matInputMain {
+            margin: 0;
+            padding: 0;
+        }
+
+        :host([floated]) #matDropdownDecorator::shadow #matInputPlaceholder {
+            -webkit-transform: translate3d(0, -16px, 0);
+            transform: translate3d(0, -16px, 0);
+        }
+
+        :host(:not([floated])) #matDropdownDecorator::shadow #matInputPlaceholder,
+        :host([floated][empty-selection]:not([showed])) #matDropdownDecorator::shadow #matInputPlaceholder {
+        @apply(--mat-font-subhead);
+            line-height: 36px !important; /* override */
+            -webkit-transform: translate3d(0, 0px, 0);
+            transform: translate3d(0, 0px, 0);
+        }
+
+        :host([full-width]) #matDropdownDecorator::shadow #matInputPlaceholder,
+        :host([pulldown]) #matDropdownDecorator::shadow #matInputPlaceholder {
+            line-height: 56px !important; /* override */
+        }
+
+        :host #matDropdownDecorator::shadow #matInputPlaceholder,
+        :host #matDropdownPicked::shadow #matOptionMain {
+            padding: 0;
+        }
+
+        :host([full-width]) #matDropdownDecorator::shadow #matInputPlaceholder,
+        :host([full-width]) #matDropdownPicked::shadow #matOptionMain {
+            padding: 0 16px;
+        }
+
+        :host([pulldown]) #matDropdownDecorator::shadow #matInputPlaceholder,
+        :host([pulldown]) #matDropdownPicked::shadow #matOptionMain {
+            padding: 0 16px 0 24px;
+        }
+
+        :host #matDropdownDecorator .dummyOption {
+            @apply(--mat-font-subhead);
+            height: 0 !important;
+            overflow: hidden;
+            text-overflow: ellipsis !important; /* override */
+            white-space: nowrap !important; /* override */
+        }
+
+        :host #matDropdownDecorator .dummyOption,
+        :host #matDropdownOptions ::content mat-option #matOptionMain {
+            padding: 0 24px 0 16px;
+        }
+
+        :host([pulldown]) #matDropdownDecorator .dummyOption,
+        :host([pulldown]) #matDropdownOptions ::content mat-option #matOptionMain,
+        :host([pulldown]) #matDropdownFirst::shadow #matOptionMain {
+            padding: 0 48px 0 24px;
+        }
+
+        :host #matDropdownPicked {
+            height: 36px;
+        }
+
+        :host([full-width]) #matDropdownPicked,
+        :host([pulldown]) #matDropdownPicked {
+            height: 56px;
+        }
+
+        :host([empty-selection]) #matDropdownPicked::shadow #matOptionWrapper[foreground="dark"] #matOptionLabel {
+            opacity: 0.44;
+        }
+
+        :host([empty-selection]) #matDropdownPicked::shadow #matOptionWrapper[foreground="light"] #matOptionLabel {
+            opacity: 0.30;
+        }
+
+        :host #matDropdownUp {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+        }
+
+        :host(:not([pulldown])) #matDropdownUp {
+            display: none !important;
+        }
+
+        :host([empty-selection]) #matDropdownFirst,
+        :host(:not([pulldown])) #matDropdownFirst {
+            display: none !important;
+        }
+
+        :host #matDropdownDivider {
+            top: 56px;
+        }
+
+        :host(:not([pulldown])) #matDropdownDivider {
+            display: none !important;
+        }
+
+        :host([pulldown]) #matDropdownOptions ::content mat-option,
+        :host([pulldown]) #matDropdownFirst {
+            height: 56px;
+            margin: -8px 0 8px 0;
+        }
+
+        :host([pulldown]) #matDropdownOptions ::content mat-option + mat-option,
+        :host([pulldown]:not([empty-selection])) #matDropdownOptions ::content mat-option {
+            height: 32px;
+            margin: 0;
+        }
+
+        /* TABLET */
+
+        @media (min-width: 960px) {
+
+            :host([full-width]) {
+                margin: 0;
+            }
+
+            :host([full-width]) #matDropdownDecorator::shadow #matInputPlaceholder,
+            :host([full-width]) #matDropdownPicked::shadow #matOptionMain {
+                padding: 0 24px;
+            }
+        }
+    </style>
+
+    <template>
+        <mat-input-decorator id="matDropdownDecorator" description="[[description]]" disabled="[[disabled]]"
+                             empty="[[emptySelection]]" error="[[error]]" floated="{{floated}}" focused="[[focused]]"
+                             floating-label="[[_hasFloatingLabel(floatingLabel, fullWidth, pulldown)]]"
+                             full-width="[[fullWidth]]" input="[[adaptee]]" invalid="[[invalid]]"
+                             invalid-message="[[invalidMessage]]" label="[[label]]" value="[[value]]">
+            <div id="matDropdownSpacer">
+                <div class="dummyOption">{{label}}</div>
+                <template is="dom-repeat" items="[[items]]" observe="label value">
+                    <div class="dummyOption">{{_computeLabel(item.label, item.value)}}</div>
+                </template>
+            </div>
+            <mat-option id="matDropdownPicked" disabled="[[disabled]]" label="[[selectedLabel]]" secondary-icon="[[_computeArrowIcon(emptySelection, singleItem)]]" value="[[selectedValue]]" on-blur="_blurHandler" on-focus="_focusHandler" on-xp-activate="_handleShow"></mat-option>
+            <mat-menu id="matDropdownMenu" background="[[background]]" showed="{{showed}}" target="[[self.$.matDropdownPicked]]">
+                <mat-icon id="matDropdownUp" name="navigation:arrow-drop-up" opacity="hint"></mat-icon>
+                <mat-option id="matDropdownFirst" label="[[selection.label]]" value="[[selection.value]]"></mat-option>
+                <mat-divider id="matDropdownDivider" cap></mat-divider>
+                <div id="matDropdownOptions" on-xp-activate="_handleActivate">
+                    <content id="content"></content>
+                </div>
+            </mat-menu>
+        </mat-input-decorator>
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-dropdown',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPInputBehavior,
+                Polymer.XPReferralBehavior,
+                Polymer.XPSelectedBehavior
+            ],
+
+            /*********************************************************************/
+
+            /**
+             * Blurs the input.
+             *
+             * @method blur
+             * @returns {Element}
+             */
+            blur: function () {
+                var self = this;
+                self.$.matDropdownPicked.blur();
+                return self;
+            },
+
+            /**
+             * Focuses the input.
+             *
+             * @method focus
+             * @returns {Element}
+             */
+            focus: function () {
+                var self = this;
+                self.$.matDropdownPicked.focus();
+                return self;
+            },
+
+            /**
+             * Hides the dropdown.
+             *
+             * @method hide
+             * @returns {Element}
+             */
+            hide: function () {
+                var self = this;
+                self.$.matDropdownMenu.hide();
+                return self._resize();
+            },
+
+            /**
+             * Shows the dropdown.
+             *
+             * @method show
+             * @returns {Element}
+             */
+            show: function () {
+                var self = this;
+                self.$.matDropdownMenu.show();
+                return self._resize();
+            },
+
+            /**
+             * Toggles the dropdown.
+             *
+             * @method toggle
+             * @returns {Element}
+             */
+            toggle: function () {
+                var self = this;
+                self.$.matDropdownMenu.toggle();
+                return self._resize();
+            },
+
+            /*********************************************************************/
+
+            /**
+             * Set the adaptee.
+             *
+             * @method _adapt
+             * @returns {Element}
+             * @private
+             */
+            _adapt: function () {
+                var self = this;
+                self._setAdaptee(XP.appendChild(Polymer.dom(self), XP.createElement('input', {attributes: {type: 'text', value: self.value}})));
+                return self;
+            },
+
+            /**
+             * Reflects adapted input's `value` onto the element.
+             *
+             * @method _commitFrom
+             * @returns {Element}
+             * @private
+             */
+            _commitFrom: function () {
+                var self = this;
+                self.value = self.adaptee.value;
+                return self;
+            },
+
+            /**
+             * Reflects element's `value` onto the adapted input.
+             *
+             * @method _commitTo
+             * @returns {Element}
+             * @private
+             */
+            _commitTo: function () {
+                var self = this;
+                if (self.value !== self.adaptee.value) { self.adaptee.value = self.value; }
+                return self;
+            },
+
+            /**
+             * Returns an option's label.
+             *
+             * @method _getLabel
+             * @param {Element} option
+             * @returns {string}
+             * @private
+             */
+            _getLabel: function (option) {
+                return option && XP.isString(option.label || option.value) ? option.label || option.value : '';
+            },
+
+            /**
+             * Returns an option's value.
+             *
+             * @method _getValue
+             * @param {Element} option
+             * @returns {number | string}
+             * @private
+             */
+            _getValue: function (option) {
+                return option && XP.isAlphanumeric(option.value) ? option.value : '';
+            },
+
+            /**
+             * Reflects element's `tabIndex` onto the adapted input.
+             *
+             * @method _index
+             * @param {number} value
+             * @returns {Element}
+             * @private
+             */
+            _index: function (value) {
+                var self = this;
+                self.$.matDropdownPicked.tabIndex = value;
+                self.$.matDropdownFirst.tabIndex  = value;
+                return self;
+            },
+
+            /**
+             * Resizes the dropdown's menu.
+             *
+             * @method _resize
+             * @returns {Element}
+             * @private
+             */
+            _resize: function () {
+                var self = this;
+                XP.setStyle(self.$.matDropdownMenu.$.matMenuAdaptee.$.matOverlayAdaptee, 'width', self.clientWidth + 'px');
+                return self;
+            },
+
+            /**
+             * Updates adapted input's attributes.
+             *
+             * @method _update
+             * @returns {Element}
+             * @private
+             */
+            _update: function () {
+                var self = this;
+                XP.setAttribute(self.adaptee, 'disabled', self.disabled);
+                XP.setAttribute(self.adaptee, 'name', self.name);
+                XP.setAttribute(self.adaptee, 'required', self.required);
+                return self;
+            },
+
+            /**
+             * Validates adapted input's `value`.
+             *
+             * @method _validate
+             * @returns {Element}
+             * @private
+             */
+            _validate: function () {
+                var self = this;
+                self._setInvalid(self.adaptee.validity.valid !== true);
+                self._setInvalidMessage(self.adaptee.validationMessage || null);
+                return self;
+            },
+
+            /*********************************************************************/
+
+            // LISTENERS
+            listeners: {
+                'items-changed': '_handleValue',
+                'selection-changed': '_handleSelection',
+                'value-changed': '_handleValue'
+            },
+
+            // OBSERVERS
+            observers: [
+                '_refresh(required)'
+            ],
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The paper's background color.
+                 *
+                 * @attribute background
+                 * @type string
+                 */
+                background: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * The description to be shown underneath the input
+                 *
+                 * @attribute description
+                 * @type string
+                 */
+                description: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * If set to true, the input's label is floated.
+                 *
+                 * @attribute floated
+                 * @type boolean
+                 * @notifies
+                 * @readonly
+                 */
+                floated: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean
+                },
+
+                /**
+                 * If set to true, the input's label will float above the input.
+                 *
+                 * @attribute floating-label
+                 * @type boolean
+                 * @default false
+                 */
+                floatingLabel: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input is full width.
+                 *
+                 * @attribute full-width
+                 * @type boolean
+                 * @default false
+                 */
+                fullWidth: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The attribute used as index.
+                 *
+                 * @attribute index-attribute
+                 * @type string
+                 * @default "value"
+                 */
+                indexAttribute: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'value'
+                },
+
+                /**
+                 * If set to true, the input is inline.
+                 *
+                 * @attribute inline
+                 * @type boolean
+                 * @default false
+                 */
+                inline: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The selector used to recognize selectable items.
+                 *
+                 * @attribute item-selector
+                 * @type string
+                 * @default "mat-option"
+                 */
+                itemSelector: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'mat-option'
+                },
+
+                /**
+                 * If set to true, the selected option is always on top.
+                 *
+                 * @attribute pulldown
+                 * @type boolean
+                 * @default false
+                 */
+                pulldown: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input is required.
+                 *
+                 * @attribute required
+                 * @type boolean
+                 * @default false
+                 */
+                required: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The selected option's label.
+                 *
+                 * @attribute selected-label
+                 * @type string
+                 * @notifies
+                 * @readonly
+                 */
+                selectedLabel: {
+                    notify: true,
+                    readOnly: true,
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * The selected option's value.
+                 *
+                 * @attribute selected-value
+                 * @type string
+                 * @default ""
+                 * @notifies
+                 * @readonly
+                 */
+                selectedValue: {
+                    notify: true,
+                    readOnly: true,
+                    type: String,
+                    value: ''
+                },
+
+                /**
+                 * If set to true, the overlay is showed.
+                 *
+                 * @attribute showed
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 */
+                showed: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            /*********************************************************************/
+
+            // COMPUTER
+            _computeArrowIcon: function (emptySelection, singleItem) {
+                return emptySelection || !singleItem ? 'navigation:arrow-drop-down' : null;
+            },
+
+            // COMPUTER
+            _computeLabel: function (label, value) {
+                return label || value;
+            },
+
+            // COMPUTER
+            _hasFloatingLabel: function (floatingLabel, fullWidth, pulldown) {
+                return floatingLabel && !fullWidth && !pulldown;
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            attached: function () {
+                this.mutated();
+            },
+
+            // LISTENER
+            mutated: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setSelectedLabel(self._getLabel(self.selection));
+                self._setSelectedValue(self._getValue(self.selection));
+
+                // Observing
+                XP.onMutation(self, self.mutated.bind(self), {attributes: true, attributeFilter: ['active', 'label', 'value'], subtree: true});
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _handleActivate: function (event) {
+                this.select(event.detail.firer);
+            },
+
+            // HANDLER
+            _handleSelection: function () {
+                if (this.selection) { this.value = this._getValue(this.selection); }
+            },
+
+            // HANDLER
+            _handleShow: function (event) {
+                event.stopPropagation();
+                this.show();
+            },
+
+            // HANDLER
+            _handleValue: function () {
+
+                // Vars
+                var self     = this,
+                    string   = XP.isAlphanumeric(self.value) ? self.value.toString() : '',
+                    selected = self.selection && self.selection.value.toString() === string,
+                    item     = selected ? self.selection : self.findItem(function (item) { return item.getAttribute('value') === string; });
+
+                // Checking
+                if (selected) { return item; }
+
+                // Picking
+                if (self.selection) { self.unselect(self.selection, true, true); }
+                if (item) { self.select(item, true); }
+            }
+        });
+    </script>
+
+</dom-module>

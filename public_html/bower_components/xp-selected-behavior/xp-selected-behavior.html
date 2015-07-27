@@ -1,0 +1,672 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+This behavior is used to add selection capabilities on the context element.
+
+@behavior xp-selected-behavior
+@description A behavior used to add selection capabilities on the context element
+@keywords web app, html5, expandjs, web-components
+@group behaviors
+@homepage http://expandjs.com/elements/xp-selected-behavior
+@repository https://github.com/ExpandJS/xp-selected-behavior
+
+@behavior xp-array-behavior /bower_components/xp-array-behavior/xp-array-behavior.html
+@behavior xp-targeter-behavior /bower_components/xp-targeter-behavior/xp-targeter-behavior.html
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.9.5
+@dependency xp-array-behavior ExpandJS/xp-array-behavior#0.9.5
+@dependency xp-targeter-behavior ExpandJS/xp-targeter-behavior#0.9.5
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
+<link rel="import" href="../xp-targeter-behavior/xp-targeter-behavior.html">
+
+<script>
+    Polymer.XPSelectedBehaviorImp = {
+
+        /**
+         * Fired on item selection.
+         *
+         * @event xp-select
+         * @param {Element} firer
+         * @param {Element} item
+         * @param {number} index
+         * @param {boolean} isMulti
+         * @param {boolean} isSelected
+         * @param {boolean} isSwitchable
+         * @bubbles
+         * @cancelable
+         */
+
+        /**
+         * Fired when the selection changes.
+         *
+         * @event xp-selection
+         * @param {Element} firer
+         * @param {Array | Element} selection
+         * @param {Array | Element} selected
+         * @param {boolean} isMulti
+         * @param {boolean} isSwitchable
+         * @bubbles
+         */
+
+        /*********************************************************************/
+
+        /**
+         * Finds an item's index.
+         *
+         * @method findIndex
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [safe = false]
+         * @returns {number | string}
+         */
+        findIndex: function (identity, safe) {
+            var self = this, item = self.findItem(identity, safe);
+            if (item && self.indexAttribute) { return XP.getAttribute(item, self.indexAttribute) || null; }
+            if (item) { return XP.indexOf(self.items || [], item); }
+            return null;
+        },
+
+        /**
+         * Finds an item.
+         *
+         * @method findItem
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [safe = false]
+         * @returns {Element}
+         */
+        findItem: function (identity, safe) {
+            return safe ? identity : XP.find(this.items || [], this._toDOMIdentity(identity)) || null;
+        },
+
+        /**
+         * Finds items filtered by predicate.
+         *
+         * @method findItems
+         * @param {Function} [predicate]
+         * @returns {Array}
+         */
+        findItems: function (predicate) {
+            return XP.filter(this.items || [], this._toDOMPredicate(predicate));
+        },
+
+        /**
+         * Finds an item's index, iterating from right to left.
+         *
+         * @method findLastIndex
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [safe = false]
+         * @returns {number | string}
+         */
+        findLastIndex: function (identity, safe) {
+            var self = this, item = self.findLastItem(identity, safe);
+            if (item && self.indexAttribute) { return XP.getAttribute(item, self.indexAttribute) || null; }
+            if (item) { return XP.indexOf(self.items || [], item) || null; }
+            return null;
+        },
+
+        /**
+         * Finds an item, iterating from right to left.
+         *
+         * @method findLastItem
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [safe = false]
+         * @returns {Element}
+         */
+        findLastItem: function (identity, safe) {
+            return safe ? identity : XP.findLast(this.items || [], this._toDOMIdentity(identity)) || null;
+        },
+
+        /**
+         * Checks if an item is selectable.
+         *
+         * @method isSelectable
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [safe = false]
+         * @returns {boolean}
+         */
+        isSelectable: function (identity, safe) {
+            var self = this, item = self.findItem(identity, safe);
+            return XP.isElement(item) && !self.isSelected(item);
+        },
+
+        /**
+         * Checks if an item is selected.
+         *
+         * @method isSelected
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [safe = false]
+         * @returns {boolean}
+         */
+        isSelected: function (identity, safe) {
+            var self = this, item = self.findItem(identity, safe);
+            return self.multi ? XP.includes(self.selection, item) : self.selection === item;
+        },
+
+        /**
+         * Checks if an item is unselectable.
+         *
+         * @method isUnselectable
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [force = false]
+         * @param {boolean} [safe = false]
+         * @returns {boolean}
+         */
+        isUnselectable: function (identity, force, safe) {
+            var self = this, item = self.findItem(identity, safe);
+            return XP.isElement(item) && self.isSelected(item) && (force || self.multi || self.switchable);
+        },
+
+        /**
+         * Selects an item.
+         *
+         * @method select
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [safe = false]
+         * @returns {Element}
+         */
+        select: function (identity, safe) {
+
+            // Vars
+            var self  = this,
+                item  = self.findItem(identity, safe),
+                index = self.findIndex(item, true);
+
+            // Checking
+            if (!item || !self.isSelectable(item)) { return null; }
+
+            // Firing
+            if (self.fire('xp-select', {firer: self, item: item, index: index, isMulti: self.multi, isSelected: true, isSwitchable: self.multi || self.switchable}, {cancelable: true}).defaultPrevented) { return null; }
+
+            // Selecting
+            self._setSelecting(true);
+            if (self.multi) { self.append('selection', item); } else { self._setSelection(item); }
+            if (self.multi) { self.append('selected', index); } else { self.selected = index; }
+            self._setSelecting(false);
+
+            return item;
+        },
+
+        /**
+         * Selects the next item.
+         *
+         * @method selectNext
+         * @returns {Element}
+         */
+        selectNext: function () {
+            var self = this, item = !self.multi ? XP.getNext(self.items || [], self.selection) : null;
+            return item ? self.select(item, true) : null;
+        },
+
+        /**
+         * Selects the previous item.
+         *
+         * @method selectPrevious
+         * @returns {Element}
+         */
+        selectPrevious: function () {
+            var self = this, item = !self.multi ? XP.getPrevious(self.items || [], self.selection) : null;
+            return item ? self.select(item, true) : null;
+        },
+
+        /**
+         * Toggles active state on an item.
+         *
+         * @method switch
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [force = false]
+         * @param {boolean} [safe = false]
+         * @returns {Element}
+         */
+        switch: function (identity, force, safe) {
+            var self = this, item = self.findItem(identity, safe);
+            if (item && self.isSelected(item)) { return self.unselect(item, force, true); }
+            if (item) { return self.select(item, true); }
+            return null;
+        },
+
+        /**
+         * Unselects an item.
+         *
+         * @method unselect
+         * @param {Element | Function | number | string} identity
+         * @param {boolean} [force = false]
+         * @param {boolean} [safe = false]
+         * @returns {Element}
+         */
+        unselect: function (identity, force, safe) {
+
+            // Vars
+            var self  = this,
+                item  = self.findItem(identity, safe),
+                index = self.findIndex(item, true);
+
+            // Checking
+            if (!item || !self.isUnselectable(item, force)) { return null; }
+
+            // Firing
+            if (self.fire('xp-select', {firer: self, item: item, index: index, isMulti: self.multi, isSelected: false, isSwitchable: self.multi || self.switchable}, {cancelable: true}).defaultPrevented && !force) { return null; }
+
+            // Unselecting
+            self._setSelecting(true);
+            if (self.multi) { self.pull('selection', item); } else { self._setSelection(null); }
+            if (self.multi) { self.pull('selected', index); } else { self.selected = null; }
+            self._setSelecting(false);
+
+            return item;
+        },
+
+        /*********************************************************************/
+
+        /**
+         * Returns a DOM identity representation of `target`.
+         *
+         * @method _toDOMIdentity
+         * @param {Element | Function | number | string} target
+         * @returns {Function | number}
+         * @private
+         */
+        _toDOMIdentity: function (target) {
+
+            // Vars
+            var self      = this,
+                attribute = self.indexAttribute,
+                index     = !attribute ? XP.toNumber(target) : null;
+
+            // Casting
+            if (XP.isIndex(index)) { return index; }
+            if (XP.isString(target) && XP.isString(attribute, true)) { return function (element) { return XP.isElement(element) && target === element.getAttribute(attribute); }; }
+            if (XP.isElement(target) || XP.isFunction(target) || XP.isNullable(target)) { return XP.toDOMIdentity(target); }
+
+            // Asserting
+            throw new XP.ArgumentError(1, 'Element, Function, number or string');
+        },
+
+        /**
+         * Returns a DOM predicate representation of `target`.
+         *
+         * @method _toDOMPredicate
+         * @param {Function} [target]
+         * @returns {Function}
+         * @private
+         */
+        _toDOMPredicate: function (target) {
+
+            // Casting
+            if (XP.isVoid(target) || XP.isFunction(target)) { return XP.toDOMPredicate(target); }
+
+            // Asserting
+            throw new XP.ArgumentError(1, 'Function');
+        },
+
+        /*********************************************************************/
+
+        // LISTENERS
+        listeners: {
+            'items-changed': '_itemsHandler',
+            'selected-changed': '_selectedHandler',
+            'selection-changed': '_selectionHandler'
+        },
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * The context element.
+             *
+             * @attribute context
+             * @type Element
+             */
+            context: {
+                value: null
+            },
+
+            /**
+             * If set to true, the selectable items are searched deep.
+             *
+             * @attribute deep
+             * @type boolean
+             * @default false
+             */
+            deep: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The index of the item to select by default.
+             *
+             * @attribute default-selected
+             * @type number | string
+             */
+            defaultSelected: {
+                value: null
+            },
+
+            /**
+             * If set to true, there are no items.
+             *
+             * @attribute empty-items
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            emptyItems: {
+                notify: true,
+                readOnly: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, there are no selected items.
+             *
+             * @attribute empty-selection
+             * @type boolean
+             * @notifies
+             * @readonly
+             */
+            emptySelection: {
+                computed: '_computeEmptySelection(selection)',
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean
+            },
+
+            /**
+             * The attribute used as index.
+             *
+             * @attribute index-attribute
+             * @type string
+             */
+            indexAttribute: {
+                reflectToAttribute: true,
+                type: String,
+                value: null
+            },
+
+            /**
+             * If set to true, the selector is initialized.
+             *
+             * @attribute initialized
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            initialized: {
+                notify: true,
+                observer: '_initializedChanged',
+                readOnly: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the mutation observer is set.
+             *
+             * @attribute is-mutated
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            isMutated: {
+                notify: true,
+                readOnly: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The selector used to recognize selectable items.
+             *
+             * @attribute item-selector
+             * @type string
+             * @default "[selectable]"
+             */
+            itemSelector: {
+                reflectToAttribute: true,
+                type: String,
+                value: '[selectable]'
+            },
+
+            /**
+             * The selectable items.
+             *
+             * @attribute items
+             * @type Array
+             * @notifies
+             */
+            items: {
+                notify: true,
+                type: Array
+            },
+
+            /**
+             * If set to true, the selector is currently mutating.
+             *
+             * @attribute mutating
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            mutating: {
+                notify: true,
+                readOnly: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The selected item's index.
+             *
+             * @attribute selected
+             * @type Array | number | string
+             * @notifies
+             */
+            selected: {
+                notify: true,
+                value: null
+            },
+
+            /**
+             * The attribute set on selection.
+             *
+             * @attribute selected-attribute
+             * @type string
+             * @default "active"
+             */
+            selectedAttribute: {
+                reflectToAttribute: true,
+                type: String,
+                value: 'active'
+            },
+
+            /**
+             * If set to true, the selection is about to change.
+             *
+             * @attribute selecting
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            selecting: {
+                notify: true,
+                readOnly: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The selected item.
+             *
+             * @attribute selection
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            selection: {
+                notify: true,
+                readOnly: true,
+                value: null
+            },
+
+            /**
+             * If set to true, there's only one item.
+             *
+             * @attribute single-item
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            singleItem: {
+                notify: true,
+                readOnly: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the unselection is allowed even if not multi.
+             *
+             * @attribute switchable
+             * @type boolean
+             * @default false
+             */
+            switchable: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            }
+        },
+
+        /*********************************************************************/
+
+        // COMPUTER
+        _computeEmptySelection: function (selection) {
+            return !selection || XP.isArray(selection, false);
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _initializedChanged: function (post) {
+
+            // Vars
+            var self = this;
+
+            // Checking
+            if (!post) { return; }
+
+            // Selecting
+            if (XP.isAlphanumeric(self.defaultSelected)) { self.select(self.indexAttribute ? self.defaultSelected : XP.toIndex(self.defaultSelected, true)); return; }
+            if (XP.isAlphanumeric(self.selected)) { self.select(self.selected); }
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        attached: function () {
+
+            // Vars
+            var self = this;
+
+            // Setting
+            if (!self.items) { self.items = []; } else { return; }
+
+            // Mutating
+            Polymer.XPSelectedBehaviorImp.mutated.apply(self);
+        },
+
+        // LISTENER
+        mutated: function () {
+
+            // Vars
+            var self     = this,
+                selector = self.context || self;
+
+            // Checking
+            if (self.selecting) { return; }
+
+            // Finding
+            self.overwrite('items', XP[self.deep ? 'getElements' : 'findElements'](Polymer.dom(selector), self.itemSelector));
+
+            // Setting
+            if (self.isMutated) { self._setMutating(true); }
+            if (self.isMutated) { self._setSelection(self.multi ? self.overwrite('selection', XP.intersection(self.items, self.selection)) : self.findItem(self.selection)); }
+            if (self.isMutated) { self.selected = self.multi ? self.overwrite('selected', XP.map(self.selection, function (item) { return self.findIndex(item, true); })) : self.findIndex(self.selection, true); }
+            if (self.isMutated) { self._setMutating(false); }
+
+            // Annotating
+            self._setIsMutated(true);
+
+            // Observing
+            XP.onMutation(selector, Polymer.XPSelectedBehaviorImp.mutated.bind(self));
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _itemsHandler: function () {
+
+            // Vars
+            var self = this;
+
+            // Setting
+            self._setEmptyItems(self.items.length === 0);
+            self._setInitialized(self.initialized || self.items.length > 0);
+            self._setSingleItem(self.items.length === 1);
+        },
+
+        // HANDLER
+        _selectedHandler: function () {
+
+            // Vars
+            var self     = this,
+                changing = !self.mutating && !self.selecting,
+                target   = self.findTarget();
+
+            // Setting
+            if (changing) { self._setSelection(self.multi ? self.overwrite('selection', XP.map(self.selected, function (identity) { return self.findItem(identity); })) : (XP.isAlphanumeric(self.selected) && self.findItem(self.selected)) || null); }
+
+            // Propagating
+            if (target) { target.selected = self.selected; }
+        },
+
+        // HANDLER
+        _selectionHandler: function () {
+
+            // Vars
+            var self = this;
+
+            // Firing
+            self.fire('xp-selection', {firer: self, selection: self.selection, selected: self.selected, isMulti: self.multi, isSwitchable: self.multi || self.switchable});
+
+            // Setting
+            XP.forEach(self.items || [], function (item) { XP.setAttribute(item, self.selectedAttribute, self.isSelected(item, true)); });
+        }
+    };
+
+    Polymer.XPSelectedBehavior = [
+        Polymer.XPArrayBehavior,
+        Polymer.XPTargeterBehavior,
+        Polymer.XPSelectedBehaviorImp
+    ];
+</script>

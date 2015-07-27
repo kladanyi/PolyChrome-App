@@ -1,6 +1,8 @@
 <dom-module id="pretty-json">
     <style is="custom-style">
-
+        :host {
+            word-wrap: break-word;
+        }
     </style>
     <template>
         <code>[[dataToString]]</code>
@@ -21,7 +23,7 @@
                 }
             },
             jsonDataChanged: function (newValue, oldValue) {
-                console.log('jsonDataChanged ' + JSON.stringify(oldValue) + ' -> ' + JSON.stringify(newValue));
+//                console.log('jsonDataChanged ' + JSON.stringify(oldValue) + ' -> ' + JSON.stringify(newValue));
 //                console.log('aktuális érték: ' + JSON.stringify(this.jsonData));
             },
             toString: function (data) {

@@ -1,0 +1,37 @@
+<dom-module id="filter-test-filter">
+    <style is="custom-style">
+    </style>
+    <template>
+        <h3>Filter</h3>
+        <paper-input value="{{filter.name}}" label="Név"></paper-input>
+        <paper-input value="{{filter.number}}" label="Szám" auto-validate pattern="[0-9]*"></paper-input>
+
+        <mat-dropdown label="Választható érték" floating-label inline model="{{filter.dropdown}}">
+            <mat-option value="1" label="Value 1"></mat-option>
+            <mat-option value="2" label="Value 2"></mat-option>
+            <mat-option value="3" label="Value 3"></mat-option>
+        </mat-dropdown>
+
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'filter-test-filter',
+            properties: {
+                filter: {
+                    type: Object,
+                    notify: true
+                }
+            },
+            observers: [
+                'change(filter.name)',
+                'change(filter.number)',
+                'change(filter.dropdown)'
+            ],
+            change: function () {
+                this.set('filter', this.filter);
+            }
+        });
+    })();
+</script>

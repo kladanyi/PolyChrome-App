@@ -1,0 +1,38 @@
+{
+  "name": "mat-option",
+  "license": "BSD-3-Clause",
+  "version": "0.9.5",
+  "description": "A custom element used to display a Material Design option",
+  "homepage": "http://expandjs.com/elements/mat-option",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material menu option",
+    "material menu",
+    "web app",
+    "html5",
+    "expandjs",
+    "web-components"
+  ],
+  "main": [
+    "mat-option.html"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.9.5",
+    "mat-icon": "ExpandJS/mat-icon#0.9.5",
+    "mat-icons": "ExpandJS/mat-icons#0.9.5",
+    "mat-ink": "ExpandJS/mat-ink#0.9.5",
+    "mat-ripple": "ExpandJS/mat-ripple#0.9.5",
+    "xp-anchor-behavior": "ExpandJS/xp-anchor-behavior#0.9.5",
+    "xp-pressed-behavior": "ExpandJS/xp-pressed-behavior#0.9.5",
+    "xp-referral-behavior": "ExpandJS/xp-referral-behavior#0.9.5",
+    "polymer": "Polymer/polymer#^1.0.0"
+  }
+}

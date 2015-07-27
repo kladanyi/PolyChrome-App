@@ -1,0 +1,40 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="../mat-option/mat-option.html">
+<link rel="import" href="mat-divider.html">
+
+<dom-module id="mat-divider-demo">
+
+    <template>
+
+        <mat-demo name="mat-divider" type="element" url="http://expandjs.com/elements/mat-divider">
+
+            <mat-demo-panel label="Default" padding-disabled>
+                <script type="text/html">
+                    <mat-option label="Option 1"></mat-option>
+                    <mat-option label="Option 2"></mat-option>
+                    <mat-option label="Option 3"></mat-option>
+                    <mat-divider></mat-divider>
+                    <mat-option label="Option 4"></mat-option>
+                    <mat-option label="Option 5"></mat-option>
+                </script>
+                <mat-option label="Option 1"></mat-option>
+                <mat-option label="Option 2"></mat-option>
+                <mat-option label="Option 3"></mat-option>
+                <mat-divider></mat-divider>
+                <mat-option label="Option 4"></mat-option>
+                <mat-option label="Option 5"></mat-option>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-divider-demo'
+        });
+    </script>
+
+</dom-module>

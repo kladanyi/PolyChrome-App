@@ -3,6 +3,7 @@
         /deep/ body {
             font-family: 'Roboto', 'Noto', sans-serif;
             font-size: 16px;
+            background-color: var(--app-background-color);
         }
 
         /* BUTTONS */
@@ -68,6 +69,12 @@
             background: var(--light-primary-color);
         }
         /* -SELECTED ELEMENTS- */
+        
+        /* h1, h2, h3 */
+        /deep/ h1.title, /deep/ h2.title, /deep/ h3.title {
+            border-bottom: 3px solid var(--dark-primary-color);
+        }
+        /* -h1, h2, h3- */
 
         #drawerToolbar {
             color: var(--secondary-text-color);
@@ -130,7 +137,7 @@
             font-weight: 500;
             line-height: 28px;
         }
-        
+
         #menuContainer {
             overflow-y: auto;
             backgroud-color: pink;
@@ -207,10 +214,10 @@
                             <iron-pages attr-for-selected="route" selected="{{route}}">
                                 <section route="home">
                                     <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
-
-                                    <paper-material elevation="1" class="card">
+                                    <filter-test-page is-current="[[isHomePage]]"></filter-test-page>
+<!--                                    <paper-material elevation="1" class="card">
                                         Kezdőlap.
-                                    </paper-material>
+                                    </paper-material>-->
                                 </section>
 
                                 <section route="users">
@@ -321,7 +328,7 @@
                         return function () {
                             DialogBehavior.showSpinnerDialog({title: 'Contact fab', text: 'JSON paraméterezés'});
                             setTimeout(function () {
-                                DialogBehavior.hideSpinnerDialog()
+                                DialogBehavior.hideSpinnerDialog();
                             }, 3000);
                         };
                     }
@@ -329,7 +336,11 @@
                 isFruitsPage: {
                     type: Boolean,
                     computed: "isThisPage(route, 'fruits')"
-                }
+                },
+                isHomePage: {
+                    type: Boolean,
+                    computed: "isThisPage(route, 'home')"
+                },
             },
             ready: function () {
                 console.log('MyApp is ready.');
@@ -356,6 +367,7 @@
                 return route === page;
             },
             titleChanged: function (newTitle, oldTitle) {
+                console.log('app title changed: ' + oldTitle + ' -> ' + newTitle);
                 if (!this.defaultTitle && oldTitle) {
                     this.defaultTitle = oldTitle;
                 }

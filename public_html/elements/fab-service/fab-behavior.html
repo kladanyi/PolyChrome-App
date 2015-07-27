@@ -13,7 +13,8 @@
                 return;
             }
             for (var i = 0; i < waitingList.length; i++) {
-                this.addFab(waitingList[i].id, waitingList[i].icon, waitingList[i].onClick, waitingList[i].page);
+//                this.addFab(waitingList[i].id, waitingList[i].icon, waitingList[i].onClick, waitingList[i].page);
+                this.addFab(waitingList[i]);
             }
             waitingList = [];
         },
@@ -23,19 +24,19 @@
             }
             currentPage = page;
             for (var i in pages[currentPage]) {
-                this.addFab(pages[currentPage][i].id, pages[currentPage][i].icon, pages[currentPage][i].onClick, pages[currentPage][i].page);
+//                this.addFab(pages[currentPage][i].id, pages[currentPage][i].icon, pages[currentPage][i].onClick, pages[currentPage][i].page);
+                this.addFab(pages[currentPage][i]);
             }
         },
-        addFab: function (id, icon, onClick, page) {
-            var fab = {id: id, icon: icon, onClick: onClick, page: page};
+        addFab: function (fab) {
             if (this.fabContainer) {
-                if (!page || page === currentPage) {
-                    this.fabContainer.addFab(id, icon, onClick);
+                if (!fab.page || fab.page === currentPage) {
+                    this.fabContainer.addFab(fab);
                 }
-                if (!pages[page]) {
-                    pages[page] = [];
+                if (!pages[fab.page]) {
+                    pages[fab.page] = [];
                 }
-                pages[page].push(fab);
+                pages[fab.page].push(fab);
             } else {
                 waitingList.push(fab);
             }

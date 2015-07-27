@@ -29,8 +29,15 @@
 
         :host {
             --paper-drawer-panel-right-drawer-container: {
-                background: none;
+                /*background: none;*/
+                background-color: var(--app-background-color);
             };
+        }
+
+        @media (max-width: 900px) {
+            /deep/ #drawer.iron-selected.paper-drawer-panel {
+                background-color: var(--app-background-color);
+            }
         }
     </style>
     <template>
@@ -41,6 +48,8 @@
             handle-as="json"
             last-response="{{fruits}}"></iron-ajax>
 
+        <fab-element id="refreshFab" icon="refresh" signal-name="refresh-fruits" page="fruits"></fab-element>
+        <iron-signals on-iron-signal-refresh-fruits="filterChanged"></iron-signals>
 
         <paper-drawer-panel right-drawer responsive-width="900px">
             <div drawer class="filterDrawer">
@@ -50,16 +59,18 @@
             </div>
             <div main class="layout vertical">
                 <div class="cont flex layout vertical">
-                    <iron-list items="[[fruits]]" as="item" class="flex">
-                        <template>
-                            <div>
-                                <paper-material elevation="1" class="card list">
-                                    <paper-ripple></paper-ripple>
-                                    <span>[[item.id]]</span> <span>[[item.name]]</span>
-                                </paper-material>
-                            </div>
-                        </template>
-                    </iron-list>
+                    <template is="dom-if" if="[[isCurrent]]">
+                        <iron-list items="[[fruits]]" as="item" class="flex">
+                            <template>
+                                <div>
+                                    <paper-material elevation="1" class="card list">
+                                        <paper-ripple></paper-ripple>
+                                        <span>[[item.id]]</span> <span>[[item.name]]</span>
+                                    </paper-material>
+                                </div>
+                            </template>
+                        </iron-list>
+                    </template>
                 </div>
             </div>
         </paper-drawer-panel>
@@ -91,6 +102,7 @@
                 'filterChanged(filter.name)'
             ],
             isCurrentChanged: function () {
+                console.log('fruit-page isCurrentChanged ' + this.isCurrent);
                 if (this.isCurrent) {
                     if (!this.fruits) {
                         this.$.listAjax.generateRequest();

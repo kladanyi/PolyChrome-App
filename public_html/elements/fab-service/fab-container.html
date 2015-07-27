@@ -35,17 +35,25 @@
                 },
                 currentFab: Object
             },
-            addFab: function (id, icon, onClick) {
+            addFab: function (fab) {
 //                console.log('Add fab: ' + id);
-                if (this.fabList.indexOf(id) > -1) {
-                    this.removeFab(id);
+                if (this.fabList.indexOf(fab.id) > -1) {
+                    this.removeFab(fab.id);
                 }
                 this.currentFab = {
-                    icon: icon,
-                    onClick: onClick
+                    icon: fab.icon
                 };
-                MyUtils.JSON.addElement(this.fabs, id, this.currentFab);
-                this.fabList.push(id);
+                this.currentFab.onClick = function() {
+                    if (fab.signalName) {
+                        var app = document.getElementById('app');
+                        app.fire('iron-signal', {name: fab.signalName, data: fab.signalData});
+                    }
+                    if (fab.onClick) {
+                        fab.onClick();
+                    }
+                };
+                MyUtils.JSON.addElement(this.fabs, fab.id, this.currentFab);
+                this.fabList.push(fab.id);
             },
             removeFab: function (id) {
                 var index = this.fabList.indexOf(id);
