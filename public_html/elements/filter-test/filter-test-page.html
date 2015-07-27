@@ -16,9 +16,15 @@
             method="GET"
             handle-as="json"
             last-response="{{response}}"></iron-ajax>
+        <iron-ajax
+            id="listAjaxPost"
+            url="[[listAjaxUrl]]"
+            method="POST"
+            handle-as="json"
+            last-response="{{responsePost}}"></iron-ajax>
 
         <fab-element id="refreshFab" icon="refresh" signal-name="refresh-filter-test" page="home"></fab-element>
-        <iron-signals on-iron-signal-refresh-filter-test="filterChanged"></iron-signals>
+        <iron-signals on-iron-signal-refresh-filter-test="refresh"></iron-signals>
 
         <h2 class="title">GET</h2>
         <div class="layout horizontal">
@@ -34,11 +40,11 @@
         <h2 class="title">POST</h2>
         <div class="layout horizontal">
             <paper-material elevation="1" class="card flex">
-                <filter-test-filter filter="{{filter}}"></filter-test-filter>
+                <filter-test-filter filter="{{filterPost}}"></filter-test-filter>
             </paper-material>
 
             <paper-material elevation="1" class="card flex">
-                <filter-test-response response="[[response]]"></filter-test-response>
+                <filter-test-response response="[[responsePost]]"></filter-test-response>
             </paper-material>
         </div>
 
@@ -54,37 +60,57 @@
                     type: Boolean,
                     observer: 'isCurrentChanged'
                 },
+                listAjaxUrl: {
+                    type: String
+                },
                 filter: {
                     type: Object,
                     value: {}
                 },
-                listAjaxUrl: {
-                    type: String
-                },
                 response: {
                     type: Object,
                     observer: 'responseChanged'
+                },
+                filterPost: {
+                    type: Object,
+                    value: {}
+                },
+                responsePost: {
+                    type: Object,
+                    observer: 'responsePostChanged'
                 }
             },
             observers: [
                 'filterChanged(filter.name)',
                 'filterChanged(filter.number)',
-                'filterChanged(filter.dropdown)'
+                'filterChanged(filter.dropdown)',
+                'filterPostChanged(filterPost.name)',
+                'filterPostChanged(filterPost.number)',
+                'filterPostChanged(filterPost.dropdown)'
             ],
             isCurrentChanged: function () {
                 console.log('filter-test-page isCurrentChanged ' + this.isCurrent);
                 if (this.isCurrent) {
-                    AppBehavior.setTitle('Öszszetett szűrés');
+                    AppBehavior.setTitle('Összetett szűrés');
                 } else {
                     AppBehavior.setTitle();
                 }
             },
+            refresh: function () {
+                this.filterChanged();
+                this.filterPostChanged();
+            },
             filterChanged: function () {
 //                console.log('filterChanged: ' + JSON.stringify(this.filter));
-                this.listAjaxUrl = this.listAjaxUrlCompute();
+                this.listAjaxUrl = this.listAjaxUrlCompute(this.filter);
                 this.$.listAjax.generateRequest();
             },
-            listAjaxUrlCompute: function () {
+            filterPostChanged: function () {
+                console.log('filterPostChanged: ' + JSON.stringify(this.filterPost));
+                this.listAjaxUrlPost = this.listAjaxUrlCompute(this.filterPost);
+                this.$.listAjaxPost.generateRequest();
+            },
+            listAjaxUrlCompute: function (filter) {
                 var d = new Date();
                 var dString =
                         [d.getFullYear(), ((d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1)), d.getDate()].join('-')
@@ -98,26 +124,29 @@
                         ((d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
 
                 var paramString = '';
-                if (this.filter.name) {
-                    paramString = 'name=' + this.filter.name;
+                if (filter.name) {
+                    paramString = 'name=' + filter.name;
                 }
-                if (this.filter.number) {
+                if (filter.number) {
                     if (paramString) {
                         paramString += '&';
                     }
-                    paramString += 'number=' + this.filter.number;
+                    paramString += 'number=' + filter.number;
                 }
-                if (this.filter.dropdown) {
+                if (filter.dropdown) {
                     if (paramString) {
                         paramString += '&';
                     }
-                    paramString += 'dropdown=' + this.filter.dropdown;
+                    paramString += 'dropdown=' + filter.dropdown;
                 }
 
                 return'http://localhost:3005/param/' + dString + (paramString ? ('?' + paramString) : '')
             },
             responseChanged: function () {
                 this.set('resopnse', this.response);
+            },
+            responsePostChanged: function () {
+                this.set('resopnsePost', this.responsePost);
             }
         });
     })();
