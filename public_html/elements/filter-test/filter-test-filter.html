@@ -6,11 +6,15 @@
         <paper-input value="{{filter.name}}" label="Név"></paper-input>
         <paper-input value="{{filter.number}}" label="Szám" auto-validate pattern="[0-9]*"></paper-input>
 
-        <mat-dropdown label="Választható érték" floating-label inline model="{{filter.dropdown}}">
+        <mat-dropdown label="Választható érték" floating-label model="{{filter.dropdown}}">
             <mat-option value="1" label="Value 1"></mat-option>
             <mat-option value="2" label="Value 2"></mat-option>
             <mat-option value="3" label="Value 3"></mat-option>
         </mat-dropdown>
+        
+        <template is="dom-repeat" items="{{filter.bools}}" as="bool">
+            <paper-checkbox checked="{{bool.value}}" on-click="changeBools">[[bool.name]]</paper-checkbox><br />
+        </template>
 
     </template>
 </dom-module>
@@ -18,6 +22,7 @@
     (function () {
         Polymer({
             is: 'filter-test-filter',
+            behaviors: [MyUtils],
             properties: {
                 filter: {
                     type: Object,
@@ -29,6 +34,21 @@
                 'change(filter.number)',
                 'change(filter.dropdown)'
             ],
+            ready: function() {
+                this.set('filter.bools', [
+                    {name: 'egy', value: false},
+                    {name: 'kettő', value: false},
+                    {name: 'három', value: false}
+                ]);
+            },
+            changeBools: function () {
+//                var bools = JSON.parse(JSON.stringify(this.filter.bools));
+                var bools = [];
+                for (var i in this.filter.bools) {
+                    bools.push(this.filter.bools[i]);
+                }
+                this.set('filter.bools', bools);
+            },
             change: function () {
                 this.set('filter', this.filter);
             }

@@ -19,34 +19,51 @@
         <iron-ajax
             id="listAjaxPost"
             url="[[listAjaxUrl]]"
+            body="[[bodyPost]]"
             method="POST"
             handle-as="json"
             last-response="{{responsePost}}"></iron-ajax>
+
+        <iron-ajax
+            id="listAjaxPut"
+            url="http://localhost:3005/param"
+            method="PUT"
+            handle-as="text"
+            last-response="{{responsePut}}"></iron-ajax>
+        <iron-ajax
+            id="listAjaxDelete"
+            url="http://localhost:3005/param"
+            method="DELETE"
+            handle-as="text"
+            last-response="{{responseDelete}}"></iron-ajax>
 
         <fab-element id="refreshFab" icon="refresh" signal-name="refresh-filter-test" page="home"></fab-element>
         <iron-signals on-iron-signal-refresh-filter-test="refresh"></iron-signals>
 
         <h2 class="title">GET</h2>
         <div class="layout horizontal">
-            <paper-material elevation="1" class="card flex">
+            <paper-material elevation="1" class="card flex-1">
                 <filter-test-filter filter="{{filter}}"></filter-test-filter>
             </paper-material>
 
-            <paper-material elevation="1" class="card flex">
+            <paper-material elevation="1" class="card flex-2">
                 <filter-test-response response="[[response]]"></filter-test-response>
             </paper-material>
         </div>
 
         <h2 class="title">POST</h2>
         <div class="layout horizontal">
-            <paper-material elevation="1" class="card flex">
+            <paper-material elevation="1" class="card flex-1">
                 <filter-test-filter filter="{{filterPost}}"></filter-test-filter>
             </paper-material>
 
-            <paper-material elevation="1" class="card flex">
+            <paper-material elevation="1" class="card flex-2">
                 <filter-test-response response="[[responsePost]]"></filter-test-response>
             </paper-material>
         </div>
+
+        <div>[[responsePut]]</div>
+        <div>[[responseDelete]]</div>
 
     </template>
 </dom-module>
@@ -54,7 +71,7 @@
     (function () {
         Polymer({
             is: 'filter-test-page',
-            behaviors: [AppBehavior],
+            behaviors: [AppBehavior, MyUtils],
             properties: {
                 isCurrent: {
                     type: Boolean,
@@ -78,15 +95,29 @@
                 responsePost: {
                     type: Object,
                     observer: 'responsePostChanged'
+                },
+                bodyPost: {
+                    type: Object,
+                    value: {}
+                },
+                responsePut: {
+                    type: String,
+                    value: 'Ide jön a put...'
+                },
+                responseDelete: {
+                    type: String,
+                    value: 'Ide jön a delete...'
                 }
             },
             observers: [
                 'filterChanged(filter.name)',
                 'filterChanged(filter.number)',
                 'filterChanged(filter.dropdown)',
+                'filterChanged(filter.bools)',
                 'filterPostChanged(filterPost.name)',
                 'filterPostChanged(filterPost.number)',
-                'filterPostChanged(filterPost.dropdown)'
+                'filterPostChanged(filterPost.dropdown)',
+                'filterPostChanged(filterPost.bools)'
             ],
             isCurrentChanged: function () {
                 console.log('filter-test-page isCurrentChanged ' + this.isCurrent);
@@ -99,15 +130,17 @@
             refresh: function () {
                 this.filterChanged();
                 this.filterPostChanged();
+                this.$.listAjaxPut.generateRequest();
+                this.$.listAjaxDelete.generateRequest();
             },
             filterChanged: function () {
-//                console.log('filterChanged: ' + JSON.stringify(this.filter));
                 this.listAjaxUrl = this.listAjaxUrlCompute(this.filter);
                 this.$.listAjax.generateRequest();
             },
             filterPostChanged: function () {
-                console.log('filterPostChanged: ' + JSON.stringify(this.filterPost));
-                this.listAjaxUrlPost = this.listAjaxUrlCompute(this.filterPost);
+                this.listAjaxUrlPost = this.listAjaxUrlCompute();
+                this.bodyPost = this.listAjaxParamsCompute(this.filterPost);
+                console.log(this.bodyPost);
                 this.$.listAjaxPost.generateRequest();
             },
             listAjaxUrlCompute: function (filter) {
@@ -123,9 +156,21 @@
                         + '.' +
                         ((d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
 
-                var paramString = '';
+                if (filter) {
+                    var paramString = this.listAjaxParamsCompute(filter);
+
+                    return'http://localhost:3005/param/' + dString + (paramString ? ('?' + paramString) : '');
+                } else {
+                    return'http://localhost:3005/param/' + dString;
+                }
+            },
+            listAjaxParamsCompute: function (filter) {
+                var paramString = 'teszt=1&teszt=2&teszt=3';
                 if (filter.name) {
-                    paramString = 'name=' + filter.name;
+                    if (paramString) {
+                        paramString += '&';
+                    }
+                    paramString += 'name=' + filter.name;
                 }
                 if (filter.number) {
                     if (paramString) {
@@ -140,7 +185,23 @@
                     paramString += 'dropdown=' + filter.dropdown;
                 }
 
-                return'http://localhost:3005/param/' + dString + (paramString ? ('?' + paramString) : '')
+                if (paramString) {
+                    paramString += '&';
+                }
+                var boolParam = '';
+                for (var i in filter.bools) {
+                    var keys = MyUtils.JSON.getKeys(filter.bools[i]);
+                    for (var j in keys) {
+                        if (boolParam) {
+                            boolParam += '&';
+                        }
+                        boolParam += 'bools.' + keys[j] + '=' + MyUtils.JSON.getElement(filter, 'bools.' + i + '.' + keys[j]);
+                    }
+                }
+                console.log('boolParam: ' + boolParam);
+                paramString += boolParam;
+
+                return paramString;
             },
             responseChanged: function () {
                 this.set('resopnse', this.response);

@@ -41,7 +41,22 @@
 
             --paper-fab-keyboard-focus-background: var(--accent-color);
         }
-        /* -CHECKBOX, RADIO BUTTON, TOGGLE BUTTON? INPUT, SLIDER, FAB- */
+        /* -CHECKBOX, RADIO BUTTON, TOGGLE BUTTON, INPUT, SLIDER, FAB- */
+        
+        /* MAT-DROPDOWN */
+        /deep/ #matInputUnderlineFocused {
+            color: var(--accent-color) !important;
+        }
+        /deep/ mat-dropdown:not([disabled]) #matInputMain {
+            border-bottom: 1px solid var(--secondary-text-color);
+        }
+        /deep/ mat-dropdown:not([disabled]) #matInputPlaceholder {
+            color: var(--secondary-text-color) !important;
+        }
+        /deep/ mat-dropdown[focused][floated] #matInputPlaceholder {
+            color: var(--accent-color) !important;
+        }
+        /* -MAT-DROPDOWN- */
 
         /* CARDS */
         /deep/ paper-material.card {
@@ -70,11 +85,11 @@
         }
         /* -SELECTED ELEMENTS- */
         
-        /* h1, h2, h3 */
+        /* H1, H2, H3 */
         /deep/ h1.title, /deep/ h2.title, /deep/ h3.title {
             border-bottom: 3px solid var(--dark-primary-color);
         }
-        /* -h1, h2, h3- */
+        /* -H1, H2, H3- */
 
         #drawerToolbar {
             color: var(--secondary-text-color);

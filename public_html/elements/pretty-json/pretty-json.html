@@ -5,7 +5,7 @@
         }
     </style>
     <template>
-        <code>[[dataToString]]</code>
+        <pre>[[dataToString]]</pre>
     </template>
 </dom-module>
 <script>
@@ -27,7 +27,7 @@
 //                console.log('aktuális érték: ' + JSON.stringify(this.jsonData));
             },
             toString: function (data) {
-                return JSON.stringify(data);
+                return JSON.stringify(data, null, 2);
             }
         });
     })();
