@@ -4,14 +4,14 @@
     <template>
         <h3>Filter</h3>
         <paper-input value="{{filter.name}}" label="Név"></paper-input>
-        <paper-input value="{{filter.number}}" label="Szám" auto-validate pattern="[0-9]*"></paper-input>
+        <paper-input id="number" value="{{number}}" label="Szám" auto-validate pattern="^[0-9]*$"></paper-input>
 
         <mat-dropdown label="Választható érték" floating-label model="{{filter.dropdown}}">
             <mat-option value="1" label="Value 1"></mat-option>
             <mat-option value="2" label="Value 2"></mat-option>
             <mat-option value="3" label="Value 3"></mat-option>
         </mat-dropdown>
-        
+
         <template is="dom-repeat" items="{{filter.bools}}" as="bool">
             <paper-checkbox checked="{{bool.value}}" on-click="changeBools">[[bool.name]]</paper-checkbox><br />
         </template>
@@ -25,16 +25,22 @@
             behaviors: [MyUtils],
             properties: {
                 filter: {
-                    type: Object,
+                    type: Object
+                },
+                valid: {
+                    type: Boolean,
                     notify: true
+                },
+                number: {
+                    type: Number
                 }
             },
             observers: [
-                'change(filter.name)',
-                'change(filter.number)',
-                'change(filter.dropdown)'
+                'changeName(filter.name)',
+                'changeNumber(number)',
+                'validate(filter.dropdown)'
             ],
-            ready: function() {
+            ready: function () {
                 this.set('filter.bools', [
                     {name: 'egy', value: false},
                     {name: 'kettő', value: false},
@@ -49,8 +55,35 @@
                 }
                 this.set('filter.bools', bools);
             },
-            change: function () {
-                this.set('filter', this.filter);
+            validPattern: function(object, value) {
+                var patt = new RegExp('^' + object.pattern + '$');
+                return (value === undefined && !object.required) || patt.test(value);
+            },
+            isValid: function () {
+                return this.validPattern(this.$.number, this.number);
+            },
+            validate: function() {
+                this.set('valid', this.isValid());
+            },
+            changeName: function() {
+                this.validate();
+                if (this.filter.name === '') {
+                    this.set('filter.name', undefined);
+                }
+            },
+            changeNumber: function () {
+                this.validate();
+                
+                if (this.number === '') {
+                    this.number = undefined;
+                } else if (this.validPattern(this.$.number, this.number) && this.number !== undefined) {
+                    var number = parseInt(this.number);
+                    if (!isNaN(number)) {
+                        this.number = number;
+                    }
+                }
+                console.log(this.number + ' ' + (typeof this.number));
+                this.set('filter.number', this.number);
             }
         });
     })();

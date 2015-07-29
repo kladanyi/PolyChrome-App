@@ -13,28 +13,34 @@
         <iron-ajax
             id="listAjax"
             url="[[listAjaxUrl]]"
+            body="[[bodyPost]]"
+            headers="[[header]]"
             method="GET"
-            handle-as="json"
             last-response="{{response}}"></iron-ajax>
         <iron-ajax
             id="listAjaxPost"
-            url="[[listAjaxUrl]]"
+            url="[[listAjaxUrlPost]]"
             body="[[bodyPost]]"
+            headers="[[header]]"
             method="POST"
-            handle-as="json"
+            content-type="application/json"
             last-response="{{responsePost}}"></iron-ajax>
 
         <iron-ajax
             id="listAjaxPut"
-            url="http://localhost:3005/param"
+            url="[[listAjaxUrlPut]]"
+            body="[[bodyPut]]"
+            headers="[[header]]"
             method="PUT"
-            handle-as="text"
+            content-type="application/json"
             last-response="{{responsePut}}"></iron-ajax>
         <iron-ajax
             id="listAjaxDelete"
-            url="http://localhost:3005/param"
+            url="[[listAjaxUrlDelete]]"
+            body="[[bodyDelete]]"
+            headers="[[header]]"
             method="DELETE"
-            handle-as="text"
+            content-type="application/json"
             last-response="{{responseDelete}}"></iron-ajax>
 
         <fab-element id="refreshFab" icon="refresh" signal-name="refresh-filter-test" page="home"></fab-element>
@@ -43,7 +49,7 @@
         <h2 class="title">GET</h2>
         <div class="layout horizontal">
             <paper-material elevation="1" class="card flex-1">
-                <filter-test-filter filter="{{filter}}"></filter-test-filter>
+                <filter-test-filter filter="{{filter}}" valid="{{valid}}"></filter-test-filter>
             </paper-material>
 
             <paper-material elevation="1" class="card flex-2">
@@ -54,7 +60,7 @@
         <h2 class="title">POST</h2>
         <div class="layout horizontal">
             <paper-material elevation="1" class="card flex-1">
-                <filter-test-filter filter="{{filterPost}}"></filter-test-filter>
+                <filter-test-filter filter="{{filterPost}}" valid="{{validPost}}"></filter-test-filter>
             </paper-material>
 
             <paper-material elevation="1" class="card flex-2">
@@ -62,8 +68,27 @@
             </paper-material>
         </div>
 
-        <div>[[responsePut]]</div>
-        <div>[[responseDelete]]</div>
+        <h2 class="title">PUT</h2>
+        <div class="layout horizontal">
+            <paper-material elevation="1" class="card flex-1">
+                <filter-test-filter filter="{{filterPut}}" valid="{{validPut}}"></filter-test-filter>
+            </paper-material>
+
+            <paper-material elevation="1" class="card flex-2">
+                <filter-test-response response="[[responsePut]]"></filter-test-response>
+            </paper-material>
+        </div>
+
+        <h2 class="title">DELETE</h2>
+        <div class="layout horizontal">
+            <paper-material elevation="1" class="card flex-1">
+                <filter-test-filter filter="{{filterDelete}}" valid="{{validDelete}}"></filter-test-filter>
+            </paper-material>
+
+            <paper-material elevation="1" class="card flex-2">
+                <filter-test-response response="[[responseDelete]]"></filter-test-response>
+            </paper-material>
+        </div>
 
     </template>
 </dom-module>
@@ -100,13 +125,36 @@
                     type: Object,
                     value: {}
                 },
+                filterPut: {
+                    type: Object,
+                    value: {}
+                },
                 responsePut: {
-                    type: String,
-                    value: 'Ide jön a put...'
+                    type: Object,
+                    value: {}
+                },
+                bodyPut: {
+                    type: Object,
+                    value: {}
+                },
+                filterDelete: {
+                    type: Object,
+                    value: {}
                 },
                 responseDelete: {
-                    type: String,
-                    value: 'Ide jön a delete...'
+                    type: Object,
+                    value: {}
+                },
+                bodyDelete: {
+                    type: Object,
+                    value: {}
+                },
+                header: {
+                    type: Object,
+                    value: {
+                        hello: 'world',
+                        hola: 'mundo'
+                    }
                 }
             },
             observers: [
@@ -117,7 +165,15 @@
                 'filterPostChanged(filterPost.name)',
                 'filterPostChanged(filterPost.number)',
                 'filterPostChanged(filterPost.dropdown)',
-                'filterPostChanged(filterPost.bools)'
+                'filterPostChanged(filterPost.bools)',
+                'filterPutChanged(filterPut.name)',
+                'filterPutChanged(filterPut.number)',
+                'filterPutChanged(filterPut.dropdown)',
+                'filterPutChanged(filterPut.bools)',
+                'filterDeleteChanged(filterDelete.name)',
+                'filterDeleteChanged(filterDelete.number)',
+                'filterDeleteChanged(filterDelete.dropdown)',
+                'filterDeleteChanged(filterDelete.bools)'
             ],
             isCurrentChanged: function () {
                 console.log('filter-test-page isCurrentChanged ' + this.isCurrent);
@@ -130,18 +186,35 @@
             refresh: function () {
                 this.filterChanged();
                 this.filterPostChanged();
-                this.$.listAjaxPut.generateRequest();
-                this.$.listAjaxDelete.generateRequest();
+                this.filterPutChanged();
+                this.filterDeleteChanged();
             },
             filterChanged: function () {
-                this.listAjaxUrl = this.listAjaxUrlCompute(this.filter);
-                this.$.listAjax.generateRequest();
+                if (this.isCurrent && this.valid) {
+                    this.listAjaxUrl = this.listAjaxUrlCompute(this.filter);
+                    this.$.listAjax.generateRequest();
+                }
             },
-            filterPostChanged: function () {
-                this.listAjaxUrlPost = this.listAjaxUrlCompute();
-                this.bodyPost = this.listAjaxParamsCompute(this.filterPost);
-                console.log(this.bodyPost);
-                this.$.listAjaxPost.generateRequest();
+            filterPostChanged: function (param) {
+                if (this.isCurrent && this.validPost) {
+                    this.listAjaxUrlPost = this.listAjaxUrlCompute();
+                    this.bodyPost = JSON.stringify(this.filterPost);
+                    this.$.listAjaxPost.generateRequest();
+                }
+            },
+            filterPutChanged: function (param) {
+                if (this.isCurrent && this.validPut) {
+                    this.listAjaxUrlPut = this.listAjaxUrlCompute();
+                    this.bodyPut = JSON.stringify(this.filterPut);
+                    this.$.listAjaxPut.generateRequest();
+                }
+            },
+            filterDeleteChanged: function (param) {
+                if (this.isCurrent && this.validDelete) {
+                    this.listAjaxUrlDelete = this.listAjaxUrlCompute();
+                    this.bodyDelete = JSON.stringify(this.filterDelete);
+                    this.$.listAjaxDelete.generateRequest();
+                }
             },
             listAjaxUrlCompute: function (filter) {
                 var d = new Date();
@@ -157,6 +230,7 @@
                         ((d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
 
                 if (filter) {
+                    console.log(filter);
                     var paramString = this.listAjaxParamsCompute(filter);
 
                     return'http://localhost:3005/param/' + dString + (paramString ? ('?' + paramString) : '');
@@ -165,7 +239,8 @@
                 }
             },
             listAjaxParamsCompute: function (filter) {
-                var paramString = 'teszt=1&teszt=2&teszt=3';
+//                var paramString = 'teszt=1&teszt=2&teszt=3';
+                var paramString = '';
                 if (filter.name) {
                     if (paramString) {
                         paramString += '&';

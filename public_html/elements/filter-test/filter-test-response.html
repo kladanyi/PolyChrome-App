@@ -16,6 +16,10 @@
                 <span class="flex-1">body paraméterek:</span>
                 <pretty-json class="flex-2" json-data="[[bodyparams]]"></pretty-json>
             </div>
+            <div class="layout horizontal">
+                <span class="flex-1">header adatok:</span>
+                <pretty-json class="flex-2" json-data="[[headerdata]]"></pretty-json>
+            </div>
         </div>
 
     </template>
@@ -39,6 +43,10 @@
                 bodyparams: {
                     type: Object,
                     computed: 'partOfData(response, "body_params")'
+                },
+                headerdata: {
+                    type: Object,
+                    computed: 'partOfData(response, "header_data")'
                 }
             },
             partOfData: function (resp, part) {
