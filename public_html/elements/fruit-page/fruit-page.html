@@ -48,6 +48,7 @@
             handle-as="json"
             last-response="{{fruits}}"></iron-ajax>
 
+        <my-app-title page="[[page]]" is-current="[[isCurrentPage]]">Gyümölcsös</my-app-title>
         <fab-element id="refreshFab" icon="refresh" signal-name="refresh-fruits" page="fruits"></fab-element>
         <iron-signals on-iron-signal-refresh-fruits="filterChanged"></iron-signals>
 
@@ -59,7 +60,7 @@
             </div>
             <div main class="layout vertical">
                 <div class="cont flex layout vertical">
-                    <template is="dom-if" if="[[isCurrent]]">
+                    <template is="dom-if" if="[[isCurrentPage]]">
                         <iron-list items="[[fruits]]" as="item" class="flex">
                             <template>
                                 <div>
@@ -82,9 +83,15 @@
             is: 'fruit-page',
             behaviors: [AppBehavior],
             properties: {
-                isCurrent: {
+                page: {
+                    type: String
+                },
+                current: {
+                    type: String
+                },
+                isCurrentPage: {
                     type: Boolean,
-                    observer: 'isCurrentChanged'
+                    computed: 'isCurrent(current)'
                 },
                 filter: {
                     type: Object,
@@ -101,19 +108,10 @@
             observers: [
                 'filterChanged(filter.name)'
             ],
-            isCurrentChanged: function () {
-                console.log('fruit-page isCurrentChanged ' + this.isCurrent);
-                if (this.isCurrent) {
-                    if (!this.fruits) {
-                        this.$.listAjax.generateRequest();
-                    }
-                    AppBehavior.setTitle('Gyümölcsös');
-                } else {
-                    AppBehavior.setTitle();
-                }
+            isCurrent: function(current) {
+                return current === this.page;
             },
             filterChanged: function () {
-                console.log('filterChanged: ' + JSON.stringify(this.filter));
                 this.$.listAjax.generateRequest();
             },
             listAjaxUrlCompute: function (name) {

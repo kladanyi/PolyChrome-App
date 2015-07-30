@@ -3,9 +3,7 @@
         /deep/ body {
             font-family: 'Roboto', 'Noto', sans-serif;
             font-size: 16px;
-            background-color: var(--app-background-color);
         }
-
         /* BUTTONS */
         /deep/ paper-button:not([disabled]).default::shadow {
             color: var(--accent-color);
@@ -42,7 +40,7 @@
             --paper-fab-keyboard-focus-background: var(--accent-color);
         }
         /* -CHECKBOX, RADIO BUTTON, TOGGLE BUTTON, INPUT, SLIDER, FAB- */
-        
+
         /* MAT-DROPDOWN */
         /deep/ #matInputUnderlineFocused {
             color: var(--accent-color) !important;
@@ -84,7 +82,7 @@
             background: var(--light-primary-color);
         }
         /* -SELECTED ELEMENTS- */
-        
+
         /* H1, H2, H3 */
         /deep/ h1.title, /deep/ h2.title, /deep/ h3.title {
             border-bottom: 3px solid var(--dark-primary-color);
@@ -159,8 +157,10 @@
         }
     </style>
     <template>
+        <iron-signals on-iron-signal-more-route-change="routeChangedSignal"></iron-signals>
         <!--<fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>-->
         <dialog-container id="dialogContainer"></dialog-container>
+        <my-app-title default>PolyChrome App</my-app-title>
 
         <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical">
             <div drawer class="flex layout vertical">
@@ -197,9 +197,15 @@
                             <a route="fruits" href="[[makeUrl('fruits')]]">
                                 <iron-icon icon="my-iconset:grape"></iron-icon>
                                 <span>Gyümölcsös</span>
+                            </a>
 
-                                <!--hidden--> 
-                                <a route="test" hidden="true"></a>
+                            <a route="test" href="[[makeUrl('test', testMenuParams)]]">
+                                <iron-icon icon="b"></iron-icon>
+                                <span>Teszt</span>
+                            </a>
+
+                            <!--hidden--> 
+                            <!--<a route="test" hidden="true"></a>-->
                         </paper-menu>
                     </more-route-selector>
                 </div>
@@ -225,14 +231,14 @@
 
                     <!-- Main Content -->
                     <div class="content flex">
-                        <more-route-selector selected-params="{{params}}" on-more-route-change="routeChanged">
+                        <more-route-selector on-more-route-change="routeChanged"> <!-- selected-params="{{params}}" -->
                             <iron-pages attr-for-selected="route" selected="{{route}}">
                                 <section route="home">
                                     <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
-                                    <filter-test-page is-current="[[isHomePage]]"></filter-test-page>
-<!--                                    <paper-material elevation="1" class="card">
-                                        Kezdőlap.
-                                    </paper-material>-->
+                                    <filter-test-page page="home" current="[[route]]"></filter-test-page>
+                                    <!--                                    <paper-material elevation="1" class="card">
+                                                                            Kezdőlap.
+                                                                        </paper-material>-->
                                 </section>
 
                                 <section route="users">
@@ -246,9 +252,9 @@
                                 <section route="user-info">
                                     <paper-material elevation="1" class="card">
                                         <h2 class="paper-font-display2">
-                                            User:<span>{{params.name}}</span>
+                                            User:<span>{{paramsname}}</span>
                                         </h2>
-                                        <div>This is <span>{{params.name}}</span>'s section</div>
+                                        <div>This is <span>{{paramsname}}</span>'s section</div>
                                         <paper-input value="{{userName}}" label="User name"></paper-input>
                                         <paper-button on-click="goToUserInfo">Ugrás a felhasználóhoz</paper-button>
                                     </paper-material>
@@ -286,14 +292,12 @@
                                 </section>
 
                                 <section route="fruits">
-                                    <fruit-page is-current="[[isFruitsPage]]"></fruit-page>
+                                    <fruit-page page="fruits" current="[[route]]"></fruit-page>
                                 </section>
 
                                 <section route="test">
                                     <paper-material elevation="1" class="card">
-                                        <h2>Teszt</h2>
-                                        <p>a: <span>[[params.a]]</span></p>
-                                        <p>b: <span>[[params.b]]</span></p>
+                                        <param-test path-params="[[params]]" page="test" current="[[route]]"></param-test>
                                     </paper-material>
                                 </section>
                             </iron-pages>
@@ -308,15 +312,14 @@
     (function () {
         Polymer({
             is: 'my-app',
-            behaviors: [ToastBehavior, FabBehavior, DialogBehavior],
+            behaviors: [AppBehavior, ToastBehavior, FabBehavior, DialogBehavior],
             properties: {
                 route: {
                     type: String,
                     value: 'home'
                 },
                 appTitle: {
-                    type: String,
-                    observer: 'titleChanged'
+                    type: String
                 },
                 fabclick: {
                     type: Object,
@@ -356,10 +359,40 @@
                     type: Boolean,
                     computed: "isThisPage(route, 'home')"
                 },
+                testMenuParams: {
+                    type: Object,
+                    value: {
+                        a: 'a értéke',
+                        b: 'b értéke'
+                    }
+                }
             },
             ready: function () {
                 console.log('MyApp is ready.');
+                AppBehavior.title.update(this);
                 FabBehavior.setCurrentPage(this.route);
+
+                window.onhashchange = function (event) {
+                    var parameters = AppBehavior.route.getParameters(MoreRouting.getRoute(AppBehavior.route.getRoute()).fullPath);
+                    console.log('parameters: ' + JSON.stringify(parameters));
+//                    console.log('============================================');
+//                    console.log('új url: ' + event.newURL);
+//                    var root = window.location.protocol + '//' + window.location.host + window.location.pathname + '#!';
+//                    var i = event.newURL.indexOf(root);
+//                    if (i === 0) {
+//                        console.log(root);
+//                        console.log(event.newURL.substring(root.length, event.newURL.length));
+//                        console.log(MoreRouting.getRoute(AppBehavior.getRoute()).fullPath);
+//                    }
+//                    console.log('============================================');
+                };
+                var parameters = AppBehavior.route.getParameters();
+                console.log('parameters: ' + JSON.stringify(parameters));
+//                console.log('============================================');
+//                var root = window.location.protocol + '//' + window.location.host + window.location.pathname + '#!';
+//                console.log('kezdő url: ' + window.location.hash); // chrome alkalmazásban ez nem jelenik meg, de ott simán a window.html-lel nyit
+//                console.log('root: ' + root);
+//                console.log('============================================');
             },
             makeUrl: function (pathOrName, params) {
                 return MoreRouting.urlFor(pathOrName, params);
@@ -372,6 +405,7 @@
                 FabBehavior.setCurrentPage(this.route);
                 if (MoreRouting.isCurrentUrl('user-info')) {
                     console.log(MoreRouting.getRoute('user-info').params.name);
+                    this.set('params.name', MoreRouting.getRoute('user-info').params.name);
                 }
 //                var p = MoreRouting.getRoute(this.route).params;
 //                console.log(this.route + ' ' + JSON.stringify(p));
@@ -381,21 +415,18 @@
             isThisPage: function (route, page) {
                 return route === page;
             },
-            titleChanged: function (newTitle, oldTitle) {
-                console.log('app title changed: ' + oldTitle + ' -> ' + newTitle);
-                if (!this.defaultTitle && oldTitle) {
-                    this.defaultTitle = oldTitle;
-                }
-
-                if (!newTitle) {
-                    this.appTitle = this.defaultTitle;
-                }
-            },
             userInfoUrl: function (name) {
                 return this.makeUrl('user-info', {name: name});
             },
             goToUserInfo: function () {
                 MoreRouting.navigateTo('user-info', {name: this.userName});
+            },
+            getElement: function (value) {
+                console.log('getElement ' + value + ' ' + JSON.stringify(this.params));
+                return value;
+            },
+            routeChangedSignal: function (data) {
+                console.log('routeChangedSignal: ' + JSON.stringify(data));
             }
         });
     })();

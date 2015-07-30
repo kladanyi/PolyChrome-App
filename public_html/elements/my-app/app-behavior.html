@@ -1,10 +1,77 @@
 <script>
+    var staticObject = {
+        titles: []
+    };
     var AppBehavior = {
-        setTitle: function(title) {
-            console.log('change app title: ' + title);
-            var app = document.getElementById('app');
-            console.log(app);
-            app.appTitle = title;
+        title: {
+            update: function (app) {
+                var title = staticObject.defaultTitle;
+                if (staticObject.titles.length > 0) {
+                    title = staticObject.titles[staticObject.titles.length - 1];
+                }
+                if (app === undefined) {
+                    app = document.getElementById('app');
+                }
+                app.set('appTitle', title);
+            },
+            setDefault: function (title) {
+                staticObject.defaultTitle = title;
+                this.update();
+            },
+            add: function (title) {
+                staticObject.titles.push(title);
+                this.update();
+            },
+            remove: function (title) {
+                var index = staticObject.titles.indexOf(title);
+                if (index > -1) {
+                    staticObject.titles.splice(index, 1);
+                }
+                this.update();
+            }
+        },
+        route: {
+            getRoute: function () {
+                var app = document.getElementById('app');
+                return app.route;
+            },
+            getParameters: function (model) {
+                var url = document.URL;
+                var root = window.location.protocol + '//' + window.location.host + window.location.pathname + '#!';
+                var index = url.indexOf(root);
+                if (index === 0) {
+                    var values = url.substring(root.length, url.length);
+                }
+                var parts = values.split('/');
+                parts.splice(0, 1);
+                
+                if (!model) {
+                    var routes = MoreRouting.driver._activeRoutes;
+                    for (var i in routes) {
+                        if (routes[i].depth === parts.length) {
+                            model = routes[i].fullPath;
+                        }
+                    }
+                }
+                
+                console.log('model: ' + model);
+                
+                //usersnél nem jó
+                
+                var modelParts = MoreRouting.getRoute(model).compiled;
+                console.log(JSON.stringify(modelParts));
+                console.log(JSON.stringify(parts));
+                
+                var params = {};
+                
+                for (var i in modelParts) {
+                    if (modelParts[i].type === 'param') {
+                        params[modelParts[i].name] = parts[i];
+                    }
+                }
+                
+                return params;
+            }
         }
     };
 </script>

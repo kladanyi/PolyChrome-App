@@ -1,0 +1,57 @@
+<dom-module id="param-test">
+    <style is="custom-style">
+    </style>
+    <template>
+        Path paraméter teszt. <span>[[url]]</span>
+        <pretty-json json-data="[[pathParams]]"></pretty-json>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'param-test',
+            behaviors: [MoreRouting],
+            properties: {
+                page: {
+                    type: String
+                },
+                current: {
+                    type: String,
+                    observer: 'pageChanged'
+                },
+                pathParams: {
+                    type: Object
+                },
+                url: {
+                    type: String,
+                    compute: 'value(window.location.href)'
+                }
+            },
+            observers: [
+                "paramChanged('a', pathParams.a)",
+                "paramChanged('b', pathParams.b)"
+            ],
+            ready: function () {
+                console.log('path params: ' + JSON.stringify(this.pathParams));
+                console.log(MoreRouting.getRoute(this.page).params.a);
+                console.log('url: ' + window.location.href);
+            },
+            paramChanged: function (name, value) {
+                console.log('paramChanged: ' + name + ' ' + value);
+            },
+            pageChanged: function () {
+                console.log('pageChanged: ' + this.page);
+                if (this.page === this.current) {
+                    console.log(MoreRouting.getRoute(this.page).params);
+                    console.log(MoreRouting.getRoute(this.page).params.a);
+                    console.log(MoreRouting.getRoute(this.page).params.b);
+                    this.set('pathParams', {a: MoreRouting.getRoute(this.page).params.a, b: MoreRouting.getRoute(this.page).params.b});
+                }
+            },
+            value: function(val) {
+                console.log('val: ' + val);
+                return val;
+            }
+        });
+    })();
+</script>

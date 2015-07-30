@@ -43,7 +43,8 @@
             content-type="application/json"
             last-response="{{responseDelete}}"></iron-ajax>
 
-        <fab-element id="refreshFab" icon="refresh" signal-name="refresh-filter-test" page="home"></fab-element>
+        <my-app-title page="[[page]]" is-current="[[isCurrentPage]]">Összetett szűrés</my-app-title>
+        <fab-element id="refreshFab" icon="refresh" signal-name="refresh-filter-test" page="[[home]]"></fab-element>
         <iron-signals on-iron-signal-refresh-filter-test="refresh"></iron-signals>
 
         <h2 class="title">GET</h2>
@@ -96,11 +97,21 @@
     (function () {
         Polymer({
             is: 'filter-test-page',
-            behaviors: [AppBehavior, MyUtils],
+            behaviors: [MyUtils],
             properties: {
-                isCurrent: {
+//                isCurrent: {
+//                    type: Boolean,
+//                    observer: 'isCurrentChanged'
+//                },
+                page: {
+                    type: String
+                },
+                current: {
+                    type: String
+                },
+                isCurrentPage: {
                     type: Boolean,
-                    observer: 'isCurrentChanged'
+                    computed: 'isCurrent(current)'
                 },
                 listAjaxUrl: {
                     type: String
@@ -175,13 +186,8 @@
                 'filterDeleteChanged(filterDelete.dropdown)',
                 'filterDeleteChanged(filterDelete.bools)'
             ],
-            isCurrentChanged: function () {
-                console.log('filter-test-page isCurrentChanged ' + this.isCurrent);
-                if (this.isCurrent) {
-                    AppBehavior.setTitle('Összetett szűrés');
-                } else {
-                    AppBehavior.setTitle();
-                }
+            isCurrent: function(current) {
+                return current === this.page;
             },
             refresh: function () {
                 this.filterChanged();
@@ -230,7 +236,6 @@
                         ((d.getMilliseconds() < 10 ? '0' : '') + d.getMilliseconds());
 
                 if (filter) {
-                    console.log(filter);
                     var paramString = this.listAjaxParamsCompute(filter);
 
                     return'http://localhost:3005/param/' + dString + (paramString ? ('?' + paramString) : '');
@@ -273,7 +278,6 @@
                         boolParam += 'bools.' + keys[j] + '=' + MyUtils.JSON.getElement(filter, 'bools.' + i + '.' + keys[j]);
                     }
                 }
-                console.log('boolParam: ' + boolParam);
                 paramString += boolParam;
 
                 return paramString;

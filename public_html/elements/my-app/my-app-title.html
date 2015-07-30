@@ -1,0 +1,32 @@
+<dom-module id="my-app-title">
+    <template></template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'my-app-title',
+            behaviors: [AppBehavior],
+            properties: {
+                default: {
+                    type: Boolean
+                },
+                isCurrent: {
+                    type: Boolean,
+                    observer: 'currentChanged'
+                }
+            },
+            ready: function () {
+                if (this.default) {
+                    AppBehavior.title.setDefault(Polymer.dom(this).textContent);
+                }
+            },
+            currentChanged: function(newVal, oldVal) {
+                if (newVal) {
+                    AppBehavior.title.add(Polymer.dom(this).textContent);
+                } else {
+                    AppBehavior.title.remove(Polymer.dom(this).textContent);
+                }
+            }
+        });
+    })();
+</script>
