@@ -42,8 +42,11 @@
                 if (index === 0) {
                     var values = url.substring(root.length, url.length);
                 }
+                if (!values) {
+                    return {};
+                }
                 var parts = values.split('/');
-                parts.splice(0, 1);
+//                parts.splice(0, 1);
                 
                 if (!model) {
                     var routes = MoreRouting.driver._activeRoutes;
@@ -56,17 +59,23 @@
                 
                 console.log('model: ' + model);
                 
+                if (!model) {
+                    return {};
+                }
+                
                 //usersnél nem jó
                 
-                var modelParts = MoreRouting.getRoute(model).compiled;
-                console.log(JSON.stringify(modelParts));
-                console.log(JSON.stringify(parts));
+                var modelParts = model.split('/'); //MoreRouting.getRoute(model).compiled;
+                console.log(MoreRouting.getRoute(model));
+                console.log('model parts: ' + JSON.stringify(modelParts));
+                console.log('parts:       ' + JSON.stringify(parts));
                 
                 var params = {};
                 
                 for (var i in modelParts) {
-                    if (modelParts[i].type === 'param') {
-                        params[modelParts[i].name] = parts[i];
+//                    if (modelParts[i].type === 'param') {
+                    if (modelParts[i].indexOf(':') === 1) {
+                        params[modelParts[i].substring(1)] = parts[i];
                     }
                 }
                 

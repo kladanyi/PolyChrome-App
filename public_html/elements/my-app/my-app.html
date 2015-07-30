@@ -204,6 +204,16 @@
                                 <span>Teszt</span>
                             </a>
 
+                            <a route="test2" href="[[makeUrl('test2', testMenuParams)]]">
+                                <iron-icon icon="b"></iron-icon>
+                                <span>Teszt 2</span>
+                            </a>
+
+                            <a route="xy-z" href="[[makeUrl('xy-z', zParam)]]">
+                                <iron-icon icon="b"></iron-icon>
+                                <span>Z</span>
+                            </a>
+
                             <!--hidden--> 
                             <!--<a route="test" hidden="true"></a>-->
                         </paper-menu>
@@ -300,6 +310,18 @@
                                         <param-test path-params="[[params]]" page="test" current="[[route]]"></param-test>
                                     </paper-material>
                                 </section>
+
+                                <section route="test2">
+                                    <paper-material elevation="1" class="card">
+                                        <param-test path-params="[[params]]" page="test2" current="[[route]]"></param-test>
+                                    </paper-material>
+                                </section>
+
+                                <section route="xy-z">
+                                    <paper-material elevation="1" class="card">
+                                        <param-test path-params="[[params]]" page="xy-z" current="[[route]]"></param-test>
+                                    </paper-material>
+                                </section>
                             </iron-pages>
                         </more-route-selector>
                     </div>
@@ -362,8 +384,14 @@
                 testMenuParams: {
                     type: Object,
                     value: {
-                        a: 'a értéke',
-                        b: 'b értéke'
+                        a: 101,
+                        b: 203
+                    }
+                },
+                zParam: {
+                    type: Object,
+                    value: {
+                        z: 5
                     }
                 }
             },
@@ -375,24 +403,9 @@
                 window.onhashchange = function (event) {
                     var parameters = AppBehavior.route.getParameters(MoreRouting.getRoute(AppBehavior.route.getRoute()).fullPath);
                     console.log('parameters: ' + JSON.stringify(parameters));
-//                    console.log('============================================');
-//                    console.log('új url: ' + event.newURL);
-//                    var root = window.location.protocol + '//' + window.location.host + window.location.pathname + '#!';
-//                    var i = event.newURL.indexOf(root);
-//                    if (i === 0) {
-//                        console.log(root);
-//                        console.log(event.newURL.substring(root.length, event.newURL.length));
-//                        console.log(MoreRouting.getRoute(AppBehavior.getRoute()).fullPath);
-//                    }
-//                    console.log('============================================');
                 };
                 var parameters = AppBehavior.route.getParameters();
                 console.log('parameters: ' + JSON.stringify(parameters));
-//                console.log('============================================');
-//                var root = window.location.protocol + '//' + window.location.host + window.location.pathname + '#!';
-//                console.log('kezdő url: ' + window.location.hash); // chrome alkalmazásban ez nem jelenik meg, de ott simán a window.html-lel nyit
-//                console.log('root: ' + root);
-//                console.log('============================================');
             },
             makeUrl: function (pathOrName, params) {
                 return MoreRouting.urlFor(pathOrName, params);
