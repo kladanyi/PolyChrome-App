@@ -32,24 +32,24 @@
                 "paramChanged('b', pathParams.b)"
             ],
             ready: function () {
-                console.log('path params: ' + JSON.stringify(this.pathParams));
-                console.log(MoreRouting.getRoute(this.page).params.a);
-                console.log('url: ' + window.location.href);
+//                console.log('path params: ' + JSON.stringify(this.pathParams));
+//                console.log(MoreRouting.getRoute(this.page).params.a);
+//                console.log('url: ' + window.location.href);
             },
             paramChanged: function (name, value) {
-                console.log('paramChanged: ' + name + ' ' + value);
+//                console.log('paramChanged: ' + name + ' ' + value);
             },
             pageChanged: function () {
-                console.log('pageChanged: ' + this.page);
-                if (this.page === this.current) {
-                    console.log(MoreRouting.getRoute(this.page).params);
-                    console.log(MoreRouting.getRoute(this.page).params.a);
-                    console.log(MoreRouting.getRoute(this.page).params.b);
-                    this.set('pathParams', {a: MoreRouting.getRoute(this.page).params.a, b: MoreRouting.getRoute(this.page).params.b});
-                }
+//                console.log('pageChanged: ' + this.page);
+//                if (this.page === this.current) {
+//                    console.log(MoreRouting.getRoute(this.page).params);
+//                    console.log(MoreRouting.getRoute(this.page).params.a);
+//                    console.log(MoreRouting.getRoute(this.page).params.b);
+//                    this.set('pathParams', {a: MoreRouting.getRoute(this.page).params.a, b: MoreRouting.getRoute(this.page).params.b});
+//                }
             },
             value: function(val) {
-                console.log('val: ' + val);
+//                console.log('val: ' + val);
                 return val;
             }
         });

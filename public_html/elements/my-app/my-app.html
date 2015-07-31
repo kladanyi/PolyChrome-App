@@ -216,6 +216,7 @@
 
                             <!--hidden--> 
                             <!--<a route="test" hidden="true"></a>-->
+                            <a route="xy" hidden="true"></a>
                         </paper-menu>
                     </more-route-selector>
                 </div>
@@ -317,6 +318,12 @@
                                     </paper-material>
                                 </section>
 
+                                <section route="xy">
+                                    <paper-material elevation="1" class="card">
+                                        <p>Ez itt az <code>xy</code> oldal. Nem látszik a menüben.</p>
+                                    </paper-material>
+                                </section>
+
                                 <section route="xy-z">
                                     <paper-material elevation="1" class="card">
                                         <param-test path-params="[[params]]" page="xy-z" current="[[route]]"></param-test>
@@ -393,6 +400,10 @@
                     value: {
                         z: 5
                     }
+                },
+                paramsname: {
+                    type: String,
+                    computed: 'getElement(params.name)'
                 }
             },
             ready: function () {
@@ -401,11 +412,10 @@
                 FabBehavior.setCurrentPage(this.route);
 
                 window.onhashchange = function (event) {
-                    var parameters = AppBehavior.route.getParameters(MoreRouting.getRoute(AppBehavior.route.getRoute()).fullPath);
-                    console.log('parameters: ' + JSON.stringify(parameters));
+                    AppBehavior.route.loadParameters(MoreRouting.getRoute(AppBehavior.route.getRoute()).fullPath);
                 };
-                var parameters = AppBehavior.route.getParameters();
-                console.log('parameters: ' + JSON.stringify(parameters));
+                var parameters = AppBehavior.route.loadParameters();
+                this.set('params', parameters);
             },
             makeUrl: function (pathOrName, params) {
                 return MoreRouting.urlFor(pathOrName, params);

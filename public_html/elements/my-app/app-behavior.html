@@ -35,49 +35,54 @@
                 var app = document.getElementById('app');
                 return app.route;
             },
-            getParameters: function (model) {
+            loadParameters: function (model) {
+                var app = document.getElementById('app');
                 var url = document.URL;
                 var root = window.location.protocol + '//' + window.location.host + window.location.pathname + '#!';
                 var index = url.indexOf(root);
                 if (index === 0) {
-                    var values = url.substring(root.length, url.length);
+                    var values = decodeURI(url.substring(root.length, url.length));
                 }
                 if (!values) {
+                    app.set('params', {});
                     return {};
                 }
                 var parts = values.split('/');
-//                parts.splice(0, 1);
+                parts.splice(0, 1);
                 
                 if (!model) {
                     var routes = MoreRouting.driver._activeRoutes;
                     for (var i in routes) {
+                        console.log(parts.length + ' ' + routes[i].depth + ' ' + MoreRouting.driver.prefix);
                         if (routes[i].depth === parts.length) {
                             model = routes[i].fullPath;
                         }
                     }
                 }
                 
-                console.log('model: ' + model);
+//                console.log('model: ' + model);
                 
                 if (!model) {
+                    app.set('params', {});
                     return {};
                 }
                 
-                //usersnél nem jó
-                
                 var modelParts = model.split('/'); //MoreRouting.getRoute(model).compiled;
-                console.log(MoreRouting.getRoute(model));
-                console.log('model parts: ' + JSON.stringify(modelParts));
-                console.log('parts:       ' + JSON.stringify(parts));
+                modelParts.splice(0, 1);
+//                console.log(MoreRouting.getRoute(model));
+//                console.log('model parts: ' + JSON.stringify(modelParts));
+//                console.log('parts:       ' + JSON.stringify(parts));
                 
                 var params = {};
                 
                 for (var i in modelParts) {
 //                    if (modelParts[i].type === 'param') {
-                    if (modelParts[i].indexOf(':') === 1) {
+                    if (modelParts[i].indexOf(':') === 0) {
                         params[modelParts[i].substring(1)] = parts[i];
                     }
                 }
+                
+                app.set('params', params);
                 
                 return params;
             }
