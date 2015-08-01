@@ -1,0 +1,71 @@
+<dom-module id="auth-test-page">
+    <style is="custom-style">
+        h2.title {
+            margin-left: 16px;
+            margin-right: 16px;
+            margin-bottom: 0;
+        }
+    </style>
+    <template>
+        <iron-ajax
+            id="setupAjax"
+            url="http://localhost:3005/setup"
+            body="[[setupBody]]"
+            method="POST"
+            content-type="application/json"
+            last-response="{{setupResponse}}"></iron-ajax>
+
+        <my-app-title page="[[page]]" is-current="[[isCurrentPage]]">Autentikáció</my-app-title>
+        <iron-signals on-iron-signal-refresh-filter-test="refresh"></iron-signals>
+
+        <h2 class="title">Setup</h2>
+        <paper-material elevation="1" class="card flex-1">
+            <paper-button on-click="newUser">Új felhasználó</paper-button>
+            <pretty-json json-data="[[setupResponse]]"></pretty-json>
+        </paper-material>
+
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'auth-test-page',
+            properties: {
+                page: {
+                    type: String
+                },
+                current: {
+                    type: String
+                },
+                isCurrentPage: {
+                    type: Boolean,
+                    computed: 'isCurrent(current)'
+                },
+                setupResponse: {
+                    type: Object
+                },
+                setupBody: {
+                    type: Object,
+                    value: {
+                        name: 'kata',
+                        pass: 'blabla'
+                    }
+                }
+            },
+            obervers: [
+                'value(setupResponse.success)',
+                'value(setupResponse.msg)'
+            ],
+            isCurrent: function(current) {
+                return current === this.page;
+            },
+            newUser: function () {
+                console.log('new user');
+                this.$.setupAjax.generateRequest();
+            },
+            value: function(val) {
+                return val;
+            }
+        });
+    })();
+</script>

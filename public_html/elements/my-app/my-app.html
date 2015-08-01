@@ -245,11 +245,9 @@
                         <more-route-selector on-more-route-change="routeChanged"> <!-- selected-params="{{params}}" -->
                             <iron-pages attr-for-selected="route" selected="{{route}}">
                                 <section route="home">
-                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
-                                    <filter-test-page page="home" current="[[route]]"></filter-test-page>
-                                    <!--                                    <paper-material elevation="1" class="card">
-                                                                            Kezdőlap.
-                                                                        </paper-material>-->
+<!--                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
+                                    <filter-test-page page="home" current="[[route]]"></filter-test-page>-->
+                                    <auth-test-page page="home" current="[[route]]"></auth-test-page>
                                 </section>
 
                                 <section route="users">
