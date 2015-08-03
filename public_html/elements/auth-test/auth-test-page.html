@@ -14,6 +14,21 @@
             method="POST"
             content-type="application/json"
             last-response="{{setupResponse}}"></iron-ajax>
+        <iron-ajax
+            id="loginAjax"
+            url="http://localhost:3005/login"
+            body="[[setupBody]]"
+            method="POST"
+            content-type="application/json"
+            last-response="{{loginResponse}}"
+            on-response="onLoginResponse"></iron-ajax>
+        <iron-ajax
+            id="dataAjax"
+            url="http://localhost:3005/static-data"
+            headers="[[tokenHeader]]"
+            method="GET"
+            content-type="application/json"
+            last-response="{{data}}"></iron-ajax>
 
         <my-app-title page="[[page]]" is-current="[[isCurrentPage]]">Autentikáció</my-app-title>
         <iron-signals on-iron-signal-refresh-filter-test="refresh"></iron-signals>
@@ -23,6 +38,18 @@
             <paper-button on-click="newUser">Új felhasználó</paper-button>
             <pretty-json json-data="[[setupResponse]]"></pretty-json>
         </paper-material>
+        
+        <h2 class="title">Login</h2>
+        <paper-material elevation="1" class="card flex-1">
+            <paper-button on-click="login">Bejelentkezés</paper-button>
+            <pretty-json json-data="[[loginResponse]]"></pretty-json>
+        </paper-material>
+        
+        <h2 class="title">Adatok lekérése </h2>
+        <paper-material elevation="1" class="card flex-1">
+            <paper-button on-click="getData">Adatok lekérése</paper-button>
+            <pretty-json json-data="[[data]]"></pretty-json>
+        </paper-material>
 
     </template>
 </dom-module>
@@ -30,6 +57,7 @@
     (function () {
         Polymer({
             is: 'auth-test-page',
+            behaviors: [ToastBehavior],
             properties: {
                 page: {
                     type: String
@@ -50,6 +78,13 @@
                         name: 'kata',
                         pass: 'blabla'
                     }
+                },
+                data: {
+                    type: Object
+                },
+                tokenHeader: {
+                    type: Object,
+                    computed: 'getTokenHeader(token)'
                 }
             },
             obervers: [
@@ -65,6 +100,25 @@
             },
             value: function(val) {
                 return val;
+            },
+            login: function() {
+                this.$.loginAjax.generateRequest();
+            },
+            onLoginResponse: function() {
+                if (this.loginResponse.success) {
+                    this.set('token', this.loginResponse.token);
+                    ToastBehavior.addToast('Sikeres bejelentkezés.');
+                } else {
+                    ToastBehavior.addToast(this.loginResponse.msg);
+                }
+            },
+            getData: function() {
+                this.$.dataAjax.generateRequest();
+            },
+            getTokenHeader: function(token) {
+                return {
+                    "x-access-token": token
+                };
             }
         });
     })();

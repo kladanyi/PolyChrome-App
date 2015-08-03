@@ -2,7 +2,7 @@
     <style is="custom-style">
     </style>
     <template>
-        Path paraméter teszt. <span>[[url]]</span>
+        Path paraméter teszt.
         <pretty-json json-data="[[pathParams]]"></pretty-json>
     </template>
 </dom-module>
@@ -21,10 +21,6 @@
                 },
                 pathParams: {
                     type: Object
-                },
-                url: {
-                    type: String,
-                    compute: 'value(window.location.href)'
                 }
             },
             observers: [
