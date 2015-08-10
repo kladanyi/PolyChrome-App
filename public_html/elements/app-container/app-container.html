@@ -1,0 +1,51 @@
+<dom-module id="app-container">
+    <style is="custom-style">
+        :host {
+            @apply(--layout-flex);
+            @apply(--layout-vertical);
+        }
+    </style>
+    <template>
+        <my-app id="app" style="[[appStyle]]"></my-app>
+        <login-page style="[[loginStyle]]" user="{{user}}"></login-page>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'app-container',
+            properties: {
+                user: {
+                    type: Object,
+                    value: {}
+                },
+                appStyle: {
+                    type: String,
+                    value: 'display: none',
+                    computed: 'appStyleString(user.token)'
+                },
+                loginStyle: {
+                    type: String,
+                    value: '',
+                    computed: 'loginStyleString(user.token)'
+                }
+            },
+            appStyleString: function(token) {
+//                console.log('appStyleString', token);
+                if (token) {
+                    return '';
+                } else {
+                    return 'display: none';
+                }
+            },
+            loginStyleString: function(token) {
+//                console.log('appStyleString', token);
+                if (token) {
+                    return 'display: none';
+                } else {
+                    return '';
+                }
+            }
+        });
+    })();
+</script>

@@ -49,7 +49,7 @@
             last-response="{{fruits}}"></iron-ajax>
 
         <my-app-title page="[[page]]" is-current="[[isCurrentPage]]">Gyümölcsös</my-app-title>
-        <fab-element id="refreshFab" icon="refresh" signal-name="refresh-fruits" page="fruits"></fab-element>
+        <fab-element id="refreshFab" icon="refresh" tooltip="Frissítés" signal-name="refresh-fruits" page="fruits"></fab-element>
         <iron-signals on-iron-signal-refresh-fruits="filterChanged"></iron-signals>
 
         <paper-drawer-panel right-drawer responsive-width="900px">

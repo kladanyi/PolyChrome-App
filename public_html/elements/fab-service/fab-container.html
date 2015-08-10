@@ -16,6 +16,7 @@
     <template>
         <template is="dom-if" if="{{currentFab}}">
             <paper-fab id="def" icon="{{currentFab.icon}}" class="fab-left-bottom" on-click="clickFab"></paper-fab>
+            <paper-tooltip for="def">{{fabtooltip}}</paper-tooltip>
         </template>
     </template>
 </dom-module>
@@ -33,6 +34,10 @@
                     type: Array,
                     value: []
                 },
+                fabtooltip: {
+                    type: String,
+                    computed: 'getValue(currentFab.tooltip)'
+                },
                 currentFab: Object
             },
             addFab: function (fab) {
@@ -43,7 +48,7 @@
                 this.currentFab = {
                     icon: fab.icon
                 };
-                this.currentFab.onClick = function() {
+                this.currentFab.onClick = function () {
                     if (fab.signalName) {
                         var app = document.getElementById('app');
                         app.fire('iron-signal', {name: fab.signalName, data: fab.signalData});
@@ -73,6 +78,9 @@
             },
             register: function () {
                 FabBehavior.setFabContainer(this);
+            },
+            getValue: function(value) {
+                return value
             }
         });
     })();

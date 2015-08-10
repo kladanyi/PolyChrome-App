@@ -1,0 +1,92 @@
+<dom-module id="login-page">
+    <link rel="import" type="css" href="../my-app/my-app.css">
+
+    <style is="custom-style">
+        :host {
+            @apply(--layout-flex);
+            @apply(--layout-vertical);
+            @apply(--layout-center);
+        }
+
+        #titleContainer {
+            width: 100%;
+        }
+
+        h1 {
+            margin: 30px;
+        }
+
+        #loginContainer {
+            @apply(--layout-flex);
+            @apply(--layout-flex-2);
+            @apply(--layout-horizontal);
+            @apply(--layout-center);
+        }
+
+        paper-material {
+            width: 300px;
+        }
+    </style>
+    <template>
+        <iron-ajax
+            id="loginAjax"
+            url="http://localhost:3005/login"
+            body="[[setupBody]]"
+            method="POST"
+            content-type="application/json"
+            last-response="{{loginResponse}}"
+            on-response="onLoginResponse"></iron-ajax>
+
+        <div id="titleContainer">
+            <h1 class="title">Chrome App login page<me-i18n key="KULCS"></me-i18n></h1>
+        </div>
+        <div id="loginContainer">
+            <div>
+                <paper-material elevation="1" class="card">
+                    <paper-input label="Név" value="{{name}}"></paper-input>
+                    <paper-input label="Jelszó" type="password" value="{{password}}"></paper-input>
+                    <paper-button class="default" on-tap="login">Bejelentkezés</paper-button>
+                </paper-material>
+            </div>
+        </div>
+        <div class="flex-1"></div>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'login-page',
+            properties: {
+                name: {
+                    type: String
+                },
+                password: {
+                    type: String
+                },
+                user: {
+                    type: Object,
+                    notify: true
+                },
+                loginResponse: {
+                    type: Object
+                }
+            },
+            login: function () {
+                this.setupBody = {
+                    name: this.name,
+                    pass: this.password
+                };
+                this.$.loginAjax.generateRequest();
+            },
+            onLoginResponse: function () {
+                console.log(this.loginResponse);
+                if (this.loginResponse.success) {
+                    this.set('user.token', this.loginResponse.token);
+                    console.log('Sikeres bejelentkezés.');
+                } else {
+                    console.log(this.loginResponse.msg);
+                }
+            }
+        });
+    })();
+</script>

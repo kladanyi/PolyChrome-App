@@ -1,0 +1,35 @@
+<dom-module id="me-i18n">
+    
+    <template>
+        <span>[[result]]</span>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'me-i18n',
+            behaviors: [I18N],
+            properties: {
+                key: {
+                    type: String
+                },
+                parameters: {
+                    type: Object
+                },
+                lang: {
+                    type: String
+                },
+                result: {
+                    type: String
+                }
+            },
+            updateResult: function() {
+                var result = this.key + '_' + this.lang + ' ' + JSON.stringify(this.parameters);
+                this.set('result', result);
+            },
+            ready: function() {
+                this.updateResult();
+            }
+        });
+    })();
+</script>

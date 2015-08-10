@@ -4,12 +4,12 @@
         <title>PolyChrome App</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-<!--        <meta http-equiv="Cache-Control" content="no-store" />
-        <meta http-equiv="Pragma" content="no-cache">
-        <meta http-equiv="Expires" content="-1">-->
+        <!--        <meta http-equiv="Cache-Control" content="no-store" />
+                <meta http-equiv="Pragma" content="no-cache">
+                <meta http-equiv="Expires" content="-1">-->
 
         <link rel="stylesheet" href="styles/loading.css">
-        
+
         <!-- Chrome for Android theme color -->
         <meta name="theme-color" content="#0097A7">  <!-- dark-primary-color -->
 
@@ -42,7 +42,9 @@
         <span id="browser-sync-binding"></span>
         <div id="loader" class="loader">Loading...</div>
     <template unresolved is="dom-bind" id="app">
-        <my-app id="app"></my-app>
+        <!--        <my-app id="app"></my-app>
+                <login-page></login-page>-->
+        <app-container></app-container>
     </template>
 
     <!-- build:js scripts/app.js -->
