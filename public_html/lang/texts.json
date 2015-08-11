@@ -1,0 +1,7 @@
+{
+    "LOGIN_TITLE": "Chrome App login page",
+    "NAME": "Name",
+    "PASSWORD": "Password",
+    "LOGIN": "Login",
+    "TEST": "Test with parameters. a: {{a}} and b: {{b}}"
+}

@@ -6,8 +6,9 @@
         }
     </style>
     <template>
-        <my-app id="app" style="[[appStyle]]"></my-app>
-        <login-page style="[[loginStyle]]" user="{{user}}"></login-page>
+        <me-i18n-config dir-name="../../lang" base-file-name="texts" lang="{{lang}}"></me-i18n-config>
+        <my-app id="app" hidden="[[!loggedIn]]"></my-app>
+        <login-page hidden="[[loggedIn]]" user="{{user}}"></login-page>
     </template>
 </dom-module>
 <script>
@@ -19,32 +20,20 @@
                     type: Object,
                     value: {}
                 },
-                appStyle: {
-                    type: String,
-                    value: 'display: none',
-                    computed: 'appStyleString(user.token)'
+                loggedIn: {
+                    type: Boolean,
                 },
-                loginStyle: {
+                lang: {
                     type: String,
-                    value: '',
-                    computed: 'loginStyleString(user.token)'
+                    value: 'hu'
                 }
             },
-            appStyleString: function(token) {
-//                console.log('appStyleString', token);
-                if (token) {
-                    return '';
-                } else {
-                    return 'display: none';
-                }
+            observers: ['tokenChanged(user.token)'],
+            tokenChanged: function(newVal, oldVal) {
+                this.set('loggedIn', !!newVal);
             },
-            loginStyleString: function(token) {
-//                console.log('appStyleString', token);
-                if (token) {
-                    return 'display: none';
-                } else {
-                    return '';
-                }
+            changeLang: function (lang) {
+                this.set('lang', lang);
             }
         });
     })();

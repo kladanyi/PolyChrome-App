@@ -36,31 +36,44 @@
             content-type="application/json"
             last-response="{{loginResponse}}"
             on-response="onLoginResponse"></iron-ajax>
+        <iron-signals on-iron-signal-lang="changeLang"></iron-signals>
 
         <div id="titleContainer">
-            <h1 class="title">Chrome App login page<me-i18n key="KULCS"></me-i18n></h1>
+            <h1 class="title"><me-i18n>LOGIN_TITLE</me-i18n></h1>
         </div>
         <div id="loginContainer">
             <div>
                 <paper-material elevation="1" class="card">
-                    <paper-input label="Név" value="{{name}}"></paper-input>
-                    <paper-input label="Jelszó" type="password" value="{{password}}"></paper-input>
-                    <paper-button class="default" on-tap="login">Bejelentkezés</paper-button>
+                    <paper-input label="[[nameLabel]]" value="{{name}}"></paper-input>
+                    <paper-input label="[[passwordLabel]]" type="password" value="{{password}}"></paper-input>
+                    <paper-button class="default" on-tap="login"><me-i18n>LOGIN</me-i18n></paper-button>
                 </paper-material>
             </div>
         </div>
-        <div class="flex-1"></div>
+        <div class="flex-1">
+            <me-i18n parameters='{"a": "alma", "b": "barack"}'>TEST</me-i18n>
+            <p>
+            <paper-button on-click="toggleLang">Toggle</paper-button>
+            </p>
+        </div>
     </template>
 </dom-module>
 <script>
     (function () {
         Polymer({
             is: 'login-page',
+            behaviors: [I18N],
             properties: {
                 name: {
                     type: String
                 },
+                nameLabel: {
+                    type: String
+                },
                 password: {
+                    type: String
+                },
+                passwordLabel: {
                     type: String
                 },
                 user: {
@@ -70,6 +83,9 @@
                 loginResponse: {
                     type: Object
                 }
+            },
+            ready: function () {
+                this.changeLang();
             },
             login: function () {
                 this.setupBody = {
@@ -86,6 +102,18 @@
                 } else {
                     console.log(this.loginResponse.msg);
                 }
+            },
+            toggleLang: function () {
+                console.log('toggle. most: ' + I18N.getLang());
+                if (I18N.getLang() === 'hu') {
+                    I18N.setLang('en');
+                } else {
+                    I18N.setLang('hu');
+                }
+            },
+            changeLang: function () {
+                this.set('nameLabel', I18N.translate('NAME'));
+                this.set('passwordLabel', I18N.translate('PASSWORD'));
             }
         });
     })();

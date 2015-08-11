@@ -1,6 +1,6 @@
 <dom-module id="me-i18n">
-    
     <template>
+        <iron-signals on-iron-signal-lang="updateResult"></iron-signals>
         <span>[[result]]</span>
     </template>
 </dom-module>
@@ -10,9 +10,6 @@
             is: 'me-i18n',
             behaviors: [I18N],
             properties: {
-                key: {
-                    type: String
-                },
                 parameters: {
                     type: Object
                 },
@@ -24,7 +21,9 @@
                 }
             },
             updateResult: function() {
-                var result = this.key + '_' + this.lang + ' ' + JSON.stringify(this.parameters);
+//                console.log('updateResult', Polymer.dom(this).textContent, this.parameters, this.lang);
+                var result = I18N.translate(Polymer.dom(this).textContent, this.parameters, this.lang);
+//                console.log('      -> ' + result);
                 this.set('result', result);
             },
             ready: function() {
