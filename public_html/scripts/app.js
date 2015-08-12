@@ -24,12 +24,26 @@
     app.addEventListener('dom-change', function () {
         console.log('Our app is ready to rock!');
 
-        document.querySelector('fab-container').register();
+        var i18nConfig = document.getElementsByTagName('me-i18n-config')[0];
+        var timeout = function () {
+            setTimeout(function () {
+                if (i18nConfig.get('isReady')) {
 
-        document.querySelector('#app').removeAttribute('unresolved');
-        setTimeout(function () {
-            document.querySelector('#loader').setAttribute('style', 'display: none');
-        });
+                    document.querySelector('fab-container').register();
+
+                    document.querySelector('#app').removeAttribute('unresolved');
+                    setTimeout(function () {
+                        document.querySelector('#loader').setAttribute('style', 'display: none');
+                    });
+                    
+                } else {
+                    timeout();
+                }
+            });
+        };
+        
+        timeout();
+
     });
 
     // See https://github.com/Polymer/polymer/issues/1381

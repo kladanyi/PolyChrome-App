@@ -21,7 +21,7 @@
         var files;
         if (lang) {
             var langs;
-            lang = lang ? lang : (navigator.language || navigator.userLanguage);
+//            lang = lang ? lang : (navigator.language || navigator.userLanguage);
             if (lang.split('-').length > 1) {
                 langs = [lang, lang.split('-')[0]];
             } else {
@@ -43,7 +43,7 @@
         console.log('Load ' + files[0] + '.');
         var request = new XMLHttpRequest();
         request.onreadystatechange = function () {
-            console.log(request.readyState, request.status);
+//            console.log(request.readyState, request.status);
             if (request.readyState === 4 && request.status === 200) {
                 var res = JSON.parse(request.responseText);
                 if (callback) {
@@ -66,7 +66,7 @@
     }
 
     I18N = {
-        config: function (_dir, _baseFileName, _lang) {
+        config: function (_dir, _baseFileName, _lang, callback) {
             if (!_dir || !_baseFileName) {
                 console.error('dir and base-file-name are required!');
                 configured = false;
@@ -74,23 +74,23 @@
             }
             dir = _dir;
             baseFileName = _baseFileName;
-            lang = _lang;
+            console.log('lang', lang);
+            lang = _lang? _lang : (navigator.language || navigator.userLanguage);
+            console.log('lang', lang);
 
             loadTexts(lang, function (res) {
                 texts = res;
                 loadTexts(null, function (res) {
                     defaultTexts = res;
                     configured = true;
-                    console.log('Config kész.');
                     var config = document.getElementsByTagName('me-i18n-config')[0];
-//                    config.set('lang', _lang);
                     config.fire('iron-signal', {name: 'lang', data: _lang});
+                    if (callback) {
+                        callback();
+                    }
+                    console.log('Config kész.');
                 });
             });
-
-//            while (!textsOK || !defaultTextsOK) {
-//                configured = true;
-//            }
         },
         translate: function (key, parameters) {
             if (parameters && typeof parameters === 'string') {
@@ -99,7 +99,7 @@
 
             if (!configured) {
                 console.error('I18N is not configured!');
-                return key + (parameters ? (' ' + JSON.stringify(parameters)) : '');
+                return ''; // key + (parameters ? (' ' + JSON.stringify(parameters)) : '');
             }
 
             var res = getTextRecursive(key, texts);
@@ -129,6 +129,9 @@
             return lang;
         },
         setLang: function (_lang) {
+            if (lang === _lang) {
+                return;
+            }
             lang = _lang;
             this.config(dir, baseFileName, _lang);
         }

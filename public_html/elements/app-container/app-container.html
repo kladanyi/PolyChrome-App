@@ -6,7 +6,7 @@
         }
     </style>
     <template>
-        <me-i18n-config dir-name="../../lang" base-file-name="texts" lang="{{lang}}"></me-i18n-config>
+        <me-i18n-config dir-name="../../lang" base-file-name="texts" ></me-i18n-config>
         <my-app id="app" hidden="[[!loggedIn]]"></my-app>
         <login-page hidden="[[loggedIn]]" user="{{user}}"></login-page>
     </template>
