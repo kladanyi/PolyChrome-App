@@ -13,17 +13,12 @@
                 parameters: {
                     type: Object
                 },
-                lang: {
-                    type: String
-                },
                 result: {
                     type: String
                 }
             },
             updateResult: function() {
-//                console.log('updateResult', Polymer.dom(this).textContent, this.parameters, this.lang);
-                var result = I18N.translate(Polymer.dom(this).textContent, this.parameters, this.lang);
-//                console.log('      -> ' + result);
+                var result = I18N.translate(Polymer.dom(this).textContent, this.parameters);
                 this.set('result', result);
             },
             ready: function() {

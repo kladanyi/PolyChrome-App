@@ -17,72 +17,52 @@
         }
     }
 
-    function loadTexts(lang) {
-//        var file = dir + '/' + baseFileName + '-' + lang + '.json';
-        var defFile = dir + '/' + baseFileName + '.json';
-        var langs, file, res;
-        
-        
-        console.log('lang:', lang);
-        
-        lang = this.lang ? this.lang : (navigator.language || navigator.userLanguage);
-        if (lang.split('-').length > 1) {
-            langs = [lang, lang.split('-')[0]];
-        } else {
-            langs = [lang];
-        }
-        
-        console.log('langs:', langs);
-
-        for (var i in langs) {
-            file = dir + '/' + baseFileName + '-' + langs[i] + '.json';
-            console.log(file);
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (request.readyState == 4 && request.status == 200) {
-                    res = JSON.parse(request.responseText);
-                }
-            };
-            request.open('GET', file, false);
-            request.send();
+    function loadTexts(lang, callback) {
+        var files;
+        if (lang) {
+            var langs;
+            lang = lang ? lang : (navigator.language || navigator.userLanguage);
+            if (lang.split('-').length > 1) {
+                langs = [lang, lang.split('-')[0]];
+            } else {
+                langs = [lang];
             }
 
-        if (!res) {
-            var request = new XMLHttpRequest();
-            request.onreadystatechange = function () {
-                if (request.readyState == 4 && request.status == 200) {
-                    res = JSON.parse(request.responseText);
-                }
-            };
-            request.open('GET', defFile, false);
-            request.send();
+            var files = [];
+            for (var i in langs) {
+                files.push(dir + '/' + baseFileName + '-' + langs[i] + '.json');
+            }
+            loadFiles(files, callback);
+        } else {
+            files = [dir + '/' + baseFileName + '.json'];
+            loadFiles(files, callback);
         }
-
-        return res;
     }
 
-    function getTexts(_lang, nowConfigure) {
-        if (!configured && !nowConfigure) {
-            console.error('I18N is not configured!');
-            return null;
-        }
-
-        if (_lang === lang) {
-            if (texts) {
-                return texts;
-            } else {
-                return defaultTexts;
+    function loadFiles(files, callback) {
+        console.log('Load ' + files[0] + '.');
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function () {
+            console.log(request.readyState, request.status);
+            if (request.readyState === 4 && request.status === 200) {
+                var res = JSON.parse(request.responseText);
+                if (callback) {
+                    callback(res);
+                }
+            } else if (request.readyState === 4 && (request.status === 404 || request.status === 0)) {
+                if (files.length > 1) {
+                    files.splice(0, 1);
+                    loadFiles(files, callback);
+                } else {
+                    if (callback) {
+                        console.warn('No lang file detected.');
+                        callback({});
+                    }
+                }
             }
-        } else {
-            var cTexts = loadTexts(_lang);
-            if (cTexts) {
-                return cTexts;
-            } else {
-                return defaultTexts;
-            }
-        }
-
-
+        };
+        request.open('GET', files[0], true);
+        request.send();
     }
 
     I18N = {
@@ -96,31 +76,39 @@
             baseFileName = _baseFileName;
             lang = _lang;
 
-            texts = loadTexts(lang);
-            defaultTexts = loadTexts();
-            configured = true;
+            loadTexts(lang, function (res) {
+                texts = res;
+                loadTexts(null, function (res) {
+                    defaultTexts = res;
+                    configured = true;
+                    console.log('Config kész.');
+                    var config = document.getElementsByTagName('me-i18n-config')[0];
+//                    config.set('lang', _lang);
+                    config.fire('iron-signal', {name: 'lang', data: _lang});
+                });
+            });
+
+//            while (!textsOK || !defaultTextsOK) {
+//                configured = true;
+//            }
         },
-        translate: function (key, parameters, _lang) {
-            if (!_lang) {
-                _lang = lang;
-            }
+        translate: function (key, parameters) {
             if (parameters && typeof parameters === 'string') {
                 parameters = JSON.parse(parameters);
             }
 
             if (!configured) {
                 console.error('I18N is not configured!');
-                return key + '_' + _lang + ' ' + JSON.stringify(parameters);
+                return key + (parameters ? (' ' + JSON.stringify(parameters)) : '');
             }
 
-            var texts = getTexts(_lang);
             var res = getTextRecursive(key, texts);
 
             if (!res) {
                 res = getTextRecursive(key, defaultTexts);
             }
             if (!res) {
-                return key + '_' + _lang + ' ' + JSON.stringify(parameters);
+                return key + (parameters ? (' ' + JSON.stringify(parameters)) : '');
             }
 
             if (parameters) {
@@ -141,11 +129,8 @@
             return lang;
         },
         setLang: function (_lang) {
-            console.log('behavior setLang: ' + _lang);
             lang = _lang;
             this.config(dir, baseFileName, _lang);
-            var config = document.getElementsByTagName('me-i18n-config')[0];
-            config.set('lang', _lang);
         }
     };
 </script>
