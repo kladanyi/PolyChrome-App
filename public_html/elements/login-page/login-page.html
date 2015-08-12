@@ -62,7 +62,7 @@
     (function () {
         Polymer({
             is: 'login-page',
-            behaviors: [I18N],
+            behaviors: [I18N, MoreRouting],
             properties: {
                 name: {
                     type: String
@@ -104,6 +104,7 @@
                 console.log(this.loginResponse);
                 if (this.loginResponse.success) {
                     this.set('user.token', this.loginResponse.token);
+                    MoreRouting.navigateTo('home');
                     console.log('Sikeres bejelentkezés.');
                 } else {
                     console.log(this.loginResponse.msg);

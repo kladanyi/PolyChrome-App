@@ -74,9 +74,7 @@
             }
             dir = _dir;
             baseFileName = _baseFileName;
-            console.log('lang', lang);
             lang = _lang? _lang : (navigator.language || navigator.userLanguage);
-            console.log('lang', lang);
 
             loadTexts(lang, function (res) {
                 texts = res;
