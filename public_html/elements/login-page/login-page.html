@@ -44,19 +44,20 @@
         </div>
         <div id="loginContainer">
             <div>
-                <paper-material elevation="1" class="card">
+<!--                <paper-material elevation="1" class="card">
                     <paper-input label="[[nameLabel]]" value="{{name}}"></paper-input>
                     <paper-input label="[[passwordLabel]]" type="password" value="{{password}}"></paper-input>
                     <paper-button class="default" on-tap="login"><me-i18n>LOGIN</me-i18n></paper-button>
                 </paper-material>
-            </div>
+            </div>-->
         </div>
         <div class="flex-1">
-            <me-i18n parameters='{"a": "alma", "b": "barack"}'>TEST</me-i18n>
+            <me-i18n parameters='{"a": "alma", "b": "barack"}'>TEST</me-i18n><br />
+            <me-i18n parameters=[[i18nParam]]>TEST</me-i18n>
             <p>
             <paper-button on-click="toggleLang">Toggle</paper-button>
             </p>
-            <me-i18n a="Alfonz" b="Begónia">TEST</me-i18n>
+            <me-i18n a="Alfonz" b="{{b}}" fp="a b">TEST</me-i18n><paper-input label="b" value="{{b}}"></paper-input>b: <span>[[b]]</span>
         </div>
     </template>
 </dom-module>
@@ -90,6 +91,14 @@
                     value: {
                         name: 'Kázmér'
                     }
+                },
+                b: {
+                    type: String,
+                    value: '-',
+                    observer: 'chB'
+                },
+                i18nParam: {
+                    type: Object
                 }
             },
             ready: function () {
@@ -123,6 +132,10 @@
             changeLang: function () {
                 this.set('nameLabel', I18N.translate('NAME'));
                 this.set('passwordLabel', I18N.translate('PASSWORD'));
+            },
+            chB: function(newVal, oldVal) {
+                console.log('b:', oldVal, '->', newVal);
+                this.set('i18nParam', {a: 'alma', b: newVal});
             }
         });
     })();
