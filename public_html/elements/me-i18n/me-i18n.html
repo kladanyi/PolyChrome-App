@@ -22,6 +22,15 @@
                 this.set('result', result);
             },
             ready: function() {
+                var parameters = this.parameters || {};
+                for (var i in this.attributes) {
+                    var attr = this.attributes[i];
+                    if (attr.nodeName && attr.nodeName !== 'class' && attr.nodeName !== 'parameters') {
+                        parameters[attr.nodeName] = attr.nodeValue;
+                    }
+                }
+                this.set('parameters', parameters);
+                console.log('parameters', parameters);
                 this.updateResult();
             }
         });
