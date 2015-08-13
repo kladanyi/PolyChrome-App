@@ -1,14 +1,15 @@
 <dom-module id="my-app">
     <link rel="import" type="css" href="my-app.css">
-    
+
     <template>
+        <iron-localstorage name="my-app-user" value="{{user}}" on-iron-localstorage-load-empty="onEmptyUser" on-iron-localstorage-load="inLoadUser"></iron-localstorage>
         <iron-signals on-iron-signal-more-route-change="routeChangedSignal"></iron-signals>
         <!--<fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>-->
         <dialog-container id="dialogContainer"></dialog-container>
         <my-app-title default>PolyChrome App</my-app-title>
 
         <paper-drawer-panel id="paperDrawerPanel" class="flex layout vertical" disable-swipe="[[plainPage]]" force-narrow="[[plainPage]]">
-            <div drawer class="flex layout vertical">
+            <div drawer class="flex layout vertical" hidden="[[plainPage]]">
                 <!-- Drawer Toolbar -->
                 <paper-toolbar id="drawerToolbar">
                     <span class="menu-title">Menü</span>
@@ -19,11 +20,11 @@
                     <more-route-selector>
                         <!--Drawer Content--> 
                         <paper-menu class="list">
-<!--                            <a route="login" href="[[makeUrl('login')]]">
-                                <iron-icon icon="b"></iron-icon>
-                                <span>Login</span>
-                            </a>-->
-                            
+                            <!--                            <a route="login" href="[[makeUrl('login')]]">
+                                                            <iron-icon icon="b"></iron-icon>
+                                                            <span>Login</span>
+                                                        </a>-->
+
                             <a route="home" href="[[makeUrl('home')]]">
                                 <iron-icon icon="home"></iron-icon>
                                 <span>Kezdőlap</span>
@@ -96,12 +97,12 @@
                         <more-route-selector on-more-route-change="routeChanged"> <!-- selected-params="{{params}}" -->
                             <iron-pages attr-for-selected="route" selected="{{route}}">
                                 <section route="login">
-                                    <login-page page="login" current="[[route]]"></login-page>
+                                    <login-page page="login" current="[[route]]" user="{{user}}"></login-page>
                                 </section>
-                                
+
                                 <section route="home">
-<!--                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
-                                    <filter-test-page page="home" current="[[route]]"></filter-test-page>-->
+                                    <!--                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
+                                                                        <filter-test-page page="home" current="[[route]]"></filter-test-page>-->
                                     <auth-test-page page="home" current="[[route]]"></auth-test-page>
                                 </section>
 
@@ -206,6 +207,9 @@
                 plainPage: {
                     type: Boolean
                 },
+                user: {
+                    type: Object
+                },
                 fabclick: {
                     type: Object,
                     value: function () {
@@ -262,6 +266,7 @@
                     computed: 'getElement(params.name)'
                 }
             },
+            observers: [ 'userChanged(user.token)' ],
             ready: function () {
                 console.log('MyApp is ready.');
                 AppBehavior.title.update(this);
@@ -282,13 +287,13 @@
                     drawerPanel.closeDrawer();
                 }
                 FabBehavior.setCurrentPage(this.route);
-                
+
                 if (MoreRouting.isCurrentUrl('login')) {
                     this.set('plainPage', true);
                 } else {
                     this.set('plainPage', false);
                 }
-                
+
 //                if (MoreRouting.isCurrentUrl('user-info')) {
 //                    console.log(MoreRouting.getRoute('user-info').params.name);
 //                    this.set('params.name', MoreRouting.getRoute('user-info').params.name);
@@ -313,6 +318,17 @@
             },
             routeChangedSignal: function (data) {
                 console.log('routeChangedSignal: ' + JSON.stringify(data));
+            },
+            onEmptyUser: function(data) {
+                console.log('Üres user -> login', data);
+                MoreRouting.navigateTo('login');
+            },
+            onLoadUser: function(data) {
+                console.log('Load user', this.get('user'), data);
+            },
+            userChanged: function(token) {
+                console.log(token, this.user, this.get('user'));
+                this.set('user', this.user);
             }
         });
     })();
