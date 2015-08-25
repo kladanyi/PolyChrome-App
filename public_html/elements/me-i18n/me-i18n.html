@@ -24,23 +24,32 @@
                 this.set('result', result);
             },
             updateParameters: function () {
-                console.log('updateParameters', this.parameters);
-//                var parameters = this.parameters || {};
-//                var attributes = this.getAttribute('fp') ? this.getAttribute('fp').split(' ') : [];
-//                for (var i in attributes) {
-//                    var attr = attributes[i];
-//                    parameters[attr] = this.getAttribute(attr);
-//                    this.properties[attr] = {
-//                        type: String,
-//                        value: this.getAttribute(attr),
-//                        observer: 'updateResult'
-//                    };
-//                }
-//                this.set('parameters', parameters);
+//                console.log('updateParameters', this.parameters);
+
+            },
+            attached: function() {
+//                console.log('attached');
+//                console.log('parameters', this.parameters);
             },
             ready: function () {
-                this.updateParameters();
-                console.log('properties', this.properties);
+//                this.updateParameters();
+//                console.log('properties', this.properties);
+//                this.updateResult();
+                var parameters = this.parameters || {};
+                var attributes = this.getAttribute('fp') ? this.getAttribute('fp').split(' ') : [];
+//                console.log('attributes', attributes);
+                for (var i in attributes) {
+                    var attr = attributes[i];
+                    console.log(i, attr, this.getAttribute(attr) ? this.getAttribute(attr) : '');
+                    parameters[attr] = this.getAttribute(attr) ? this.getAttribute(attr) : '';
+                    this.properties[attr] = {
+                        type: String,
+                        value: this.getAttribute(attr),
+                        observer: 'updateResult'
+                    };
+                }
+//                console.log('properties', this.properties);
+                this.set('parameters', parameters);
                 this.updateResult();
             }
         });

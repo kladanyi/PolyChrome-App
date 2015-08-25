@@ -2,7 +2,7 @@
     <link rel="import" type="css" href="my-app.css">
 
     <template>
-        <iron-localstorage name="my-app-user" value="{{user}}" on-iron-localstorage-load-empty="onEmptyUser" on-iron-localstorage-load="inLoadUser"></iron-localstorage>
+        <!--        <iron-localstorage name="my-app-user" value="{{user}}" on-iron-localstorage-load-empty="onEmptyUser" on-iron-localstorage-load="inLoadUser"></iron-localstorage>-->
         <iron-signals on-iron-signal-more-route-change="routeChangedSignal"></iron-signals>
         <!--<fab-element id="appFab" icon="attachment" click-fn="[[fabclick]]"></fab-element>-->
         <dialog-container id="dialogContainer"></dialog-container>
@@ -88,7 +88,7 @@
 
                         <!--Toolbar icons--> 
                         <paper-icon-button icon="refresh"></paper-icon-button>
-                        <paper-icon-button icon="social:person"></paper-icon-button>
+                        <paper-icon-button icon="social:person" on-click="logout"></paper-icon-button>
 
                     </paper-toolbar>
 
@@ -195,7 +195,7 @@
     (function () {
         Polymer({
             is: 'my-app',
-            behaviors: [AppBehavior, ToastBehavior, FabBehavior, DialogBehavior],
+            behaviors: [AppBehavior, ToastBehavior, FabBehavior, DialogBehavior, StorageBehavior],
             properties: {
                 route: {
                     type: String,
@@ -266,17 +266,41 @@
                     computed: 'getElement(params.name)'
                 }
             },
-            observers: [ 'userChanged(user.token)' ],
+            observers: ['userChanged(user.token)', 'userChanged(user.name)'],
             ready: function () {
                 console.log('MyApp is ready.');
                 AppBehavior.title.update(this);
                 FabBehavior.setCurrentPage(this.route);
+
+                this.set('user.name', 'Nobody');
 
                 window.onhashchange = function (event) {
                     AppBehavior.route.loadParameters(MoreRouting.getRoute(AppBehavior.route.getRoute()).fullPath);
                 };
                 var parameters = AppBehavior.route.loadParameters();
                 this.set('params', parameters);
+            },
+            attached: function () {
+                var self = this;
+                console.log('self.user', self.user, 'this.user', this.user);
+                StorageBehavior.sessionGet('user', function (user) {
+                    if (!user) {
+                        StorageBehavior.localGet('user', function (user) {
+                            console.log('local user:', user);
+                            if (!user) {
+                                self.onEmptyUser();
+                            } else {
+                                console.log('User load from local storage.', user);
+//                                self.set('user', user);
+                                self.onLoadUser(user);
+                            }
+                        });
+                    } else {
+                        console.log('User load from session storage.', user);
+//                        self.set('user', user);
+                        self.onLoadUser(user);
+                    }
+                });
             },
             makeUrl: function (pathOrName, params) {
                 return MoreRouting.urlFor(pathOrName, params);
@@ -319,16 +343,24 @@
             routeChangedSignal: function (data) {
                 console.log('routeChangedSignal: ' + JSON.stringify(data));
             },
-            onEmptyUser: function(data) {
+            onEmptyUser: function (data) {
                 console.log('Üres user -> login', data);
                 MoreRouting.navigateTo('login');
             },
-            onLoadUser: function(data) {
+            onLoadUser: function (data) {
+                console.log('onLoadUser:', this.user, data);
+                this.set('user', data);
                 console.log('Load user', this.get('user'), data);
             },
-            userChanged: function(token) {
-                console.log(token, this.user, this.get('user'));
+            userChanged: function (val) {
+//                console.log('userChanged', val, this.user, this.get('user'));
                 this.set('user', this.user);
+            },
+            logout: function () {
+                this.set('user', null);
+                MoreRouting.navigateTo('login');
+                StorageBehavior.sessionRemove('user');
+                StorageBehavior.localRemove('user');
             }
         });
     })();

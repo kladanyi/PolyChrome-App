@@ -1,0 +1,72 @@
+<script>
+    var lStorage, sessionStorage, isChromeApp;
+    sStorage = window.sessionStorage;
+    try {
+        lStorage = chrome.storage.local;
+        isChromeApp = true;
+    } catch (e) {
+        lStorage = window.localStorage;
+        isChromeApp = false;
+    }
+
+    var StorageBehavior = {
+        localSet: function (key, value, callBack) {
+            value = JSON.stringify(value);
+            if (isChromeApp) {
+                var pair = {};
+                pair[key] = value;
+                lStorage.set(pair, function () {
+                    if (typeof callBack === 'function') {
+                        callBack(value);
+                    }
+                });
+            } else {
+                lStorage.setItem(key, value);
+                if (typeof callBack === 'function') {
+                    callBack(value);
+                }
+            }
+        },
+        localGet: function (key, callBack) {
+            if (isChromeApp) {
+                lStorage.get(key, function (result) {
+                    if (typeof callBack === 'function') {
+                        callBack(result[key]);
+                    }
+                });
+            } else {
+                if (typeof callBack === 'function') {
+                    callBack(lStorage.getItem(key));
+                }
+            }
+        },
+        localRemove: function (key, callBack) {
+            if (isChromeApp) {
+                lStorage.remove(key, callBack);
+            } else {
+                lStorage.removeItem(key);
+                if (typeof callBack === 'function') {
+                    callBack();
+                }
+            }
+        },
+        sessionSet: function (key, value, callBack) {
+            value = JSON.stringify(value);
+            sStorage.setItem(key, value);
+            if (typeof callBack === 'function') {
+                callBack(value);
+            }
+        },
+        sessionGet: function (key, callBack) {
+            if (typeof callBack === 'function') {
+                callBack(JSON.parse(sStorage.getItem(key)));
+            }
+        },
+        sessionRemove: function (key, callBack) {
+            sStorage.removeItem(key);
+            if (typeof callBack === 'function') {
+                callBack(value);
+            }
+        }
+    };
+</script>

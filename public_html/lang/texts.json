@@ -3,5 +3,6 @@
     "NAME": "Name",
     "PASSWORD": "Password",
     "LOGIN": "Login",
-    "TEST": "Test with parameters. a: {{a}} and b: {{b}}"
+    "TEST": "Test with parameters. a: {{a}} and b: {{b}}",
+    "STAY_LOGGED_IN": "Stay logged in"
 }

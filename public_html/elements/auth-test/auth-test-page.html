@@ -33,18 +33,18 @@
         <my-app-title page="[[page]]" is-current="[[isCurrentPage]]">Autentikáció</my-app-title>
         <iron-signals on-iron-signal-refresh-filter-test="refresh"></iron-signals>
 
-        <h2 class="title">Setup</h2>
-        <paper-material elevation="1" class="card flex-1">
+        <h2 class="title" hidden=="[[loggedInGlobal]]">Setup</h2>
+        <paper-material elevation="1" class="card flex-1" hidden=="[[loggedInGlobal]]">
             <paper-button on-click="newUser">Új felhasználó</paper-button>
             <pretty-json json-data="[[setupResponse]]"></pretty-json>
         </paper-material>
-        
-        <h2 class="title">Login</h2>
-        <paper-material elevation="1" class="card flex-1">
+
+        <h2 class="title" hidden="[[loggedInGlobal]]">Login</h2>
+        <paper-material elevation="1" class="card flex-1" hidden="[[loggedInGlobal]]">
             <paper-button on-click="login">Bejelentkezés</paper-button>
             <pretty-json json-data="[[loginResponse]]"></pretty-json>
         </paper-material>
-        
+
         <h2 class="title">Adatok lekérése </h2>
         <paper-material elevation="1" class="card flex-1">
             <paper-button on-click="getData">Adatok lekérése</paper-button>
@@ -57,7 +57,7 @@
     (function () {
         Polymer({
             is: 'auth-test-page',
-            behaviors: [ToastBehavior],
+            behaviors: [ToastBehavior, AppBehavior],
             properties: {
                 page: {
                     type: String
@@ -85,26 +85,30 @@
                 tokenHeader: {
                     type: Object,
                     computed: 'getTokenHeader(token)'
+                },
+                loggedInGlobal: {
+                    type: Boolean,
+                    value: true
                 }
             },
             obervers: [
                 'value(setupResponse.success)',
                 'value(setupResponse.msg)'
             ],
-            isCurrent: function(current) {
+            isCurrent: function (current) {
                 return current === this.page;
             },
             newUser: function () {
                 console.log('new user');
                 this.$.setupAjax.generateRequest();
             },
-            value: function(val) {
+            value: function (val) {
                 return val;
             },
-            login: function() {
+            login: function () {
                 this.$.loginAjax.generateRequest();
             },
-            onLoginResponse: function() {
+            onLoginResponse: function () {
                 if (this.loginResponse.success) {
                     this.set('token', this.loginResponse.token);
                     ToastBehavior.addToast('Sikeres bejelentkezés.');
@@ -112,10 +116,15 @@
                     ToastBehavior.addToast(this.loginResponse.msg);
                 }
             },
-            getData: function() {
+            getData: function () {
+                console.log('loggedInGlobal', this.loggedInGlobal);
+                if (this.loggedInGlobal) {
+                    console.log(AppBehavior.getApp().get('user'), AppBehavior.getApp().user);
+                    this.set('token', AppBehavior.getApp().user.token);
+                }
                 this.$.dataAjax.generateRequest();
             },
-            getTokenHeader: function(token) {
+            getTokenHeader: function (token) {
                 return {
                     "x-access-token": token
                 };

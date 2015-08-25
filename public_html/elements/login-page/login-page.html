@@ -1,5 +1,5 @@
 <dom-module id="login-page">
-    <iron-localstorage name="my-app-user" value="{{user}}"></iron-localstorage>
+    <!--<iron-localstorage name="my-app-user" value="{{user}}"></iron-localstorage>-->
     <link rel="import" type="css" href="../my-app/my-app.css">
 
     <style is="custom-style">
@@ -44,21 +44,23 @@
         </div>
         <div id="loginContainer">
             <div>
-<!--                <paper-material elevation="1" class="card">
+                <paper-material elevation="1" class="card">
                     <paper-input label="[[nameLabel]]" value="{{name}}"></paper-input>
                     <paper-input label="[[passwordLabel]]" type="password" value="{{password}}"></paper-input>
+                    <paper-checkbox checked="{{stayLoggedIn}}"><me-i18n>STAY_LOGGED_IN</me-i18n></paper-checkbox>
                     <paper-button class="default" on-tap="login"><me-i18n>LOGIN</me-i18n></paper-button>
                 </paper-material>
-            </div>-->
+            </div>
         </div>
-        <div class="flex-1">
-            <me-i18n parameters='{"a": "alma", "b": "barack"}'>TEST</me-i18n><br />
+        <!--<div class="flex-1">-->
+            <!--<pretty-json json-data="{{user}}"></pretty-json>-->
+<!--            <me-i18n parameters='{"a": "alma", "b": "barack"}'>TEST</me-i18n><br />
             <me-i18n parameters=[[i18nParam]]>TEST</me-i18n>
             <p>
             <paper-button on-click="toggleLang">Toggle</paper-button>
             </p>
-            <me-i18n a="Alfonz" b="{{b}}" fp="a b">TEST</me-i18n><paper-input label="b" value="{{b}}"></paper-input>b: <span>[[b]]</span>
-        </div>
+            <me-i18n a="Alfonz" b="{{b}}" fp="a b">TEST</me-i18n><paper-input label="b" value="{{b}}"></paper-input>b: <span>[[b]]</span>-->
+        <!--</div>-->
     </template>
 </dom-module>
 <script>
@@ -79,6 +81,10 @@
                 passwordLabel: {
                     type: String
                 },
+                stayLoggedIn: {
+                    type: Boolean,
+                    value: false
+                },
                 user: {
                     type: Object,
                     notify: true
@@ -92,14 +98,14 @@
                         name: 'Kázmér'
                     }
                 },
-                b: {
-                    type: String,
-                    value: '-',
-                    observer: 'chB'
-                },
-                i18nParam: {
-                    type: Object
-                }
+//                b: {
+//                    type: String,
+//                    value: '-',
+//                    observer: 'chB'
+//                },
+//                i18nParam: {
+//                    type: Object
+//                }
             },
             ready: function () {
                 this.changeLang();
@@ -112,13 +118,25 @@
                 this.$.loginAjax.generateRequest();
             },
             onLoginResponse: function () {
-                console.log(this.loginResponse);
                 if (this.loginResponse.success) {
-                    this.set('user.token', this.loginResponse.token);
+                    console.log('user:', this.user);
+                    var user = {
+                        name: this.name,
+                        token: this.loginResponse.token
+                    };
+                    this.set('user', user);
                     MoreRouting.navigateTo('home');
-                    console.log('Sikeres bejelentkezés.');
+                    console.log('stayLoggedIn', this.stayLoggedIn);
+                    if (this.stayLoggedIn) {
+                        StorageBehavior.localSet('user', user);
+                    } else {
+                        StorageBehavior.sessionSet('user', user);
+                    }
+                    this.name = null;
+                    this.password = null;
+                    this.stayLoggedIn = false;
                 } else {
-                    console.log(this.loginResponse.msg);
+                    console.error(this.loginResponse.msg);
                 }
             },
             toggleLang: function () {
