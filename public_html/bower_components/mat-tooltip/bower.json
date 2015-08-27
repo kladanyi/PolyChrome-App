@@ -1,16 +1,18 @@
 {
-  "name": "xp-targeter-behavior",
+  "name": "mat-tooltip",
   "license": "BSD-3-Clause",
   "version": "0.9.7",
-  "main": "xp-targeter-behavior.html",
-  "description": "A behavior used add targeting capabilities on the context element",
-  "homepage": "http://expandjs.com/elements/xp-targeter-behavior",
+  "main": "mat-tooltip.html",
+  "description": "A custom element used to display a Material Design tooltip",
+  "homepage": "http://expandjs.com/elements/mat-tooltip",
   "authors": [
     "Giuliano Rullo <g.rullo@expandjs.com>",
     "Maurizio Stefàno <m.stefano@expandjs.com>",
     "Robert Manolea <r.manolea@expandjs.com>"
   ],
   "keywords": [
+    "material design",
+    "material tooltip",
     "web app",
     "html5",
     "expandjs",
@@ -21,6 +23,11 @@
   ],
   "dependencies": {
     "expandjs": "ExpandJS/expandjs#0.9.7",
+    "xp-adapter-behavior": "ExpandJS/xp-adapter-behavior#0.9.7",
+    "xp-tooltip": "ExpandJS/xp-tooltip#0.9.7",
     "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "mat-demo": "ExpandJS/mat-demo#0.9.7"
   }
 }

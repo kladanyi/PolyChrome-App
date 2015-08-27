@@ -89,6 +89,25 @@
 
                 return params;
             }
+        },
+        headerIcons: {
+            init: function() {
+                staticObject.headerIcons = AppBehavior.getApp().$.headerIcons;
+            },
+            addIcon: function(icon, page) {
+                if (staticObject.headerIcons) {
+                    staticObject.headerIcons.addIcon(icon, page);
+                } else {
+                    console.error('Call AppBehavior.headerIcons.init()!');
+                }
+            },
+            removeIcon: function(iconId, page) {
+                if (staticObject.headerIcons) {
+                    staticObject.headerIcons.removeIcon(iconId, page);
+                } else {
+                    console.error('Call AppBehavior.headerIcons.init()!');
+                }
+            }
         }
     };
 </script>

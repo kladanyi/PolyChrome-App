@@ -1,0 +1,98 @@
+<!--<link rel="import" href="">-->
+
+<dom-module id="header-icons">
+    <template>
+        <!--        <paper-icon-button icon="refresh"></paper-icon-button>
+                <paper-icon-button icon="social:person" on-click="logout"></paper-icon-button>-->
+        <template is="dom-repeat" items="[[icons]]">
+            <!--<span>[[item.id]]</span>-->
+            <paper-icon-button icon="[[item.icon]]" on-click="iconTap"></paper-icon-button>
+        </template>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'header-icons',
+            behaviors: [AppBehavior, StorageBehavior],
+            properties: {
+                icons: {
+                    type: Array
+                },
+                iconsByRoute: {
+                    type: Object,
+                    value: {}
+                },
+                route: {
+                    type: String,
+                    observer: 'routeChanged'
+                },
+                darab: {
+                    type: String
+                }
+            },
+            ready: function () {
+                this.addIcon({
+                    id: 'logout',
+                    icon: 'social:person',
+                    action: function () {
+                        AppBehavior.getApp().set('user', null);
+                        MoreRouting.navigateTo('login');
+                        StorageBehavior.sessionRemove('user');
+                        StorageBehavior.localRemove('user');
+                    }
+                });
+            },
+            routeChanged: function (newVal, oldVal) {
+                var icons = [];
+                for (var i = 0; this.iconsByRoute['*'] && i < this.iconsByRoute['*'].length; i++) {
+                    icons.unshift(this.iconsByRoute['*'][i]);
+                }
+                for (var i = 0; this.iconsByRoute[newVal] && i < this.iconsByRoute[newVal].length; i++) {
+                    icons.unshift(this.iconsByRoute[newVal][i]);
+                }
+                this.set('icons', icons);
+            },
+            iconTap: function (event) {
+                if (typeof event.model.item.action === 'function') {
+                    event.model.item.action();
+                }
+            },
+            addIcon: function (icon, page) {
+                if (!page) {
+                    page = '*';
+                }
+
+                if (!this.iconsByRoute[page]) {
+                    this.set('iconsByRoute.' + page, []);
+                }
+                this.push('iconsByRoute.' + page, icon);
+//
+                if (page === this.route) {
+                    this.routeChanged(this.route, this.route);
+                }
+            },
+            removeIcon: function (iconId, page) {
+                if (!page) {
+                    page = '*';
+                }
+
+                if (this.icons[page]) {
+                    for (var i = 0; i < this.icons[page]; i++) {
+                        if (this.icons[page][i].id === iconId) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index !== undefined) {
+                        this.splice('icons.' + page, index, 1);
+                    }
+                }
+
+                if (page === this.route) {
+                    this.routeChanged(this.route, this.route);
+                }
+            }
+        });
+    })();
+</script>

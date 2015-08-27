@@ -117,7 +117,7 @@
                 }
             },
             getData: function () {
-                console.log('loggedInGlobal', this.loggedInGlobal);
+                ToastBehavior.addToast('Kérem az adatokat.');
                 if (this.loggedInGlobal) {
                     console.log(AppBehavior.getApp().get('user'), AppBehavior.getApp().user);
                     this.set('token', AppBehavior.getApp().user.token);

@@ -1,4 +1,4 @@
-<dom-module id="toast-service">
+<dom-module id="toast-container">
     <style is="custom-style">
         :host {
             display: block;
@@ -20,7 +20,7 @@
 <script>
     (function () {
         Polymer({
-            is: 'toast-service',
+            is: 'toast-container',
             addToast: function (text, duration) {
                 this.$.toast.text = text;
                 if (duration) {

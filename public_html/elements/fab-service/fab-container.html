@@ -16,7 +16,6 @@
     <template>
         <template is="dom-if" if="{{currentFab}}">
             <paper-fab id="def" icon="{{currentFab.icon}}" class="fab-left-bottom" on-click="clickFab"></paper-fab>
-            <paper-tooltip for="def">{{fabtooltip}}</paper-tooltip>
         </template>
     </template>
 </dom-module>
@@ -34,10 +33,10 @@
                     type: Array,
                     value: []
                 },
-                fabtooltip: {
-                    type: String,
-                    computed: 'getValue(currentFab.tooltip)'
-                },
+//                fabtooltip: {
+//                    type: String,
+//                    computed: 'getValue(currentFab.tooltip)'
+//                },
                 currentFab: Object
             },
             addFab: function (fab) {
@@ -79,8 +78,8 @@
             register: function () {
                 FabBehavior.setFabContainer(this);
             },
-            getValue: function(value) {
-                return value
+            getValue: function (value) {
+                return value;
             }
         });
     })();

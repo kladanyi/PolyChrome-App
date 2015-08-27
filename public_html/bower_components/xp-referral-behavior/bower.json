@@ -1,7 +1,8 @@
 {
   "name": "xp-referral-behavior",
   "license": "BSD-3-Clause",
-  "version": "0.9.5",
+  "version": "0.9.7",
+  "main": "xp-referral-behavior.html",
   "description": "A behavior used to add self referencing capabilities on the context element",
   "homepage": "http://expandjs.com/elements/xp-referral-behavior",
   "authors": [
@@ -15,14 +16,11 @@
     "expandjs",
     "web-components"
   ],
-  "main": [
-    "xp-referral-behavior.html"
-  ],
   "ignore": [
     "**/.*"
   ],
   "dependencies": {
-    "expandjs": "ExpandJS/expandjs#0.9.5",
+    "expandjs": "ExpandJS/expandjs#0.9.7",
     "polymer": "Polymer/polymer#^1.0.0"
   }
 }

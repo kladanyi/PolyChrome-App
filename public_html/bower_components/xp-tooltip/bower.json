@@ -1,10 +1,10 @@
 {
-  "name": "xp-targeter-behavior",
+  "name": "xp-tooltip",
   "license": "BSD-3-Clause",
   "version": "0.9.7",
-  "main": "xp-targeter-behavior.html",
-  "description": "A behavior used add targeting capabilities on the context element",
-  "homepage": "http://expandjs.com/elements/xp-targeter-behavior",
+  "main": "xp-tooltip.html",
+  "description": "A custom element used to create a tooltip",
+  "homepage": "http://expandjs.com/elements/xp-tooltip",
   "authors": [
     "Giuliano Rullo <g.rullo@expandjs.com>",
     "Maurizio Stefàno <m.stefano@expandjs.com>",
@@ -21,6 +21,8 @@
   ],
   "dependencies": {
     "expandjs": "ExpandJS/expandjs#0.9.7",
+    "xp-overlay": "ExpandJS/xp-overlay#0.9.7",
+    "xp-referral-behavior": "ExpandJS/xp-referral-behavior#0.9.7",
     "polymer": "Polymer/polymer#^1.0.0"
   }
 }

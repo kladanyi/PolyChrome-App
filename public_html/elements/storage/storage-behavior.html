@@ -31,12 +31,14 @@
             if (isChromeApp) {
                 lStorage.get(key, function (result) {
                     if (typeof callBack === 'function') {
-                        callBack(result[key]);
+                        callBack(JSON.parse(result[key]));
                     }
                 });
             } else {
                 if (typeof callBack === 'function') {
-                    callBack(lStorage.getItem(key));
+                    var result = lStorage.getItem(key);
+                    result = JSON.parse(result);
+                    callBack(result);
                 }
             }
         },

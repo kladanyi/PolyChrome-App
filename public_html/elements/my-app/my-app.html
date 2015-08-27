@@ -1,3 +1,5 @@
+<link rel="import" href="header-icons.html">
+
 <dom-module id="my-app">
     <link rel="import" type="css" href="my-app.css">
 
@@ -74,7 +76,7 @@
                 </div>
             </div>
             <div main>
-                <toast-service id="toast-service"></toast-service>
+                <toast-container id="toast-container"></toast-container>
                 <fab-container id="fab-container"></fab-container>
                 <paper-header-panel mode="seamed" class="fullbleed layout vertical">
                     <!-- Main Toolbar -->
@@ -87,8 +89,9 @@
                         <span class="flex"></span>
 
                         <!--Toolbar icons--> 
-                        <paper-icon-button icon="refresh"></paper-icon-button>
-                        <paper-icon-button icon="social:person" on-click="logout"></paper-icon-button>
+                        <!--                        <paper-icon-button icon="refresh"></paper-icon-button>
+                                                <paper-icon-button icon="social:person" on-click="logout"></paper-icon-button>-->
+                        <header-icons id="headerIcons" route="[[route]]"></header-icons>
 
                     </paper-toolbar>
 
@@ -101,8 +104,8 @@
                                 </section>
 
                                 <section route="home">
-                                    <!--                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
-                                                                        <filter-test-page page="home" current="[[route]]"></filter-test-page>-->
+<!--                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
+                                    <filter-test-page page="home" current="[[route]]"></filter-test-page>-->
                                     <auth-test-page page="home" current="[[route]]"></auth-test-page>
                                 </section>
 
@@ -136,9 +139,9 @@
                                     <paper-material elevation="1" class="card">
                                         <content-5></content-5>
                                     </paper-material>
-                                    <!--                                    <paper-material elevation="1" class="card">
-                                                                            <content-4></content-4>
-                                                                        </paper-material>-->
+<!--                                    <paper-material elevation="1" class="card">
+                                        <content-4></content-4>
+                                    </paper-material>-->
                                     <paper-material elevation="1" class="card">
                                         <content-3></content-3>
                                     </paper-material>
@@ -146,8 +149,8 @@
                                         <content-2></content-2>
                                     </paper-material>
                                     <paper-material elevation="1" class="card">
-                                        <content-1></content-1>
-                                    </paper-material>
+                                        <content-1></content-1><!--
+                                    </paper-material>-->
                                 </section>
 
                                 <section route="content-2">
@@ -264,6 +267,18 @@
                 paramsname: {
                     type: String,
                     computed: 'getElement(params.name)'
+                },
+                refreshIcon: {
+                    type: String,
+                    value: 'refresh'
+                },
+                refreshTap: {
+                    type: Object,
+                    value: function () {
+                        return function () {
+                            ToastBehavior.addToast('Refresh...');
+                        };
+                    }
                 }
             },
             observers: ['userChanged(user.token)', 'userChanged(user.name)'],
@@ -282,25 +297,30 @@
             },
             attached: function () {
                 var self = this;
-                console.log('self.user', self.user, 'this.user', this.user);
+//                console.log('self.user', self.user, 'this.user', this.user);
                 StorageBehavior.sessionGet('user', function (user) {
                     if (!user) {
                         StorageBehavior.localGet('user', function (user) {
-                            console.log('local user:', user);
+//                            console.log('local user:', user);
                             if (!user) {
                                 self.onEmptyUser();
                             } else {
-                                console.log('User load from local storage.', user);
+//                                console.log('User load from local storage.', user);
 //                                self.set('user', user);
                                 self.onLoadUser(user);
                             }
                         });
                     } else {
-                        console.log('User load from session storage.', user);
+//                        console.log('User load from session storage.', user);
 //                        self.set('user', user);
                         self.onLoadUser(user);
                     }
                 });
+                
+                AppBehavior.headerIcons.init();
+                AppBehavior.headerIcons.addIcon({icon: 'star', id: 'test', action: function() { ToastBehavior.addToast('Sikerült : )') }}, 'home');
+//                AppBehavior.headerIcons.removeIcon('logout');
+//                AppBehavior.headerIcons.removeIcon('test', 'home');
             },
             makeUrl: function (pathOrName, params) {
                 return MoreRouting.urlFor(pathOrName, params);
@@ -337,20 +357,16 @@
                 MoreRouting.navigateTo('user-info', {name: this.userName});
             },
             getElement: function (value) {
-                console.log('getElement ' + value + ' ' + JSON.stringify(this.params));
                 return value;
             },
             routeChangedSignal: function (data) {
                 console.log('routeChangedSignal: ' + JSON.stringify(data));
             },
             onEmptyUser: function (data) {
-                console.log('Üres user -> login', data);
                 MoreRouting.navigateTo('login');
             },
             onLoadUser: function (data) {
-                console.log('onLoadUser:', this.user, data);
                 this.set('user', data);
-                console.log('Load user', this.get('user'), data);
             },
             userChanged: function (val) {
 //                console.log('userChanged', val, this.user, this.get('user'));

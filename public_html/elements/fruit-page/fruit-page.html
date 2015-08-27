@@ -108,6 +108,18 @@
             observers: [
                 'filterChanged(filter.name)'
             ],
+            attached: function() {
+                console.info('refresh page:', this.page);
+                var self = this;
+                AppBehavior.headerIcons.addIcon({
+                    id: 'refresh',
+                    icon: 'refresh',
+                    action: function() {
+                        console.log('self', self);
+                        self.$.listAjax.generateRequest();
+                    }
+                }, this.page);
+            },
             isCurrent: function(current) {
                 return current === this.page;
             },
