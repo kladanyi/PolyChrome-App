@@ -68,7 +68,7 @@
                 }
                 this.push('iconsByRoute.' + page, icon);
 //
-                if (page === this.route) {
+                if (page === '*' || page === this.route) {
                     this.routeChanged(this.route, this.route);
                 }
             },
@@ -89,7 +89,7 @@
                     }
                 }
 
-                if (page === this.route) {
+                if (page === '*' || page === this.route) {
                     this.routeChanged(this.route, this.route);
                 }
             }

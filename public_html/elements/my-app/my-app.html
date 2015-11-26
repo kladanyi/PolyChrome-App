@@ -66,6 +66,11 @@
                                 <iron-icon icon="b"></iron-icon>
                                 <span>Z</span>
                             </a>
+                            
+                            <a route="file" href="[[makeUrl('file')]]">
+                                <iron-icon icon="b"></iron-icon>
+                                <span>File teszt</span>
+                            </a>
 
                             <!--hidden--> 
                             <a route="login" hidden="true"></a>
@@ -104,8 +109,8 @@
                                 </section>
 
                                 <section route="home">
-<!--                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
-                                    <filter-test-page page="home" current="[[route]]"></filter-test-page>-->
+                                    <!--                                    <fab-element id="homeFab" icon="home" click-fn="[[homeFabClick]]" page="home"></fab-element>
+                                                                        <filter-test-page page="home" current="[[route]]"></filter-test-page>-->
                                     <auth-test-page page="home" current="[[route]]"></auth-test-page>
                                 </section>
 
@@ -139,9 +144,9 @@
                                     <paper-material elevation="1" class="card">
                                         <content-5></content-5>
                                     </paper-material>
-<!--                                    <paper-material elevation="1" class="card">
-                                        <content-4></content-4>
-                                    </paper-material>-->
+                                    <!--                                    <paper-material elevation="1" class="card">
+                                                                            <content-4></content-4>
+                                                                        </paper-material>-->
                                     <paper-material elevation="1" class="card">
                                         <content-3></content-3>
                                     </paper-material>
@@ -184,6 +189,12 @@
                                 <section route="xy-z">
                                     <paper-material elevation="1" class="card">
                                         <param-test path-params="[[params]]" page="xy-z" current="[[route]]"></param-test>
+                                    </paper-material>
+                                </section>
+
+                                <section route="file">
+                                    <paper-material elevation="1" class="card">
+                                        <file-test></file-test>
                                     </paper-material>
                                 </section>
                             </iron-pages>
@@ -316,9 +327,11 @@
                         self.onLoadUser(user);
                     }
                 });
-                
+
                 AppBehavior.headerIcons.init();
-                AppBehavior.headerIcons.addIcon({icon: 'star', id: 'test', action: function() { ToastBehavior.addToast('Sikerült : )') }}, 'home');
+                AppBehavior.headerIcons.addIcon({icon: 'star', id: 'test', action: function () {
+                        ToastBehavior.addToast('Sikerült : )')
+                    }}, 'home');
 //                AppBehavior.headerIcons.removeIcon('logout');
 //                AppBehavior.headerIcons.removeIcon('test', 'home');
             },

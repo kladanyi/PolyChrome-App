@@ -1,0 +1,58 @@
+<dom-module id="file-test">
+    <style is="custom-style">
+    </style>
+    <template>
+        <p>[[message]]</p>
+        <input type="file" id="files" name="files[]" multiple />
+        <output id="list"></output>
+
+        <paper-button on-tap="checkFiles">CHECK</paper-button>
+    </template>
+</dom-module>
+<script>
+    (function () {
+        Polymer({
+            is: 'file-test',
+            ready: function () {
+                if (window.File && window.FileReader && window.FileList && window.Blob) {
+                    this.set('message', 'Great success! All the File APIs are supported.');
+                } else {
+                    this.set('message', 'The File APIs are not fully supported in this browser.');
+                }
+
+//                function handleFileSelect(evt) {
+//                    var files = evt.target.files; // FileList object
+//
+//                    // files is a FileList of File objects. List some properties.
+//                    var output = [];
+//                    for (var i = 0, f; f = files[i]; i++) {
+//                        output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+//                                f.size, ' bytes, last modified: ',
+//                                f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+//                                '</li>');
+//                    }
+//                    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+//                }
+//
+//                document.getElementById('files').addEventListener('change', handleFileSelect, false);
+            },
+            checkFiles: function () {
+                var files = this.$.files.files;
+                console.log(files);
+                for (var i = 0; i < files.length; i++) {
+                    var f = files[i];
+                    console.log(files[i]);
+                    var reader = new FileReader();
+                    reader.onload = (function (theFile) {
+                        return function (e) {
+//                            console.log(e.target.result);
+                            console.log(theFile.name, theFile.type);
+                        };
+                    })(f);
+
+                    reader.readAsDataURL(f);
+                }
+            }
+        });
+    })();
+</script>
